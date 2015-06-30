@@ -4,3 +4,8 @@
 !_TAG_PROGRAM_NAME	Exuberant Ctags	//
 !_TAG_PROGRAM_URL	http://ctags.sourceforge.net	/official site/
 !_TAG_PROGRAM_VERSION	5.8	//
+resolveStub	C:\Users\Himanshu\Documents\Vita\VHL\nid_table.c	/^int resolveStub(void *stub, SceNID nid, nidTable_entry *entry)$/;"	function	line:3	signature:(void *stub, SceNID nid, nidTable_entry *entry)
+nidTable_isValidModuleInfo	C:\Users\Himanshu\Documents\Vita\VHL\nid_table.c	/^int nidTable_isValidModuleInfo(SceModuleInfo *m_info)$/;"	function	line:54	signature:(SceModuleInfo *m_info)
+nidTable_resolveAll	C:\Users\Himanshu\Documents\Vita\VHL\nid_table.c	/^int nidTable_resolveAll()$/;"	function	line:62
+nidTable_resolveImportFromNID	C:\Users\Himanshu\Documents\Vita\VHL\nid_table.c	/^int nidTable_resolveImportFromNID(SceUInt *functionPtrLocation, SceNID nid, void *libraryBase, char* libName)$/;"	function	line:67	signature:(SceUInt *functionPtrLocation, SceNID nid, void *libraryBase, char* libName)
+nidTable_resolveVHLImports	C:\Users\Himanshu\Documents\Vita\VHL\nid_table.c	/^int nidTable_resolveVHLImports(UVL_Context *ctx, VHLCalls *calls)$/;"	function	line:87	signature:(UVL_Context *ctx, VHLCalls *calls)

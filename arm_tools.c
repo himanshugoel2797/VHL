@@ -5,6 +5,7 @@ int Disassemble(void *instruction, ARM_INSTRUCTION *instData)
         //TODO implement ARM instruction disassembling
 
         unsigned int inst = *(unsigned int*)instruction;
+        DEBUG_LOG("Instruction: 0x%08x", inst);
 
         //Extract the condition information
         instData->condition = ARM_CONDITION_EXTRACT(inst);
@@ -23,8 +24,13 @@ int Disassemble(void *instruction, ARM_INSTRUCTION *instData)
                 instData->instruction = ARM_EXTRA_TYPE_EXTRACT(inst);
                 if(instData->instruction == 14 || instData->instruction == 15)
                 {
-                        instData->type = ARM_MOV_INSTRUCTION;
+                        instData->type = ARM_MVN_INSTRUCTION;
                         instData->argCount = 0; //TODO parse MVN arguments
+                        break;
+                }
+                if(instData->instruction != ARM_INST_MOVT && instData->instruction != ARM_INST_MOVW) {
+                        instData->type = ARM_UNKN_INSTRUCTION;
+                        instData->instruction = ARM_INST_UNKNOWN;
                         break;
                 }
                 instData->value[0] = B_EXTRACT(inst, 15, 12);
@@ -33,19 +39,29 @@ int Disassemble(void *instruction, ARM_INSTRUCTION *instData)
                 break;
         case ARM_BRANCH_INSTRUCTION:
                 instData->instruction = B_EXTRACT(inst, 7, 4);  //The instruction type for a branch depends on 7-4
+                if(instData->instruction != ARM_INST_BX && instData->instruction != ARM_INST_BLX){
+                        instData->type = ARM_UNKN_INSTRUCTION;
+                        instData->instruction = ARM_INST_UNKNOWN;
+                        break;
+                }
                 instData->value[0] = B_EXTRACT(inst, 3, 0);
                 instData->argCount = 1;
                 break;
         case ARM_ADR_INSTRUCTION:
                 instData->instruction = ARM_EXTRA_TYPE_EXTRACT(inst);
-                if(instData->instruction == 4) instData->instruction = ARM_INST_ADR; //two possible encodings
+                if(instData->instruction == ARM_ADR_INSTRUCTION) instData->instruction = ARM_INST_ADR; //two possible encodings
+                if(instData->instruction != ARM_ADR_INSTRUCTION && instData->instruction != ARM_INST_ADR) {
+                        instData->type = ARM_UNKN_INSTRUCTION;
+                        instData->instruction = ARM_INST_UNKNOWN;
+                        break;
+                }
                 instData->value[0] = B_EXTRACT(inst, 15, 12);
                 instData->value[1] = B_EXTRACT(inst, 11, 0);
                 instData->argCount = 2;
                 break;
-        case ARM_UNKNOWN:
+        case ARM_UNKN_INSTRUCTION:
         default:
-                instData->type = ARM_UNKNOWN;
+                instData->type = ARM_UNKN_INSTRUCTION;
                 instData->instruction = ARM_INST_UNKNOWN;
                 instData->argCount = 0;
                 return -1;

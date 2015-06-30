@@ -12,12 +12,12 @@
 #define NID_TABLE_MAX_ENTRIES 16384
 #define NID_TABLE_CACHE_FILE VHL_DATA_PATH "/nidCache.bin"
 
-enum EntryTypes {
+typedef enum  {
         ENTRY_TYPES_UNKN = 0,
         ENTRY_TYPES_FUNCTION,
         ENTRY_TYPES_SYSCALL,
         ENTRY_TYPES_VARIABLE
-};
+}EntryTypes;
 
 //Represents an entry in the NID table
 typedef struct {

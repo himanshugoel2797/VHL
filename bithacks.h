@@ -12,8 +12,8 @@
 
 #define B_JOIN(a, b, shift) (a | (b << shift))
 
-#define BIT_MASK(a, b) (((unsigned) -1 >> (31 - (b))) & ~((1U << (a)) - 1))
-#define B_EXTRACT(x, min, max) ( (x  & BIT_MASK(min, max)) >> min  )
+#define BIT_MASK(a, b) ((((unsigned) -1 >> a) << a + (31 - b)) >> (31 - b))
+#define B_EXTRACT(x, max, min) ( (x  & BIT_MASK(min, max)) >> min  )
 
 /* test if x is even */
 #define B_EVEN(x)        (((x)&1)==0)
