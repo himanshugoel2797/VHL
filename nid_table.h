@@ -28,6 +28,7 @@ typedef enum  {
 typedef struct {
         SceNID nid;
         int type;
+        void *stub_loc;
         union {
                 void *function;
                 SceUInt location;
@@ -38,9 +39,12 @@ int nidTable_initialize();
 int resolveStub(void *stub, SceNID nid, nidTable_entry *entry);
 SceModuleInfo* nidTable_findModuleInfo(void* location, SceUInt size, char* libname);
 int nidTable_isValidModuleInfo(SceModuleInfo *m_info);
+int nidTable_resolveFromModule(VHLCalls *calls, SceLoadedModuleInfo *target);
 int nidTable_resolveImportFromNID(VHLCalls *calls, SceUInt *functionPtrLocation, SceNID nid, void *libraryBase, char* libName);
 int nidTable_resolveVHLImports(UVL_Context *ctx, VHLCalls *calls);
 int nidTable_resolveAll(VHLCalls *calls);
-int nidTable_exportFunc(void *target, SceNID nid);
+int nidTable_exportFunc(VHLCalls *calls, void *target, SceNID nid);
+
+int nidTable_setNIDaddress(VHLCalls *calls, void *stub, SceNID nid);
 
 #endif

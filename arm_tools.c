@@ -38,7 +38,7 @@ int Disassemble(void *instruction, ARM_INSTRUCTION *instData)
                 break;
         case ARM_BRANCH_INSTRUCTION:
                 instData->instruction = B_EXTRACT(inst, 7, 4);  //The instruction type for a branch depends on 7-4
-                if(instData->instruction != ARM_INST_BX && instData->instruction != ARM_INST_BLX){
+                if(instData->instruction != ARM_INST_BX && instData->instruction != ARM_INST_BLX) {
                         instData->type = ARM_UNKN_INSTRUCTION;
                         instData->instruction = ARM_INST_UNKNOWN;
                         break;
@@ -65,5 +65,34 @@ int Disassemble(void *instruction, ARM_INSTRUCTION *instData)
                 instData->argCount = 0;
                 return -1;
         }
+        return 0;
+}
+
+int Assemble(ARM_INSTRUCTION *instData, unsigned int *instruction)
+{
+        unsigned int tmp = 0;
+        tmp |= B_EXTRACT(instData->condition, 3, 0) << 29;
+        tmp |= B_EXTRACT(instData->type, 3, 0) << 25;
+
+        //Generate instruction
+        switch(instData->type) {
+        case ARM_MOV_INSTRUCTION:
+                tmp |= B_EXTRACT(instData->instruction, 3, 0) << 21;
+                tmp |= B_EXTRACT(instData->value[0], 3, 0) << 13;
+
+                tmp |= B_EXTRACT(instData->value[1], 11, 0);
+                tmp |= B_EXTRACT(instData->value[1], 15, 12) << 17;
+                break;
+        case ARM_SVC_INSTRUCTION:
+                tmp |= B_EXTRACT(instData->value[0], 23, 0);
+                break;
+        case ARM_BRANCH_INSTRUCTION:
+                tmp = ((SceUInt)0xE12FFF1 << 4) | instData->value[0];
+                break;
+        default:
+                return -1;
+        }
+
+        *instruction = tmp;
         return 0;
 }

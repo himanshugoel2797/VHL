@@ -30,11 +30,6 @@ typedef struct {
         int (*sceKernelStopUnloadModule)(SceUID, SceSize /*arg size*/, void* /*args*/, int /*flags*/,void* /*NULL*/, int* /*result*/);
         int (*sceKernelUnloadModule)(SceUID);
 
-//Sysmodule functions
-        int (*sceSysmoduleLoadModule)(SceUInt16);
-        int (*sceSysmoduleUnloadModule)(SceUInt16);
-        int (*sceSysmoduleIsLoaded)(SceUInt16);
-
 //Memory management functions
         SceUID (*sceKernelAllocMemBlock)(const char*, int, int, void*);
         int (*sceKernelFreeMemBlock)(SceUID);
@@ -73,10 +68,6 @@ typedef enum
         SCE_KERNEL_LOAD_STARTMODULE = 768363258,
         SCE_KERNEL_STOP_UNLOADMODULE = 605419684,
         SCE_KERNEL_UNLOADMODULE = 428315150,
-
-        SCE_SYSMODULE_LOADMODULE = 2040534538,
-        SCE_SYSMODULE_UNLOADMODULE = 836270085,
-        SCE_SYSMODULE_ISLOADED = 1393138554,
 
         SCE_KERNEL_ALLOC_MEMBLOCK = 3117804510,
         SCE_KERNEL_FREE_MEMBLOCK = 2837321198,

@@ -4,6 +4,7 @@
 #include "vhl.h"
 #include "nid_table.h"
 #include "nidcache.h"
+#include "elf_parser.h"
 
 static VHLCalls calls;
 
@@ -26,24 +27,22 @@ _start(UVL_Context *ctx)
 
         int err = nidTable_resolveVHLImports(ctx, &calls);
         if(err < 0) {
-                calls.LogLine("Failed to resolve some functions... VHL might not work...");
+                calls.LogLine("Failed to resolve some functions... VHL will not work...");
+                return -1;
         }
 
-        calls.LogLine("Resolving and Caching NIDs...");
-
-        nidTable_resolveAll(&calls);
-
         calls.LogLine("Freeing memory...");
+        //TODO
 
         calls.LogLine("Loading plugins...");
+        //TODO
 
         calls.LogLine("Loading menu...");
-
-        calls.LogLine("Launching menu...");
+        calls.UnlockMem();
+        elfParser_Load(&calls, "pss0:/top/Documents/homebrew.self", NULL);
 
         while(1) {
-
-                calls.LogLine("Menu exited! Relaunching...");
+                //calls.LogLine("Menu exited! Relaunching...");
         }
 
         return 0;

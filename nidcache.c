@@ -21,7 +21,6 @@ int nidCacheContainsModuleNID(SceNID nid, int *offset)
                 }
                 off += header[i].count;
         }
-        DEBUG_LOG("Failed to find NID 0x%08x in cache", nid);
         return -1;
 }
 
