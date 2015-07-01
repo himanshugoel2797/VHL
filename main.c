@@ -3,6 +3,7 @@
 #include <psp2/kernel/memorymgr.h>
 #include "vhl.h"
 #include "nid_table.h"
+#include "nidcache.h"
 
 static VHLCalls calls;
 
@@ -21,6 +22,7 @@ _start(UVL_Context *ctx)
 
         calls.LogLine("Initializing VHL...");
         calls.LogLine("Bootstrapping...");
+        nidCacheInitialize(&calls, (SceUInt)&_start);
 
         nidTable_resolveVHLImports(ctx, &calls);
 

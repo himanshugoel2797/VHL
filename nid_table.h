@@ -8,6 +8,7 @@
 #include "elf_headers.h"
 #include "utils.h"
 #include "vhl.h"
+#include "nidcache.h"
 
 #define NID_TABLE_MAX_ENTRIES 16384
 #define NID_TABLE_MAX_MODULES 256
@@ -37,7 +38,7 @@ int nidTable_initialize();
 int resolveStub(void *stub, SceNID nid, nidTable_entry *entry);
 SceModuleInfo* nidTable_findModuleInfo(void* location, SceUInt size, char* libname);
 int nidTable_isValidModuleInfo(SceModuleInfo *m_info);
-int nidTable_resolveImportFromNID(SceUInt *functionPtrLocation, SceNID nid, void *libraryBase, char* libName);
+int nidTable_resolveImportFromNID(VHLCalls *calls, SceUInt *functionPtrLocation, SceNID nid, void *libraryBase, char* libName);
 int nidTable_resolveVHLImports(UVL_Context *ctx, VHLCalls *calls);
 int nidTable_resolveAll(VHLCalls *calls);
 int nidTable_exportFunc(void *target, SceNID nid);

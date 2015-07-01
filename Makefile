@@ -1,5 +1,5 @@
 CC=arm-none-eabi-gcc
-CFLAGS=-fPIE -fno-zero-initialized-in-bss -std=c99 -mcpu=cortex-a9 -D DEBUG -mthumb-interwork -I$(PSP2SDK)/include
+CFLAGS=-fPIE -fno-zero-initialized-in-bss -std=c99 -mcpu=cortex-a9 -D DEBUG -D PSV_3XX -mthumb-interwork -I$(PSP2SDK)/include
 CFLAGS_THUMB=-mthumb
 LD=arm-none-eabi-gcc
 LDFLAGS=-T linker.x -nodefaultlibs -nostdlib -pie
@@ -8,7 +8,7 @@ OBJCOPYFLAGS=
 
 TARGET=VHL
 
-OBJ=main.o nid_table.o arm_tools.o loader.o utils.o mini-printf.o nidcache.o
+OBJ=main.o nid_table.o arm_tools.o loader.o utils.o mini-printf.o nidcache.o nidcache3xx.o
 
 all: clean $(TARGET)
 

@@ -65,7 +65,7 @@ typedef struct
         SceUShort16 num_functions;  // number of imported functions
         SceUShort16 num_vars;       // number of imported variables
         SceUShort16 unknown1;
-        SceUShort16 module_nid;     // NID of the module to link to
+        SceUInt module_nid;     // NID of the module to link to
         char    *lib_name;    // name of module
         SceUInt   *func_nid_table;// array of function NIDs (numFuncs)
         void    **func_entry_table;// parallel array of pointers to stubs; they're patched by the loader to jump to the final code
@@ -86,6 +86,8 @@ typedef union
 #define SCE_MODULE_IMPORTS_GET_FUNCTION_COUNT(x) (((x->size == sizeof(SceModuleImports_3x)) ? x->new_version.num_functions : x->old_version.num_functions))
 #define SCE_MODULE_IMPORTS_GET_FUNCTIONS_NIDTABLE(x) (((x->size == sizeof(SceModuleImports_3x)) ? x->new_version.func_nid_table : x->old_version.func_nid_table))
 #define SCE_MODULE_IMPORTS_GET_FUNCTIONS_ENTRYTABLE(x) (((x->size == sizeof(SceModuleImports_3x)) ? x->new_version.func_entry_table : x->old_version.func_entry_table))
+#define SCE_MODULE_IMPORTS_GET_LIB_NAME(x) (((x->size == sizeof(SceModuleImports_3x)) ? x->new_version.lib_name : x->old_version.lib_name))
+#define SCE_MODULE_IMPORTS_GET_NID(x) (((x->size == sizeof(SceModuleImports_3x)) ? x->new_version.module_nid : x->old_version.module_nid))
 
 typedef struct
 {
