@@ -26,6 +26,8 @@ _start(UVL_Context *ctx)
 
         calls.LogLine("Resolving and Caching NIDs...");
 
+        nidTable_resolveAll(&calls);
+
         calls.LogLine("Freeing memory...");
 
         calls.LogLine("Loading plugins...");

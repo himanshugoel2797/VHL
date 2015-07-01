@@ -8,7 +8,7 @@ OBJCOPYFLAGS=
 
 TARGET=VHL
 
-OBJ=main.o nid_table.o arm_tools.o loader.o utils.o mini-printf.o
+OBJ=main.o nid_table.o arm_tools.o loader.o utils.o mini-printf.o nidcache.o
 
 all: clean $(TARGET)
 

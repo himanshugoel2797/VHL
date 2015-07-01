@@ -83,6 +83,10 @@ typedef union
         SceModuleImports_3x new_version;
 } SceModuleImports;
 
+#define SCE_MODULE_IMPORTS_GET_FUNCTION_COUNT(x) (((x->size == sizeof(SceModuleImports_3x)) ? x->new_version.num_functions : x->old_version.num_functions))
+#define SCE_MODULE_IMPORTS_GET_FUNCTIONS_NIDTABLE(x) (((x->size == sizeof(SceModuleImports_3x)) ? x->new_version.func_nid_table : x->old_version.func_nid_table))
+#define SCE_MODULE_IMPORTS_GET_FUNCTIONS_ENTRYTABLE(x) (((x->size == sizeof(SceModuleImports_3x)) ? x->new_version.func_entry_table : x->old_version.func_entry_table))
+
 typedef struct
 {
         SceUInt size;       // this structure size (0x18)
