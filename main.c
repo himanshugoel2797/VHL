@@ -24,7 +24,10 @@ _start(UVL_Context *ctx)
         calls.LogLine("Bootstrapping...");
         nidCacheInitialize(&calls, (SceUInt)&_start);
 
-        nidTable_resolveVHLImports(ctx, &calls);
+        int err = nidTable_resolveVHLImports(ctx, &calls);
+        if(err < 0) {
+                calls.LogLine("Failed to resolve some functions... VHL might not work...");
+        }
 
         calls.LogLine("Resolving and Caching NIDs...");
 
@@ -48,5 +51,5 @@ _start(UVL_Context *ctx)
 
 void logLine(const char *str)
 {
-  calls.LogLine(str);
+        calls.LogLine(str);
 }

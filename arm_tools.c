@@ -5,7 +5,6 @@ int Disassemble(void *instruction, ARM_INSTRUCTION *instData)
         //TODO implement ARM instruction disassembling
 
         unsigned int inst = *(unsigned int*)instruction;
-        DEBUG_LOG("Instruction: 0x%08x", inst);
 
         //Extract the condition information
         instData->condition = ARM_CONDITION_EXTRACT(inst);
