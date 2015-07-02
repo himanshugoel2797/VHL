@@ -38,7 +38,7 @@ _start(UVL_Context *ctx)
         //TODO
 
         calls.LogLine("Loading menu...");
-        calls.UnlockMem();
+
         elfParser_Load(&calls, "pss0:/top/Documents/homebrew.self", NULL);
 
         while(1) {

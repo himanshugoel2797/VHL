@@ -56,7 +56,7 @@ typedef struct {
 typedef enum
 {
         SCE_IO_OPEN = 1818274913,
-        SCE_IO_CLOSE = 3339421830,
+        SCE_IO_CLOSE = 3339421830,  
         SCE_IO_READ = 4256375443,
         SCE_IO_WRITE = 888133750,
         SCE_IO_LSEEK = 2579109694,

@@ -52,20 +52,9 @@ int nidTable_isValidModuleInfo(SceModuleInfo *m_info)
 
 int nidTable_resolveFromModule(VHLCalls *calls, SceLoadedModuleInfo *target)
 {
-        int loadResult = sizeof(int);
-        SceUID l_mod_uid = calls->sceKernelLoadModule(target->file_path,0,&loadResult);
-        SceLoadedModuleInfo l_mod_info;
-        l_mod_info.size = sizeof(SceLoadedModuleInfo);
-        if(calls->sceKernelGetModuleInfo(l_mod_uid, &l_mod_info) < 0) {
-                internal_printf("Failed to get module info... Module %s will not be available...", target->module_name);
-                return -1;
-        }
 
         SceModuleInfo *orig_mod_info = nidTable_findModuleInfo(target->segments[0].vaddr, target->segments[0].memsz, target->module_name);
-        SceModuleInfo *mod_info = nidTable_findModuleInfo(l_mod_info.segments[0].vaddr, l_mod_info.segments[0].memsz, l_mod_info.module_name);
-
-        if(mod_info != NULL)
-        {
+        if(orig_mod_info != NULL) {
                 SceUInt base_orig = (SceUInt)orig_mod_info - orig_mod_info->ent_top + sizeof(SceModuleInfo);
                 SceModuleExports *exportTable_orig = (SceModuleExports*)(base_orig + orig_mod_info->ent_top);
 
@@ -82,36 +71,51 @@ int nidTable_resolveFromModule(VHLCalls *calls, SceLoadedModuleInfo *target)
                 }
 
 
-
-                SceModuleImports *importTable_orig = (SceModuleImports*)(base_orig + orig_mod_info->stub_top);
-
-                SceUInt base_l = (SceUInt)mod_info - mod_info->ent_top + sizeof(SceModuleInfo);
-                SceModuleImports *importTable_l = (SceModuleImports*)(base_l + mod_info->stub_top);
-
-                //Check the export tables to see if the NID is present
-                //If so assign the respective pointer to functionPtrLocation
-                for(; (SceUInt)importTable_orig < (SceUInt)(base_orig + orig_mod_info->stub_end); importTable_orig= (SceModuleImports*)((SceUInt)importTable_orig + importTable_orig->size)) {
-                        if(SCE_MODULE_IMPORTS_GET_LIB_NAME(importTable_orig) != NULL) DEBUG_LOG("Lib Name: %s", SCE_MODULE_IMPORTS_GET_LIB_NAME(importTable_orig));
-
-                        for(int i = 0; i < SCE_MODULE_IMPORTS_GET_FUNCTION_COUNT(importTable_orig); i++)
-                        {
-                                int err = resolveStub(SCE_MODULE_IMPORTS_GET_FUNCTIONS_ENTRYTABLE(importTable_orig)[i], SCE_MODULE_IMPORTS_GET_FUNCTIONS_NIDTABLE(importTable_l), &entries[currentIndex]);
-                                if(err >= 0) currentIndex++;
-                                if(currentIndex == NID_TABLE_MAX_ENTRIES) {
-                                        DEBUG_LOG_("NID table full!");
-                                        return 0;
-                                }
-                        }
-
-                        importTable_l = ((SceUInt)importTable_l + importTable_l->size);
+                int loadResult = sizeof(int);
+                SceUID l_mod_uid = calls->sceKernelLoadModule(target->file_path,0,&loadResult);
+                SceLoadedModuleInfo l_mod_info;
+                l_mod_info.size = sizeof(SceLoadedModuleInfo);
+                if(calls->sceKernelGetModuleInfo(l_mod_uid, &l_mod_info) < 0) {
+                        internal_printf("Failed to get module info...");
+                        return -1;
                 }
-                DEBUG_LOG_("NID cache updated");
 
-                //TODO import resolution in a similar manner
+
+                SceModuleInfo *mod_info = nidTable_findModuleInfo(l_mod_info.segments[0].vaddr, l_mod_info.segments[0].memsz, l_mod_info.module_name);
+
+                if(mod_info != NULL)
+                {
+                        SceUInt base_orig = (SceUInt)orig_mod_info - orig_mod_info->ent_top + sizeof(SceModuleInfo);
+                        SceModuleExports *exportTable_orig = (SceModuleExports*)(base_orig + orig_mod_info->ent_top);
+                        SceModuleImports *importTable_orig = (SceModuleImports*)(base_orig + orig_mod_info->stub_top);
+
+                        SceUInt base_l = (SceUInt)mod_info - mod_info->ent_top + sizeof(SceModuleInfo);
+                        SceModuleImports *importTable_l = (SceModuleImports*)(base_l + mod_info->stub_top);
+
+                        //Check the export tables to see if the NID is present
+                        //If so assign the respective pointer to functionPtrLocation
+                        for(; (SceUInt)importTable_orig < (SceUInt)(base_orig + orig_mod_info->stub_end); importTable_orig= (SceModuleImports*)((SceUInt)importTable_orig + importTable_orig->size)) {
+                                if(SCE_MODULE_IMPORTS_GET_LIB_NAME(importTable_orig) != NULL) DEBUG_LOG("Lib Name: %s", SCE_MODULE_IMPORTS_GET_LIB_NAME(importTable_orig));
+
+                                for(int i = 0; i < SCE_MODULE_IMPORTS_GET_FUNCTION_COUNT(importTable_orig); i++)
+                                {
+                                        int err = resolveStub(SCE_MODULE_IMPORTS_GET_FUNCTIONS_ENTRYTABLE(importTable_orig)[i], SCE_MODULE_IMPORTS_GET_FUNCTIONS_NIDTABLE(importTable_l)[i], &entries[currentIndex]);
+                                        if(err >= 0) currentIndex++;
+                                        if(currentIndex == NID_TABLE_MAX_ENTRIES) {
+                                                DEBUG_LOG_("NID table full!");
+                                                return 0;
+                                        }
+                                }
+
+                                importTable_l = ((SceUInt)importTable_l + importTable_l->size);
+                        }
+                        DEBUG_LOG_("NID cache updated");
+
+                        //TODO import resolution in a similar manner
+                }
+
+                calls->sceKernelUnloadModule(l_mod_uid);
         }
-
-        calls->sceKernelUnloadModule(l_mod_uid);
-
         return 0;
 }
 
@@ -133,14 +137,11 @@ int nidTable_resolveAll(VHLCalls *calls)
                 if(calls->sceKernelGetModuleInfo(uids[i], &loadedModuleInfo) < 0) {
                         internal_printf("Failed to get module info... Skipping...");
                 }else{
-                        SceModuleInfo *moduleInfo = nidTable_findModuleInfo(loadedModuleInfo.segments[0].vaddr, loadedModuleInfo.segments[0].memsz, loadedModuleInfo.module_name);
-                        if(moduleInfo != NULL) {
-                                DEBUG_LOG("Module Found: %s", moduleInfo->modname);
-                                //TODO resolve NIDs by loading and unloading modules, and build entry table
-                                nidTable_resolveFromModule(calls, &loadedModuleInfo);
-                        }
+                        nidTable_resolveFromModule(calls, &loadedModuleInfo);
                 }
         }
+        DEBUG_LOG("%d NIDs added to database", currentIndex);
+        return 0;
 }
 
 SceModuleInfo* nidTable_findModuleInfo(void* location, SceUInt size, char* libname)
@@ -182,6 +183,19 @@ int nidTable_resolveImportFromNID(VHLCalls *calls, SceUInt *functionPtrLocation,
 
         DEBUG_LOG("Searching for NID 0x%08x in module %s", nid, libName);
 
+        calls->UnlockMem();
+        //Check the cache if it's ready
+        if(currentIndex > 0)
+        {
+                DEBUG_LOG_("Searching NID database...");
+                for(int i= 0; i < currentIndex; i++) {
+                        if(entries[i].nid == nid) {
+                                DEBUG_LOG_("Match found!");
+                                *functionPtrLocation = entries[i].stub_loc;
+                                return 0;
+                        }
+                }
+        }
         //Check the export tables to see if the NID is present
         //If so assign the respective pointer to functionPtrLocation
         for(; (SceUInt)exportTable < (SceUInt)(base + moduleInfo->ent_end); exportTable++) {
@@ -196,7 +210,6 @@ int nidTable_resolveImportFromNID(VHLCalls *calls, SceUInt *functionPtrLocation,
                 }
         }
 
-        calls->UnlockMem();
         for(; (SceUInt)importTable < (SceUInt)(base + moduleInfo->stub_end); importTable=(SceModuleImports*)((SceUInt)importTable + importTable->size)) {
                 int offset = 0;
                 int index = nidCacheContainsModuleNID(SCE_MODULE_IMPORTS_GET_NID(importTable), &offset);
@@ -225,19 +238,8 @@ int nidTable_resolveImportFromNID(VHLCalls *calls, SceUInt *functionPtrLocation,
                 }
         }
 
-        //Check the cache if it's ready
-        if(currentIndex > 0)
-        {
-                DEBUG_LOG_("Searching NID database...");
-                for(int i= 0; i < currentIndex; i++) {
-                        if(entries[currentIndex].nid == nid) {
-                                DEBUG_LOG_("Match found!");
-                                *functionPtrLocation = entries[currentIndex].value.location;
-                                return 0;
-                        }
-                }
-        }
 
+        calls->FlushICache(functionPtrLocation, 0x10);
         calls->LockMem();
         DEBUG_LOG("Failed to find import NID 0x%08x in imports for %s", nid, libName);
 
@@ -274,6 +276,24 @@ int nidTable_resolveVHLImports(UVL_Context *ctx, VHLCalls *calls)
 
                 err = nidTable_resolveImportFromNID(calls, (SceUInt*)&calls->sceKernelUnloadModule,
                                                     SCE_KERNEL_UNLOADMODULE,
+                                                    libKernelBase.value.function, "SceLibKernel");
+                if(err < 0) return -1;
+
+                calls->LogLine("Resolving and Caching NIDs...");
+                nidTable_resolveAll(calls);
+
+                err = nidTable_resolveImportFromNID(calls, (SceUInt*)&calls->sceKernelLoadStartModule,
+                                                    SCE_KERNEL_LOAD_STARTMODULE,
+                                                    libKernelBase.value.function, "SceLibKernel");
+                if(err < 0) return -1;
+
+                err = nidTable_resolveImportFromNID(calls, (SceUInt*)&calls->sceKernelStopUnloadModule,
+                                                    SCE_KERNEL_STOP_UNLOADMODULE,
+                                                    libKernelBase.value.function, "SceLibKernel");
+                if(err < 0) return -1;
+
+                err = nidTable_resolveImportFromNID(calls, (SceUInt*)&calls->sceIOMkdir,
+                                                    SCE_IO_MKDIR,
                                                     libKernelBase.value.function, "SceLibKernel");
                 if(err < 0) return -1;
 
@@ -314,25 +334,6 @@ int nidTable_resolveVHLImports(UVL_Context *ctx, VHLCalls *calls)
 
                 err = nidTable_resolveImportFromNID(calls, (SceUInt*)&calls->sceIOLseek,
                                                     SCE_IO_LSEEK,
-                                                    libKernelBase.value.function, "SceLibKernel");
-                if(err < 0) return -1;
-
-
-                calls->LogLine("Resolving and Caching NIDs...");
-                nidTable_resolveAll(calls);
-
-                err = nidTable_resolveImportFromNID(calls, (SceUInt*)&calls->sceKernelLoadStartModule,
-                                                    SCE_KERNEL_LOAD_STARTMODULE,
-                                                    libKernelBase.value.function, "SceLibKernel");
-                if(err < 0) return -1;
-
-                err = nidTable_resolveImportFromNID(calls, (SceUInt*)&calls->sceKernelStopUnloadModule,
-                                                    SCE_KERNEL_STOP_UNLOADMODULE,
-                                                    libKernelBase.value.function, "SceLibKernel");
-                if(err < 0) return -1;
-
-                err = nidTable_resolveImportFromNID(calls, (SceUInt*)&calls->sceIOMkdir,
-                                                    SCE_IO_MKDIR,
                                                     libKernelBase.value.function, "SceLibKernel");
                 if(err < 0) return -1;
 
@@ -416,6 +417,7 @@ int nidTable_setNIDaddress(VHLCalls *calls, void *stub, SceNID nid)
                         Assemble(&movw, (unsigned int*)stub);
                         Assemble(&movt, (unsigned int*)(stub + sizeof(SceUInt)));
                         Assemble(&jmp, (unsigned int*)(stub + 2*sizeof(SceUInt)));
+                        calls->FlushICache(stub, 0x10);
                         calls->LockMem();
                         return 0;
                 }
