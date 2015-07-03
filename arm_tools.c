@@ -71,17 +71,17 @@ int Disassemble(void *instruction, ARM_INSTRUCTION *instData)
 int Assemble(ARM_INSTRUCTION *instData, unsigned int *instruction)
 {
         unsigned int tmp = 0;
-        tmp |= B_EXTRACT(instData->condition, 3, 0) << 29;
-        tmp |= B_EXTRACT(instData->type, 3, 0) << 25;
+        tmp |= B_EXTRACT(instData->condition, 3, 0) << 28;
+        tmp |= B_EXTRACT(instData->type, 3, 0) << 24;
 
         //Generate instruction
         switch(instData->type) {
         case ARM_MOV_INSTRUCTION:
-                tmp |= B_EXTRACT(instData->instruction, 3, 0) << 21;
-                tmp |= B_EXTRACT(instData->value[0], 3, 0) << 13;
+                tmp |= B_EXTRACT(instData->instruction, 3, 0) << 20;
+                tmp |= B_EXTRACT(instData->value[0], 3, 0) << 12;
 
                 tmp |= B_EXTRACT(instData->value[1], 11, 0);
-                tmp |= B_EXTRACT(instData->value[1], 15, 12) << 17;
+                tmp |= B_EXTRACT(instData->value[1], 15, 12) << 16;
                 break;
         case ARM_SVC_INSTRUCTION:
                 tmp |= B_EXTRACT(instData->value[0], 23, 0);
@@ -94,5 +94,6 @@ int Assemble(ARM_INSTRUCTION *instData, unsigned int *instruction)
         }
 
         *instruction = tmp;
+
         return 0;
 }

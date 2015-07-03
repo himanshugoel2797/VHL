@@ -25,27 +25,27 @@
 #define B_IS_SET(x, n)   (((x) & (1<<(n))) ? 1 : 0)
 
 /* set n-th bit in x */
-#define B_SET(x, n)      ((x) |= (1<<(n)))
+#define B_SET(x, n)      ((x) | (1<<(n)))
 
 /* unset n-th bit in x */
-#define B_UNSET(x, n)    ((x) &= ~(1<<(n)))
+#define B_UNSET(x, n)    ((x) & ~(1<<(n)))
 
 /* toggle n-th bit in x */
-#define B_TOGGLE(x, n)   ((x) ^= (1<<(n)))
+#define B_TOGGLE(x, n)   ((x) ^ (1<<(n)))
 
 /* turn off right-most 1-bit in x */
-#define B_TURNOFF_1(x)   ((x) &= ((x)-1))
+#define B_TURNOFF_1(x)   ((x) & ((x)-1))
 
 /* isolate right-most 1-bit in x */
-#define B_ISOLATE_1(x)   ((x) &= (-(x)))
+#define B_ISOLATE_1(x)   ((x) & (-(x)))
 
 /* right-propagate right-most 1-bit in x */
-#define B_PROPAGATE_1(x) ((x) |= ((x)-1))
+#define B_PROPAGATE_1(x) ((x) | ((x)-1))
 
 /* isolate right-most 0-bit in x */
-#define B_ISOLATE_0(x)   ((x) = ~(x) & ((x)+1))
+#define B_ISOLATE_0(x)   (~(x) & ((x)+1))
 
 /* turn on right-most 0-bit in x */
-#define B_TURNON_0(x)    ((x) |= ((x)+1))
+#define B_TURNON_0(x)    ((x) | ((x)+1))
 
 #endif

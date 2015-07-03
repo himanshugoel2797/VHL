@@ -21,7 +21,8 @@ typedef enum  {
         ENTRY_TYPES_UNKN = 0,
         ENTRY_TYPES_FUNCTION,
         ENTRY_TYPES_SYSCALL,
-        ENTRY_TYPES_VARIABLE
+        ENTRY_TYPES_VARIABLE,
+        ENTRY_TYPES_RELOC,
 }EntryTypes;
 
 //Represents an entry in the NID table
