@@ -8,9 +8,9 @@ OBJCOPYFLAGS=
 
 TARGET=VHL
 
-OBJ=main.o nid_table.o arm_tools.o loader.o utils.o mini-printf.o nidcache.o nidcache3xx.o elf_parser.o
+OBJ=main.o nid_table.o arm_tools.o loader.o nidcache.o nidcache3xx.o elf_parser.o utils/nid_storage.o utils/utils.o utils/mini-printf.o utils/memoryManager.o
 
-all: clean $(TARGET)
+all: $(TARGET)
 
 %.o: %.c
 	$(CC) -c -o $@ $< $(CFLAGS) $(CFLAGS_THUMB)
@@ -24,3 +24,4 @@ $(TARGET): $(OBJ)
 
 clean:
 	rm -rf *.o *.elf *.bin *.s $(TARGET)
+	cd utils && rm -rf *.o

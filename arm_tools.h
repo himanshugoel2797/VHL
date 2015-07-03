@@ -1,7 +1,7 @@
 #ifndef _VHL_ARM_TOOLS_H_
 #define _VHL_ARM_TOOLS_H_
 
-#include "bithacks.h"
+#include "utils/bithacks.h"
 #include "vhl.h"
 #include <psp2/types.h>
 

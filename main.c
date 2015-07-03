@@ -21,8 +21,8 @@ _start(UVL_Context *ctx)
         calls.LogLine = ctx->logline;
         ctx->psvLockMem();
 
-        calls.LogLine("Initializing VHL...");
-        calls.LogLine("Bootstrapping...");
+        DEBUG_LOG_("Initializing VHL...");
+        DEBUG_LOG_("Bootstrapping...");
         nidCacheInitialize(&calls, (SceUInt)&_start);
 
         int err = nidTable_resolveVHLImports(ctx, &calls);
@@ -31,13 +31,13 @@ _start(UVL_Context *ctx)
                 return -1;
         }
 
-        calls.LogLine("Freeing memory...");
+        DEBUG_LOG_("Freeing memory...");
         //TODO
 
-        calls.LogLine("Loading plugins...");
+        DEBUG_LOG_("Loading plugins...");
         //TODO
 
-        calls.LogLine("Loading menu...");
+        DEBUG_LOG_("Loading menu...");
 
         elfParser_Load(&calls, "pss0:/top/Documents/homebrew.self", NULL);
 

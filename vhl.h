@@ -8,7 +8,7 @@
 #include <psp2/io/stat.h>
 #include <psp2/kernel/memorymgr.h>
 #include <psp2/kernel/threadmgr.h>
-#include "mini-printf.h"
+#include "utils/mini-printf.h"
 #include "elf_headers.h"
 
 typedef SceUInt SceNID;
