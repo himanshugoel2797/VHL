@@ -329,11 +329,6 @@ int nidTable_resolveVHLImports(UVL_Context *ctx, VHLCalls *calls)
                                                     libKernelBase.value.function, "SceLibKernel");
                 if(err < 0) return -1;
 
-                err = nidTable_resolveImportFromNID(calls, (SceUInt*)&calls->sceKernelGetFreeMemorySize,
-                                                    SCE_KERNEL_GET_FREE_MEMORY_SIZE,
-                                                    libKernelBase.value.function, "SceLibKernel");
-                if(err < 0) return -1;
-
                 err = nidTable_resolveImportFromNID(calls, (SceUInt*)&calls->sceIOClose,
                                                     SCE_IO_CLOSE,
                                                     libKernelBase.value.function, "SceLibKernel");
@@ -351,6 +346,11 @@ int nidTable_resolveVHLImports(UVL_Context *ctx, VHLCalls *calls)
 
                 err = nidTable_resolveImportFromNID(calls, (SceUInt*)&calls->sceIOLseek,
                                                     SCE_IO_LSEEK,
+                                                    libKernelBase.value.function, "SceLibKernel");
+                if(err < 0) return -1;
+
+                err = nidTable_resolveImportFromNID(calls, (SceUInt*)&calls->sceKernelFindMemBlockByAddr,
+                                                    SCE_KERNEL_FIND_MEMBLOCK_BY_ADDR,
                                                     libKernelBase.value.function, "SceLibKernel");
                 if(err < 0) return -1;
 

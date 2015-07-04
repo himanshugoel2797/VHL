@@ -35,6 +35,9 @@ typedef struct {
         int (*sceKernelFreeMemBlock)(SceUID);
         int (*sceKernelGetMemBlockBase)(SceUID, void**);
         int (*sceKernelGetFreeMemorySize)(SceSize*);
+        SceUID (*sceKernelFindMemBlockByAddr)(void*, int);
+
+        int (*pss_suspend_thread)(SceUID tid);
 
         //UVL context calls
         void* (*AllocCodeMem)(SceUInt*);
@@ -55,6 +58,9 @@ typedef struct {
 
 typedef enum
 {
+        PSS_SUSPEND_THREAD = 3291295646,
+        //TODO add sceKernelThread imports
+
         SCE_IO_OPEN = 1818274913,
         SCE_IO_CLOSE = 3339421830,
         SCE_IO_READ = 4256375443,
@@ -72,7 +78,7 @@ typedef enum
         SCE_KERNEL_ALLOC_MEMBLOCK = 3117804510,
         SCE_KERNEL_FREE_MEMBLOCK = 2837321198,
         SCE_KERNEL_GET_MEMBLOCK_BASE = 3102693400,
-        SCE_KERNEL_GET_FREE_MEMORY_SIZE = 2278316043
+        SCE_KERNEL_FIND_MEMBLOCK_BY_ADDR = 0xA33B99D1
 }VHL_CALLS_NIDS;
 
 int __attribute__ ((section (".text.start"))) _start(UVL_Context *ctx);

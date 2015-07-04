@@ -5,6 +5,7 @@
 #include "nid_table.h"
 #include "nidcache.h"
 #include "elf_parser.h"
+#include "exports.h"
 
 static VHLCalls calls;
 
@@ -37,6 +38,7 @@ _start(UVL_Context *ctx)
         DEBUG_LOG_("Loading plugins...");
         //TODO
 
+        exports_initialize(&calls);
         DEBUG_LOG_("Loading menu...");
 
         elfParser_Load(&calls, "pss0:/top/Documents/homebrew.self", NULL);
