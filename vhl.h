@@ -13,7 +13,6 @@
 
 typedef SceUInt SceNID;
 
-
 typedef struct {
         //IO Functions
         SceUID (*sceIOOpen)(const char*, int, SceMode);

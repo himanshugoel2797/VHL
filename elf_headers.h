@@ -86,6 +86,11 @@ typedef union
 #define SCE_MODULE_IMPORTS_GET_FUNCTION_COUNT(x) (((x->size == sizeof(SceModuleImports_3x)) ? x->new_version.num_functions : x->old_version.num_functions))
 #define SCE_MODULE_IMPORTS_GET_FUNCTIONS_NIDTABLE(x) (((x->size == sizeof(SceModuleImports_3x)) ? x->new_version.func_nid_table : x->old_version.func_nid_table))
 #define SCE_MODULE_IMPORTS_GET_FUNCTIONS_ENTRYTABLE(x) (((x->size == sizeof(SceModuleImports_3x)) ? x->new_version.func_entry_table : x->old_version.func_entry_table))
+
+#define SCE_MODULE_IMPORTS_GET_VARIABLE_COUNT(x) (((x->size == sizeof(SceModuleImports_3x)) ? x->new_version.num_vars : x->old_version.num_vars))
+#define SCE_MODULE_IMPORTS_GET_VARIABLE_NIDTABLE(x) (((x->size == sizeof(SceModuleImports_3x)) ? x->new_version.var_nid_table : x->old_version.var_nid_table))
+#define SCE_MODULE_IMPORTS_GET_VARIABLE_ENTRYTABLE(x) (((x->size == sizeof(SceModuleImports_3x)) ? x->new_version.var_entry_table : x->old_version.var_entry_table))
+
 #define SCE_MODULE_IMPORTS_GET_LIB_NAME(x) (((x->size == sizeof(SceModuleImports_3x)) ? x->new_version.lib_name : x->old_version.lib_name))
 #define SCE_MODULE_IMPORTS_GET_NID(x) (((x->size == sizeof(SceModuleImports_3x)) ? x->new_version.module_nid : x->old_version.module_nid))
 

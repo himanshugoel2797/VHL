@@ -6,13 +6,27 @@
 #include "elf_headers.h"
 #include "nid_table.h"
 
-#define MAX_BLOCK_COUNT 32
+#define MAX_SLOTS 32
 #define TEMP_STORAGE_BUFFER_LEN 1024
 
-typedef struct{
-  void *allocLocation;
-  SceUID uid;
-  int size;
+#define ALIGN(x, n) ( ((x >> n) + 1) << n )
+#define FOUR_KB_ALIGN(x) ALIGN(x, 12)
+#define MB_ALIGN(x) ALIGN(x, 20)
+
+
+
+typedef struct {
+        void *data_mem_loc;
+        SceUID data_mem_uid;
+        int data_mem_size;
+
+        void *exec_mem_loc;
+        SceUID exec_mem_uid;
+        int exec_mem_size;
+
+        void *elf_mem_loc;
+        SceUID elf_mem_uid;
+        int elf_mem_size;
 } allocData;
 
 typedef uint16_t Elf32_Half;  // Unsigned half int
@@ -68,11 +82,108 @@ enum Elf_Type {
         ET_SCE_RELEXEC = 0xFE04
 };
 
+enum Ph_Type {
+        PH_LOAD = 1,
+        PH_SCE_RELOCATE = 0x60000000
+};
+
+enum Pf_Type{
+    PF_X = 1,
+    PF_W = 2,
+    PF_R = 4
+};
+
 #define EM_ARM    (40)  // x86 Machine Type
 #define EV_CURRENT  (1)  // ELF Current Version
 
+typedef struct {
+        Elf32_Word p_type;
+        Elf32_Off p_offset;
+        Elf32_Addr p_vaddr;
+        Elf32_Addr p_paddr;
+        Elf32_Word p_filesz;
+        Elf32_Word p_memsz;
+        Elf32_Word p_flags;
+        Elf32_Word p_align;
+} Elf32_Phdr;
 
-int elfParser_Load(VHLCalls *calls, const char* file, void** entryPoint);
+typedef struct {
+        Elf32_Word sh_name;
+        Elf32_Word sh_type;
+        Elf32_Word sh_flags;
+        Elf32_Addr sh_addr;
+        Elf32_Off sh_offset;
+        Elf32_Word sh_size;
+        Elf32_Word sh_link;
+        Elf32_Word sh_info;
+        Elf32_Word sh_addralign;
+        Elf32_Word sh_entsize;
+} Elf32_Shdr;
+
+typedef struct {
+        Elf32_Word st_name;
+        Elf32_Addr st_value;
+        Elf32_Word st_size;
+        uint8_t st_info;
+        uint8_t st_other;
+        Elf32_Half st_shndx;
+} Elf32_Sym;
+
+typedef union
+{
+    SceUInt       r_type;
+    struct
+    {
+        SceUInt   r_opt1;
+        SceUInt   r_opt2;
+    } r_short;
+    struct
+    {
+        SceUInt   r_type;
+        SceUInt   r_addend;
+        SceUInt   r_offset;
+    } r_long;
+} SceReloc;
+/** @}*/
+
+/** \name Macros to get SCE reloc values
+ *  @{
+ */
+#define SCE_RELOC_SHORT_OFFSET(x) (((x).r_opt1 >> 20) | ((x).r_opt2 & 0xFFFFF) << 12)
+#define SCE_RELOC_SHORT_ADDEND(x) ((x).r_opt2 >> 20)
+#define SCE_RELOC_LONG_OFFSET(x) ((x).r_offset)
+#define SCE_RELOC_LONG_ADDEND(x) ((x).r_addend)
+#define SCE_RELOC_LONG_CODE2(x) (((x).r_type >> 20) & 0xFF)
+#define SCE_RELOC_LONG_DIST2(x) (((x).r_type >> 28) & 0xF)
+#define SCE_RELOC_IS_SHORT(x) (((x).r_type) & 0xF)
+#define SCE_RELOC_CODE(x) (((x).r_type >> 8) & 0xFF)
+#define SCE_RELOC_SYMSEG(x) (((x).r_type >> 4) & 0xF)
+#define SCE_RELOC_DATSEG(x) (((x).r_type >> 16) & 0xF)
+/** @}*/
+
+/** \name Vita supported relocations
+ *  @{
+ */
+#define R_ARM_NONE              0
+#define R_ARM_ABS32             2
+#define R_ARM_REL32             3
+#define R_ARM_THM_CALL          10
+#define R_ARM_CALL              28
+#define R_ARM_JUMP24            29
+#define R_ARM_TARGET1           38
+#define R_ARM_V4BX              40
+#define R_ARM_TARGET2           41
+#define R_ARM_PREL31            42
+#define R_ARM_MOVW_ABS_NC       43
+#define R_ARM_MOVT_ABS          44
+#define R_ARM_THM_MOVW_ABS_NC   47
+#define R_ARM_THM_MOVT_ABS      48
+
+
+int blockManager_initialize(VHLCalls *calls);
+int blockManager_free_old_data(VHLCalls *calls, int curSlot);
+
+int elfParser_Load(VHLCalls *calls, int curSlot, const char* file, void** entryPoint);
 
 
 #endif

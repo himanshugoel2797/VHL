@@ -7,7 +7,6 @@ int nidCacheInitialize(VHLCalls *calls, SceUInt base){
         calls->UnlockMem();
         libkernel_nid_cache_header = ( (base & ~1) + (SceUInt)libkernel_nid_cache_header_);
         libkernel_nid_cache = ( (base & ~1) + (SceUInt)libkernel_nid_cache_);
-        DEBUG_LOG("0x%08x", libkernel_nid_cache);
         calls->LockMem();
 }
 

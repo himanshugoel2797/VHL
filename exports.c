@@ -2,11 +2,28 @@
 
 static VHLCalls func_calls;
 
+static int export_printf(const char* fmt, ...)
+{
+        char buffer[INTERNAL_PRINTF_MAX_LENGTH];
+        va_list va;
+        va_start(va, fmt);
+        mini_vsnprintf(buffer, INTERNAL_PRINTF_MAX_LENGTH, fmt, va);
+        va_end(va);
+        logLine(buffer);
+        return 0;
+}
+
+static SceUID allocCodeMem(int size)
+{
+        return AllocCodeMemBlock(size);
+}
+
 int exports_initialize(VHLCalls *calls)
 {
         calls->UnlockMem();
         func_calls.AllocCodeMem = calls->AllocCodeMem;
         func_calls.FlushICache = calls->FlushICache;
+        func_calls.UnlockMem = calls->UnlockMem;
         func_calls.LockMem = calls->LockMem;
         func_calls.LogLine = calls->LogLine;
         func_calls.sceKernelAllocMemBlock = calls->sceKernelAllocMemBlock;
@@ -15,7 +32,13 @@ int exports_initialize(VHLCalls *calls)
         func_calls.sceKernelFindMemBlockByAddr = calls->sceKernelFindMemBlockByAddr;
         calls->LockMem();
 
-        nidTable_exportFunc(calls, AllocCodeMemBlock, ALLOC_CODE_MEM);
+        nidTable_exportFunc(calls, &allocCodeMem, ALLOC_CODE_MEM);
+        nidTable_exportFunc(calls, &export_printf, PRINTF);
+        nidTable_exportFunc(calls, func_calls.LogLine, PUTS);
+        nidTable_exportFunc(calls, func_calls.LogLine, LOG);
+        nidTable_exportFunc(calls, func_calls.UnlockMem, UNLOCK);
+        nidTable_exportFunc(calls, func_calls.LockMem, LOCK);
+        nidTable_exportFunc(calls, func_calls.FlushICache, FLUSH);
 
         return 0;
 }

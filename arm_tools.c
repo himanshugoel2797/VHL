@@ -70,6 +70,9 @@ int Disassemble(void *instruction, ARM_INSTRUCTION *instData)
 
 int Assemble(ARM_INSTRUCTION *instData, unsigned int *instruction)
 {
+
+
+
         unsigned int tmp = 0;
         tmp |= B_EXTRACT(instData->condition, 3, 0) << 28;
         tmp |= B_EXTRACT(instData->type, 3, 0) << 24;

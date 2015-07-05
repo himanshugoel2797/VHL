@@ -34,6 +34,7 @@ _start(UVL_Context *ctx)
 
         DEBUG_LOG_("Freeing memory...");
         //TODO
+        blockManager_initialize(&calls);  //Initialize the elf block slots
 
         DEBUG_LOG_("Loading plugins...");
         //TODO
@@ -41,7 +42,13 @@ _start(UVL_Context *ctx)
         exports_initialize(&calls);
         DEBUG_LOG_("Loading menu...");
 
-        elfParser_Load(&calls, "pss0:/top/Documents/homebrew.self", NULL);
+        int (*start)(int, char*);
+        if(elfParser_Load(&calls, 0, "pss0:/top/Documents/homebrew.self", &start) < 0) {
+                DEBUG_LOG_("Load failed!");
+                return -1;
+        }
+        DEBUG_LOG_("Load succeeded! Launching!");
+        DEBUG_LOG("0x%08x returned", start(0, NULL));
 
         while(1) {
                 //calls.LogLine("Menu exited! Relaunching...");

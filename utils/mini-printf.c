@@ -204,7 +204,6 @@ mini_snprintf(char* buffer, unsigned int buffer_len, char *fmt, ...)
 int internal_printf(const char* fmt, ...)
 {
 								char buffer[INTERNAL_PRINTF_MAX_LENGTH];
-
 								va_list va;
 								va_start(va, fmt);
 								mini_vsnprintf(buffer, INTERNAL_PRINTF_MAX_LENGTH, fmt, va);

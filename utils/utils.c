@@ -7,7 +7,35 @@
 
 size_t strlen (const char *str)
 {
-    return (*str) ? strlen(++str) + 1 : 0;
+        return (*str) ? strlen(++str) + 1 : 0;
+}
+
+void * memcpy(void * dst, const void * src, size_t len)
+{
+        char *dst_ptr = (char*)dst;
+        char *src_ptr = (char*)src;
+
+        for(int i = 0; i < len; i++)
+        {
+                dst_ptr[i] = src_ptr[i];
+        }
+
+        return dst;
+}
+
+void * memset(void * s, char c, size_t n)
+{
+        unsigned char* p=s;
+
+        for(int i = 0; i < n;)
+        {
+                p[i++] = c;
+                p[i++] = c;
+                p[i++] = c;
+                p[i++] = c;
+        }
+
+        return s;
 }
 
 void make_delta1(int *delta1, char *pat, int patlen) {

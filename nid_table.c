@@ -118,6 +118,16 @@ int nidTable_resolveFromModule(VHLCalls *calls, SceLoadedModuleInfo *target)
                                 for(int i = 0; i < SCE_MODULE_IMPORTS_GET_FUNCTION_COUNT(importTable_orig); i++)
                                 {
                                         int err = resolveStub(SCE_MODULE_IMPORTS_GET_FUNCTIONS_ENTRYTABLE(importTable_orig)[i], SCE_MODULE_IMPORTS_GET_FUNCTIONS_NIDTABLE(importTable_l)[i], &entry);
+                                        if(entry.nid == 2968642796) DEBUG_LOG("MATCH FOUND! 0x%08x 0x%08x", entry.type, entry.value.location);
+                                        if(entry.nid != 0) nid_storage_addEntry(calls, &entry);
+                                }
+
+                                for(int i = 0; i < SCE_MODULE_IMPORTS_GET_VARIABLE_COUNT(importTable_orig); i++)
+                                {
+                                        entry.type = ENTRY_TYPES_VARIABLE;
+                                        entry.nid = SCE_MODULE_IMPORTS_GET_VARIABLE_NIDTABLE(importTable_l)[i];
+                                        entry.stub_loc = SCE_MODULE_IMPORTS_GET_VARIABLE_ENTRYTABLE(importTable_orig)[i];
+                                        entry.value.location = *(SceUInt*)entry.stub_loc;
                                         if(entry.nid != 0) nid_storage_addEntry(calls, &entry);
                                 }
 
@@ -263,6 +273,15 @@ int nidTable_resolveImportFromNID(VHLCalls *calls, SceUInt *functionPtrLocation,
         return -1;
 }
 
+#define STUB_FUNCTION(type, name) \
+        type __attribute__((naked, section(".sceStub.text.uvl"))) name () \
+        { \
+                __asm__ ("movw r0, #0xffff\n" \
+                         "movt r0, #0xffff\n" \
+                         "bx lr\n"); \
+        }
+
+STUB_FUNCTION(SceUID, ioOpen);
 
 int nidTable_resolveVHLImports(UVL_Context *ctx, VHLCalls *calls)
 {
@@ -367,7 +386,7 @@ int nidTable_exportFunc(VHLCalls *calls, void *target, SceNID nid)
         entry.nid = nid;
         entry.type = ENTRY_TYPES_FUNCTION;
         entry.value.location = (SceUInt)target;
-        entry.stub_loc = target;
+        entry.stub_loc = (SceUInt)target;
 
         nid_storage_addEntry(calls, &entry);
 
@@ -385,21 +404,24 @@ int nidTable_setNIDaddress(VHLCalls *calls, void *stub, SceNID nid)
                         ARM_INSTRUCTION movw;
                         ARM_INSTRUCTION jmp;
 
+                        stub = (SceUInt)stub & ~1;
+
                         switch(entry.type) {
-                        case ENTRY_TYPES_FUNCTION:
+                        /*case ENTRY_TYPES_FUNCTION:
+
                                 movw.condition = ARM_CONDITION_ALWAYS;
                                 movw.type = ARM_MOV_INSTRUCTION;
                                 movw.instruction = ARM_INST_MOVW;
                                 movw.argCount = 2;
                                 movw.value[0] = ARM_R12;
-                                movw.value[1] = entry.value.location;
+                                movw.value[1] = (SceUInt16)entry.value.location;
 
                                 movt.condition = ARM_CONDITION_ALWAYS;
                                 movt.type = ARM_MOV_INSTRUCTION;
                                 movt.instruction = ARM_INST_MOVT;
                                 movt.argCount = 2;
                                 movt.value[0] = ARM_R12;
-                                movt.value[1] = entry.value.location >> 16; //Only the top part
+                                movt.value[1] = (SceUInt16)(entry.value.location >> 16); //Only the top part
 
                                 jmp.condition = ARM_CONDITION_ALWAYS;
                                 jmp.type = ARM_BRANCH_INSTRUCTION;
@@ -407,7 +429,7 @@ int nidTable_setNIDaddress(VHLCalls *calls, void *stub, SceNID nid)
                                 jmp.argCount = 1;
                                 jmp.value[0] = ARM_R12;
                                 break;
-                        case ENTRY_TYPES_SYSCALL:
+                           case ENTRY_TYPES_SYSCALL:
                                 movw.condition = ARM_CONDITION_ALWAYS;
                                 movw.type = ARM_MOV_INSTRUCTION;
                                 movw.instruction = ARM_INST_MOVW;
@@ -426,22 +448,47 @@ int nidTable_setNIDaddress(VHLCalls *calls, void *stub, SceNID nid)
                                 jmp.instruction = ARM_INST_BX;
                                 jmp.argCount = 1;
                                 jmp.value[0] = ARM_R14;
+                                break;*/
+                        case ENTRY_TYPES_SYSCALL:
+                        case ENTRY_TYPES_RELOC:
+                        case ENTRY_TYPES_FUNCTION:
+
+                                movw.condition = ARM_CONDITION_ALWAYS;
+                                movw.type = ARM_MOV_INSTRUCTION;
+                                movw.instruction = ARM_INST_MOVW;
+                                movw.argCount = 2;
+                                movw.value[0] = ARM_R12;
+                                movw.value[1] = (SceUInt16)entry.stub_loc;
+
+                                movt.condition = ARM_CONDITION_ALWAYS;
+                                movt.type = ARM_MOV_INSTRUCTION;
+                                movt.instruction = ARM_INST_MOVT;
+                                movt.argCount = 2;
+                                movt.value[0] = ARM_R12;
+                                movt.value[1] = (SceUInt16)((SceUInt)entry.stub_loc >> 16);                  //Only the top part
+
+                                jmp.condition = ARM_CONDITION_ALWAYS;
+                                jmp.type = ARM_BRANCH_INSTRUCTION;
+                                jmp.instruction = ARM_INST_BX;
+                                jmp.argCount = 1;
+                                jmp.value[0] = ARM_R12;
+                                break;
+                        case ENTRY_TYPES_VARIABLE:
+                                calls->UnlockMem();
+                                *(SceUInt*)stub = entry.value.location;
+                                calls->LockMem();
+                                return 0;
                                 break;
                         default:
                                 return -1;
                                 break;
                         }
 
+
                         calls->UnlockMem();
-                        unsigned int tmp = 0;
-                        Assemble(&movw, &tmp);
-                        ((SceUInt*)stub)[0] = tmp;
-
-                        Assemble(&movt, &tmp);
-                        ((SceUInt*)stub)[1] = tmp;
-
-                        Assemble(&jmp, &tmp);
-                        ((SceUInt*)stub)[2] = tmp;
+                        Assemble(&movw, &((SceUInt*)stub)[0]);
+                        Assemble(&movt, &((SceUInt*)stub)[1]);
+                        Assemble(&jmp, &((SceUInt*)stub)[2]);
 
                         calls->LockMem();
                         calls->FlushICache(stub, 0x10);
