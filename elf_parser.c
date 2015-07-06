@@ -43,6 +43,23 @@ int blockManager_initialize(VHLCalls *calls)
 
 
 
+/*
+  elfParser_write_segment and elfParser_relocate taken from UVL
+ * relocate.c - Performs SCE ELF relocations
+ * Copyright 2015 Yifan Lu
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *    http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 int elfParser_write_segment(VHLCalls *calls, Elf32_Phdr *phdr, SceUInt offset, void *data, SceUInt len)
 {
         if(offset + len > phdr->p_filesz) {
@@ -486,10 +503,12 @@ int elfParser_load_sce_relexec(VHLCalls *calls, int curSlot, SceUID fd, unsigned
                 }
         }
 
+        DEBUG_LOG_("Retrieving entry point");
         if(entryPoint != NULL) *entryPoint = prgmHDR[index].p_vaddr + mod_info->mod_start;
         calls->UnlockMem();
         allocatedBlocks[curSlot].entryPoint = prgmHDR[index].p_vaddr + mod_info->mod_start;
         calls->LockMem();
+        DEBUG_LOG_("Entry point retrieved");
 
         return 0;
 

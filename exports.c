@@ -24,6 +24,7 @@ int homebrew_load(const char *path, int slot)
 
 static int homebrew_start(int slot)
 {
+  export_printf("Starting...");
   return elfParser_Start(&func_calls, slot);
 }
 

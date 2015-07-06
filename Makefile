@@ -18,7 +18,7 @@ all: $(TARGET)
 $(TARGET): $(OBJ)
 	$(LD) -o $@ $^ $(LDFLAGS)
 	$(OBJCOPY) -O binary $@ $@.bin
-	cp $(TARGET).bin C:\Users\Himanshu\Documents\Vita\rejuvenate-0.2.1-beta\uvloader.bin
+	cp $(TARGET).bin C:\Users\Himanshu\Documents\Vita\rejuvenate-0.2.1-beta\vhl.bin
 
 .PHONY: clean
 
