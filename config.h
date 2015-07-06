@@ -12,4 +12,8 @@
 //VHL data directory
 #define VHL_DATA_PATH FS_ROOT"/vhl/"
 
+
+#define MAX_SLOTS 32
+#define NID_STORAGE_MAX_BUCKET_ENTRIES 64
+
 #endif

@@ -3,10 +3,10 @@
 static SceUInt libkernel_nid_cache_header;
 static SceUInt libkernel_nid_cache;
 
-int nidCacheInitialize(VHLCalls *calls, SceUInt base){
+int nidCacheInitialize(VHLCalls *calls){
         calls->UnlockMem();
-        libkernel_nid_cache_header = ( (base & ~1) + (SceUInt)libkernel_nid_cache_header_);
-        libkernel_nid_cache = ( (base & ~1) + (SceUInt)libkernel_nid_cache_);
+        libkernel_nid_cache_header = ( calls->loadAddress + (SceUInt)libkernel_nid_cache_header_);
+        libkernel_nid_cache = ( calls->loadAddress + (SceUInt)libkernel_nid_cache_);
         calls->LockMem();
 }
 

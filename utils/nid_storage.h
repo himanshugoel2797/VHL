@@ -5,7 +5,6 @@
 #include "../vhl.h"
 #include "../config.h"
 
-#define NID_STORAGE_MAX_BUCKET_ENTRIES 64
 #define NID_STORAGE_BUCKET_COUNT 256
 #define NID_STORAGE_CACHE_FILE VHL_DATA_PATH"/nidCache.bin"
 
@@ -32,5 +31,6 @@ typedef struct {
 int nid_storage_initialize(VHLCalls *calls);
 int nid_storage_addEntry(VHLCalls *calls, nidTable_entry *entry);
 int nid_storage_getEntry(SceNID nid, nidTable_entry *entry);
+int nid_storage_addHookEntry(VHLCalls *calls, nidTable_entry *entry);
 
 #endif

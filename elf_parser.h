@@ -6,7 +6,6 @@
 #include "elf_headers.h"
 #include "nid_table.h"
 
-#define MAX_SLOTS 32
 #define TEMP_STORAGE_BUFFER_LEN 1024
 
 #define ALIGN(x, n) ( ((x >> n) + 1) << n )
@@ -27,6 +26,8 @@ typedef struct {
         void *elf_mem_loc;
         SceUID elf_mem_uid;
         int elf_mem_size;
+
+        int (*entryPoint)(int, char**);
 } allocData;
 
 typedef uint16_t Elf32_Half;  // Unsigned half int
@@ -183,6 +184,7 @@ typedef union
 int blockManager_initialize(VHLCalls *calls);
 int blockManager_free_old_data(VHLCalls *calls, int curSlot);
 
+int elfParser_Start(VHLCalls *calls, int curSlot);
 int elfParser_Load(VHLCalls *calls, int curSlot, const char* file, void** entryPoint);
 
 

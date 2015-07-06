@@ -13,8 +13,10 @@ int __attribute__ ((section (".text.start")))
 _start(UVL_Context *ctx)
 {
         ctx->logline("Starting VHL...");
+
         //Initialize VHLCalls
         ctx->psvUnlockMem();
+        calls.loadAddress = (SceUInt)&_start & ~1;
         calls.AllocCodeMem = ctx->psvCodeAllocMem;
         calls.UnlockMem = ctx->psvUnlockMem;
         calls.LockMem = ctx->psvLockMem;
@@ -24,7 +26,7 @@ _start(UVL_Context *ctx)
 
         DEBUG_LOG_("Initializing VHL...");
         DEBUG_LOG_("Bootstrapping...");
-        nidCacheInitialize(&calls, (SceUInt)&_start);
+        nidCacheInitialize(&calls);
 
         int err = nidTable_resolveVHLImports(ctx, &calls);
         if(err < 0) {
@@ -42,15 +44,15 @@ _start(UVL_Context *ctx)
         exports_initialize(&calls);
         DEBUG_LOG_("Loading menu...");
 
-        int (*start)(int, char*);
-        if(elfParser_Load(&calls, 0, "pss0:/top/Documents/homebrew.self", &start) < 0) {
-                DEBUG_LOG_("Load failed!");
+        if(elfParser_Load(&calls, 0, "pss0:/top/Documents/homebrew.self", NULL) < 0) {
+                internal_printf("Load failed!");
                 return -1;
         }
-        DEBUG_LOG_("Load succeeded! Launching!");
-        DEBUG_LOG("0x%08x returned", start(0, NULL));
+        internal_printf("Load succeeded! Launching!");
 
         while(1) {
+          int ret = elfParser_Start(&calls, 0);
+        DEBUG_LOG("0x%08x returned", ret);
                 //calls.LogLine("Menu exited! Relaunching...");
         }
 

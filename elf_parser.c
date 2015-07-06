@@ -19,6 +19,7 @@ int blockManager_free_old_data(VHLCalls *calls, int curSlot)
         allocatedBlocks[curSlot].elf_mem_loc = 0;
         allocatedBlocks[curSlot].elf_mem_uid = 0;
         allocatedBlocks[curSlot].elf_mem_size = 0;
+        allocatedBlocks[curSlot].entryPoint = NULL;
         calls->LockMem();
 
         return 0;
@@ -320,7 +321,12 @@ int elfParser_load_sce_exec(VHLCalls *calls, int curSlot, SceUID fd, unsigned in
 int elfParser_load_sce_relexec(VHLCalls *calls, int curSlot, SceUID fd, unsigned int len, Elf32_Ehdr *hdr, void **entryPoint)
 {
 
-        SceUID tmpDataStore_uid = calls->sceKernelAllocMemBlock("elf_data_store", SCE_KERNEL_MEMBLOCK_TYPE_USER_RW, FOUR_KB_ALIGN(len), NULL);
+        if(allocatedBlocks[curSlot].data_mem_uid != 0) blockManager_free_old_data(calls, curSlot); //Make sure the block is empty to prevent memory leaks
+        char tmpDS_name[18];
+        snprintf(tmpDS_name, 18, "elf_data_store%d", curSlot);
+
+
+        SceUID tmpDataStore_uid = calls->sceKernelAllocMemBlock(tmpDS_name, SCE_KERNEL_MEMBLOCK_TYPE_USER_RW, FOUR_KB_ALIGN(len), NULL);
         void *tmpDataStore_loc = NULL;
 
         if(tmpDataStore_uid < 0) {
@@ -397,7 +403,6 @@ int elfParser_load_sce_relexec(VHLCalls *calls, int curSlot, SceUID fd, unsigned
         }
 
         //Update the memory entry table
-        if(allocatedBlocks[curSlot].data_mem_uid != 0) blockManager_free_old_data(calls, curSlot); //Make sure the block is empty to prevent memory leaks
         calls->UnlockMem();
         allocatedBlocks[curSlot].data_mem_loc = data_mem_loc;
         allocatedBlocks[curSlot].data_mem_uid = data_mem_uid;
@@ -470,19 +475,22 @@ int elfParser_load_sce_relexec(VHLCalls *calls, int curSlot, SceUID fd, unsigned
                 for(int i = 0; i < SCE_MODULE_IMPORTS_GET_FUNCTION_COUNT(imports); i++)
                 {
                         int err = nidTable_setNIDaddress(calls, SCE_MODULE_IMPORTS_GET_FUNCTIONS_ENTRYTABLE(imports)[i], SCE_MODULE_IMPORTS_GET_FUNCTIONS_NIDTABLE(imports)[i]);
-                        //if(err < 0)DEBUG_LOG("Failed to resolve NID 0x%08x", SCE_MODULE_IMPORTS_GET_FUNCTIONS_NIDTABLE(imports)[i]);
+                        if(err < 0) DEBUG_LOG("Failed to resolve import NID 0x%08x", SCE_MODULE_IMPORTS_GET_FUNCTIONS_NIDTABLE(imports)[i]);
+                        if(SCE_MODULE_IMPORTS_GET_FUNCTIONS_NIDTABLE(imports)[i] == 1) DEBUG_LOG_("Match found!");
                 }
 
                 for(int i = 0; i < SCE_MODULE_IMPORTS_GET_VARIABLE_COUNT(imports); i++)
                 {
                         int err = nidTable_setNIDaddress(calls, SCE_MODULE_IMPORTS_GET_VARIABLE_ENTRYTABLE(imports)[i], SCE_MODULE_IMPORTS_GET_VARIABLE_NIDTABLE(imports)[i]);
-                        //if(err < 0)DEBUG_LOG("Failed to resolve NID 0x%08x", SCE_MODULE_IMPORTS_GET_VARIABLE_NIDTABLE(imports)[i]);
+                        if(err < 0) DEBUG_LOG("Failed to resolve variable NID 0x%08x", SCE_MODULE_IMPORTS_GET_VARIABLE_NIDTABLE(imports)[i]);
                 }
         }
 
-        *entryPoint = prgmHDR[index].p_vaddr + mod_info->mod_start;
+        if(entryPoint != NULL) *entryPoint = prgmHDR[index].p_vaddr + mod_info->mod_start;
+        calls->UnlockMem();
+        allocatedBlocks[curSlot].entryPoint = prgmHDR[index].p_vaddr + mod_info->mod_start;
+        calls->LockMem();
 
-        DEBUG_LOG_("Done!");
         return 0;
 
 freeAllAndError:
@@ -494,8 +502,7 @@ freeTmpDataAndError:
 
 int elfParser_Load(VHLCalls *calls, int curSlot, const char *file, void **entryPoint)
 {
-        char buffer[TEMP_STORAGE_BUFFER_LEN];
-
+        DEBUG_LOG_("elfParser_Load");
         SceUID fd = calls->sceIOOpen(file, PSP2_O_RDONLY, 0777);
         DEBUG_LOG("Opened %s as %d", file, fd);
 
@@ -527,7 +534,14 @@ int elfParser_Load(VHLCalls *calls, int curSlot, const char *file, void **entryP
                 return -1;
                 break;
         }
+        calls->sceIOClose(fd);
         //TODO figure out how to determine if a homebrew is still running, it might be necessary to export a function to kill a homebrew, along with a hook somewhere in the homebrew to check the status
 
         return 0;
+}
+
+int elfParser_Start(VHLCalls *calls, int curSlot)
+{
+        internal_printf("0x%08x", allocatedBlocks[curSlot].entryPoint);
+        return allocatedBlocks[curSlot].entryPoint(0, NULL);
 }

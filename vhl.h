@@ -14,6 +14,7 @@
 typedef SceUInt SceNID;
 
 typedef struct {
+        SceUInt loadAddress;
         //IO Functions
         SceUID (*sceIOOpen)(const char*, int, SceMode);
         int (*sceIOClose)(SceUID);
@@ -35,6 +36,11 @@ typedef struct {
         int (*sceKernelGetMemBlockBase)(SceUID, void**);
         int (*sceKernelGetFreeMemorySize)(SceSize*);
         SceUID (*sceKernelFindMemBlockByAddr)(void*, int);
+
+        //Sysmodule functions
+                int (*sceSysmoduleLoadModule)(SceUInt16);
+                int (*sceSysmoduleUnloadModule)(SceUInt16);
+                int (*sceSysmoduleIsLoaded)(SceUInt16);
 
         int (*pss_suspend_thread)(SceUID tid);
 
@@ -77,7 +83,12 @@ typedef enum
         SCE_KERNEL_ALLOC_MEMBLOCK = 3117804510,
         SCE_KERNEL_FREE_MEMBLOCK = 2837321198,
         SCE_KERNEL_GET_MEMBLOCK_BASE = 3102693400,
-        SCE_KERNEL_FIND_MEMBLOCK_BY_ADDR = 0xA33B99D1
+        SCE_KERNEL_FIND_MEMBLOCK_BY_ADDR = 0xA33B99D1,
+
+        SCE_SYSMODULE_LOADMODULE = 2040534538,
+        SCE_SYSMODULE_UNLOADMODULE = 836270085,
+        SCE_SYSMODULE_ISLOADED = 1393138554
+
 }VHL_CALLS_NIDS;
 
 int __attribute__ ((section (".text.start"))) _start(UVL_Context *ctx);

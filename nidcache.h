@@ -11,7 +11,7 @@ typedef struct {
 extern const NID_CACHE libkernel_nid_cache_header_[];
 extern const SceNID libkernel_nid_cache_[];
 
-int nidCacheInitialize(VHLCalls *calls, SceUInt base);
+int nidCacheInitialize(VHLCalls *calls);
 int nidCacheContainsModuleNID(SceNID nid, int *offset);
 
 NID_CACHE* nidCache_getHeader();

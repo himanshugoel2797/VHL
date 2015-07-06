@@ -1,6 +1,7 @@
 #include "nid_storage.h"
 
 static nidTable_entry nid_storage_table[NID_STORAGE_BUCKET_COUNT * NID_STORAGE_MAX_BUCKET_ENTRIES];
+static nidTable_entry nid_storage_table_hooks[MAX_SLOTS][NID_STORAGE_BUCKET_COUNT * NID_STORAGE_MAX_BUCKET_ENTRIES];
 
 int nid_storage_initialize(VHLCalls *calls)
 {
@@ -45,4 +46,9 @@ int nid_storage_getEntry(SceNID nid, nidTable_entry *entry)
                 }
         }
         return -1;
+}
+
+int nid_storage_addHookEntry(VHLCalls *calls, nidTable_entry *entry)
+{
+
 }

@@ -13,6 +13,30 @@ static int export_printf(const char* fmt, ...)
         return 0;
 }
 
+int homebrew_load(const char *path, int slot)
+{
+  export_printf("%s", path);
+  int (*load)(VHLCalls*, int, char*, void**) = ((SceUInt)&elfParser_Load + func_calls.loadAddress);   //Offset is correct, jump still crashes
+  export_printf("0x%08x", &elfParser_Load);
+  export_printf("0x%08x", &load);
+  return load(&func_calls, slot, path, NULL);
+}
+
+static int homebrew_start(int slot)
+{
+  return elfParser_Start(&func_calls, slot);
+}
+
+static int homebrew_pause(int slot)
+{
+  return -1;
+}
+
+static int homebrew_stop(int slot)
+{
+  return -1;
+}
+
 static SceUID allocCodeMem(int size)
 {
         return AllocCodeMemBlock(size);
@@ -21,6 +45,7 @@ static SceUID allocCodeMem(int size)
 int exports_initialize(VHLCalls *calls)
 {
         calls->UnlockMem();
+        func_calls.loadAddress = calls->loadAddress;
         func_calls.AllocCodeMem = calls->AllocCodeMem;
         func_calls.FlushICache = calls->FlushICache;
         func_calls.UnlockMem = calls->UnlockMem;
@@ -30,6 +55,10 @@ int exports_initialize(VHLCalls *calls)
         func_calls.sceKernelFreeMemBlock = calls->sceKernelFreeMemBlock;
         func_calls.sceKernelGetMemBlockBase = calls->sceKernelGetMemBlockBase;
         func_calls.sceKernelFindMemBlockByAddr = calls->sceKernelFindMemBlockByAddr;
+        func_calls.sceIOOpen = calls->sceIOOpen;
+        func_calls.sceIORead = calls->sceIORead;
+        func_calls.sceIOLseek = calls->sceIOLseek;
+        func_calls.sceIOClose = calls->sceIOClose;
         calls->LockMem();
 
         nidTable_exportFunc(calls, &allocCodeMem, ALLOC_CODE_MEM);
@@ -39,6 +68,8 @@ int exports_initialize(VHLCalls *calls)
         nidTable_exportFunc(calls, func_calls.UnlockMem, UNLOCK);
         nidTable_exportFunc(calls, func_calls.LockMem, LOCK);
         nidTable_exportFunc(calls, func_calls.FlushICache, FLUSH);
+        nidTable_exportFunc(calls, &homebrew_load, LOAD_ELF);
+        nidTable_exportFunc(calls, &homebrew_start, START_ELF);
 
         return 0;
 }
