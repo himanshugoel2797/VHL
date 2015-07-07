@@ -1,0 +1,6 @@
+VHL : Vita Homebrew Loader
+
+   This software includes module structure definitions and 
+   elf relocation code from UVLoader developed by Yifanlu,
+   available at:
+      https://github.com/yifanlu/UVLoader/
