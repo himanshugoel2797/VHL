@@ -64,6 +64,6 @@ typedef struct {
 
 //Disassemble ARM instruction
 int Disassemble(void *instruction, ARM_INSTRUCTION *instData);
-int Assemble(ARM_INSTRUCTION *instData, unsigned int *instruction);
+int Assemble(ARM_INSTRUCTION *instData, SceUInt *instruction);
 
 #endif

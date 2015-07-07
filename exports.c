@@ -9,23 +9,8 @@ static int export_printf(const char* fmt, ...)
         va_start(va, fmt);
         mini_vsnprintf(buffer, INTERNAL_PRINTF_MAX_LENGTH, fmt, va);
         va_end(va);
-        logLine(buffer);
+        func_calls.LogLine(buffer);
         return 0;
-}
-
-int homebrew_load(const char *path, int slot)
-{
-  export_printf("%s", path);
-  int (*load)(VHLCalls*, int, char*, void**) = ((SceUInt)&elfParser_Load + func_calls.loadAddress);   //Offset is correct, jump still crashes
-  export_printf("0x%08x", &elfParser_Load);
-  export_printf("0x%08x", &load);
-  return load(&func_calls, slot, path, NULL);
-}
-
-static int homebrew_start(int slot)
-{
-  export_printf("Starting...");
-  return elfParser_Start(&func_calls, slot);
 }
 
 static int homebrew_pause(int slot)
@@ -62,15 +47,13 @@ int exports_initialize(VHLCalls *calls)
         func_calls.sceIOClose = calls->sceIOClose;
         calls->LockMem();
 
-        nidTable_exportFunc(calls, &allocCodeMem, ALLOC_CODE_MEM);
-        nidTable_exportFunc(calls, &export_printf, PRINTF);
-        nidTable_exportFunc(calls, func_calls.LogLine, PUTS);
-        nidTable_exportFunc(calls, func_calls.LogLine, LOG);
-        nidTable_exportFunc(calls, func_calls.UnlockMem, UNLOCK);
-        nidTable_exportFunc(calls, func_calls.LockMem, LOCK);
-        nidTable_exportFunc(calls, func_calls.FlushICache, FLUSH);
-        nidTable_exportFunc(calls, &homebrew_load, LOAD_ELF);
-        nidTable_exportFunc(calls, &homebrew_start, START_ELF);
+        nid_table_exportFunc(calls, &allocCodeMem, ALLOC_CODE_MEM);
+        nid_table_exportFunc(calls, &export_printf, PRINTF);
+        nid_table_exportFunc(calls, func_calls.LogLine, PUTS);
+        nid_table_exportFunc(calls, func_calls.LogLine, LOG);
+        nid_table_exportFunc(calls, func_calls.UnlockMem, UNLOCK);
+        nid_table_exportFunc(calls, func_calls.LockMem, LOCK);
+        nid_table_exportFunc(calls, func_calls.FlushICache, FLUSH);
 
         return 0;
 }

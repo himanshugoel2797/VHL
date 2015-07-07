@@ -1,170 +1,157 @@
 #ifndef _VHL_ELF_HEADERS_H_
 #define _VHL_ELF_HEADERS_H_
 
-#include <psp2/types.h>
+#include "common.h"
 
-#define MOD_INFO_VALID_ATTR     0x0000
-#define MOD_INFO_VALID_VER      0x0101
+typedef uint16_t Elf32_Half;  // Unsigned half int
+typedef uint32_t Elf32_Off; // Unsigned offset
+typedef uint32_t Elf32_Addr;  // Unsigned address
+typedef uint32_t Elf32_Word;  // Unsigned int
+typedef int32_t Elf32_Sword;  // Signed int
 
-#define MODULE_FILENAME_LENGTH 256
-#define SEGMENT_COUNT 4
+#define ELF_NIDENT  16
 
-//Structs from UVLoader
-/*
- * resolve.h - Performs SCE ELF relocations
- * Copyright 2015 Yifan Lu
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *    http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
+typedef struct {
+        uint8_t e_ident[ELF_NIDENT];
+        Elf32_Half e_type;
+        Elf32_Half e_machine;
+        Elf32_Word e_version;
+        Elf32_Addr e_entry;
+        Elf32_Off e_phoff;
+        Elf32_Off e_shoff;
+        Elf32_Word e_flags;
+        Elf32_Half e_ehsize;
+        Elf32_Half e_phentsize;
+        Elf32_Half e_phnum;
+        Elf32_Half e_shentsize;
+        Elf32_Half e_shnum;
+        Elf32_Half e_shstrndx;
+} Elf32_Ehdr;
 
-typedef struct // thanks roxfan
-{
-        SceUShort16 size;       // size of this structure; 0x20 for Vita 1.x
-        SceUInt8 lib_version[2]; //
-        SceUShort16 attribute;  // ?
-        SceUShort16 num_functions; // number of exported functions
-        SceUInt num_vars;   // number of exported variables
-        SceUInt num_tls_vars; // number of exported TLS variables?  <-- pretty sure wrong // yifanlu
-        SceUInt module_nid; // NID of this specific export list; one PRX can export several names
-        char    *lib_name;// name of the export module
-        SceUInt   *nid_table;// array of 32-bit NIDs for the exports, first functions then vars
-        void    **entry_table;// array of pointers to exported functions and then variables
-} SceModuleExports;
+enum Elf_Ident {
+        EI_MAG0   = 0,// 0x7F
+        EI_MAG1   = 1,// 'E'
+        EI_MAG2   = 2,// 'L'
+        EI_MAG3   = 3,// 'F'
+        EI_CLASS  = 4,// Architecture (32/64)
+        EI_DATA   = 5,// Byte Order
+        EI_VERSION  = 6,// ELF Version
+        EI_OSABI  = 7,// OS Specific
+        EI_ABIVERSION = 8, // OS Specific
+        EI_PAD    = 9// Padding
+};
 
-/**
- * \brief SCE module import table (< 3.0 format)
- *
- * Can be found in an ELF file or loaded in
- * memory.
- */
-typedef struct // thanks roxfan
-{
-        SceUShort16 size;           // size of this structure; 0x34 for Vita 1.x
-        SceUShort16 lib_version;    //
-        SceUShort16 attribute;      //
-        SceUShort16 num_functions;  // number of imported functions
-        SceUShort16 num_vars;       // number of imported variables
-        SceUShort16 num_tls_vars;   // number of imported TLS variables
-        SceUInt reserved1;      // ?
-        SceUInt module_nid;     // NID of the module to link to
-        char    *lib_name;    // name of module
-        SceUInt reserved2;      // ?
-        SceUInt   *func_nid_table;// array of function NIDs (numFuncs)
-        void    **func_entry_table;// parallel array of pointers to stubs; they're patched by the loader to jump to the final code
-        SceUInt   *var_nid_table;// NIDs of the imported variables (numVars)
-        void    **var_entry_table;// array of pointers to "ref tables" for each variable
-        SceUInt   *tls_nid_table;// NIDs of the imported TLS variables (numTlsVars)
-        void    **tls_entry_table;// array of pointers to ???
-} SceModuleImports_2x;
+#define ELFMAG0 0x7F // e_ident[EI_MAG0]
+#define ELFMAG1  'E'  // e_ident[EI_MAG1]
+#define ELFMAG2  'L'  // e_ident[EI_MAG2]
+#define ELFMAG3  'F'  // e_ident[EI_MAG3]
+#define ELFDATA2LSB  (1)  // Little Endian
+#define ELFCLASS32 (1)  // 32-bit Architecture
 
-/**
- * \brief SCE module import table (>= 3.x format)
- *
- * Can be found in an ELF file or loaded in
- * memory.
- */
-typedef struct
-{
-        SceUShort16 size;           // size of this structure; 0x24 for Vita 3.x
-        SceUShort16 lib_version;    //
-        SceUShort16 attribute;      //
-        SceUShort16 num_functions;  // number of imported functions
-        SceUShort16 num_vars;       // number of imported variables
-        SceUShort16 unknown1;
-        SceUInt module_nid;     // NID of the module to link to
-        char    *lib_name;    // name of module
-        SceUInt   *func_nid_table;// array of function NIDs (numFuncs)
-        void    **func_entry_table;// parallel array of pointers to stubs; they're patched by the loader to jump to the final code
-        SceUInt   *var_nid_table;// NIDs of the imported variables (numVars)
-        void    **var_entry_table;// array of pointers to "ref tables" for each variable
-} SceModuleImports_3x;
+enum Elf_Type {
+        ET_NONE   = 0,// Unkown Type
+        ET_REL    = 1,// Relocatable File
+        ET_EXEC   = 2,// Executable File
+        ET_SCE_EXEC = 0xFE00,
+        ET_SCE_RELEXEC = 0xFE04
+};
 
-/**
- * \brief SCE module import table
- */
+enum Ph_Type {
+        PH_LOAD = 1,
+        PH_SCE_RELOCATE = 0x60000000
+};
+
+enum Pf_Type{
+    PF_X = 1,
+    PF_W = 2,
+    PF_R = 4
+};
+
+#define EM_ARM    (40)  // x86 Machine Type
+#define EV_CURRENT  (1)  // ELF Current Version
+
+typedef struct {
+        Elf32_Word p_type;
+        Elf32_Off p_offset;
+        Elf32_Addr p_vaddr;
+        Elf32_Addr p_paddr;
+        Elf32_Word p_filesz;
+        Elf32_Word p_memsz;
+        Elf32_Word p_flags;
+        Elf32_Word p_align;
+} Elf32_Phdr;
+
+typedef struct {
+        Elf32_Word sh_name;
+        Elf32_Word sh_type;
+        Elf32_Word sh_flags;
+        Elf32_Addr sh_addr;
+        Elf32_Off sh_offset;
+        Elf32_Word sh_size;
+        Elf32_Word sh_link;
+        Elf32_Word sh_info;
+        Elf32_Word sh_addralign;
+        Elf32_Word sh_entsize;
+} Elf32_Shdr;
+
+typedef struct {
+        Elf32_Word st_name;
+        Elf32_Addr st_value;
+        Elf32_Word st_size;
+        uint8_t st_info;
+        uint8_t st_other;
+        Elf32_Half st_shndx;
+} Elf32_Sym;
+
 typedef union
 {
-        SceUShort16 size;
-        SceModuleImports_2x old_version;
-        SceModuleImports_3x new_version;
-} SceModuleImports;
+    SceUInt       r_type;
+    struct
+    {
+        SceUInt   r_opt1;
+        SceUInt   r_opt2;
+    } r_short;
+    struct
+    {
+        SceUInt   r_type;
+        SceUInt   r_addend;
+        SceUInt   r_offset;
+    } r_long;
+} SceReloc;
+/** @}*/
 
-#define SCE_MODULE_IMPORTS_GET_FUNCTION_COUNT(x) (((x->size == sizeof(SceModuleImports_3x)) ? x->new_version.num_functions : x->old_version.num_functions))
-#define SCE_MODULE_IMPORTS_GET_FUNCTIONS_NIDTABLE(x) (((x->size == sizeof(SceModuleImports_3x)) ? x->new_version.func_nid_table : x->old_version.func_nid_table))
-#define SCE_MODULE_IMPORTS_GET_FUNCTIONS_ENTRYTABLE(x) (((x->size == sizeof(SceModuleImports_3x)) ? x->new_version.func_entry_table : x->old_version.func_entry_table))
+/** \name Macros to get SCE reloc values
+ *  @{
+ */
+#define SCE_RELOC_SHORT_OFFSET(x) (((x).r_opt1 >> 20) | ((x).r_opt2 & 0xFFFFF) << 12)
+#define SCE_RELOC_SHORT_ADDEND(x) ((x).r_opt2 >> 20)
+#define SCE_RELOC_LONG_OFFSET(x) ((x).r_offset)
+#define SCE_RELOC_LONG_ADDEND(x) ((x).r_addend)
+#define SCE_RELOC_LONG_CODE2(x) (((x).r_type >> 20) & 0xFF)
+#define SCE_RELOC_LONG_DIST2(x) (((x).r_type >> 28) & 0xF)
+#define SCE_RELOC_IS_SHORT(x) (((x).r_type) & 0xF)
+#define SCE_RELOC_CODE(x) (((x).r_type >> 8) & 0xFF)
+#define SCE_RELOC_SYMSEG(x) (((x).r_type >> 4) & 0xF)
+#define SCE_RELOC_DATSEG(x) (((x).r_type >> 16) & 0xF)
+/** @}*/
 
-#define SCE_MODULE_IMPORTS_GET_VARIABLE_COUNT(x) (((x->size == sizeof(SceModuleImports_3x)) ? x->new_version.num_vars : x->old_version.num_vars))
-#define SCE_MODULE_IMPORTS_GET_VARIABLE_NIDTABLE(x) (((x->size == sizeof(SceModuleImports_3x)) ? x->new_version.var_nid_table : x->old_version.var_nid_table))
-#define SCE_MODULE_IMPORTS_GET_VARIABLE_ENTRYTABLE(x) (((x->size == sizeof(SceModuleImports_3x)) ? x->new_version.var_entry_table : x->old_version.var_entry_table))
-
-#define SCE_MODULE_IMPORTS_GET_LIB_NAME(x) (((x->size == sizeof(SceModuleImports_3x)) ? x->new_version.lib_name : x->old_version.lib_name))
-#define SCE_MODULE_IMPORTS_GET_NID(x) (((x->size == sizeof(SceModuleImports_3x)) ? x->new_version.module_nid : x->old_version.module_nid))
-
-typedef struct
-{
-        SceUInt size;       // this structure size (0x18)
-        SceUInt perms;      // probably rwx in low bits
-        void            *vaddr;// address in memory
-        SceUInt memsz;      // size in memory
-        SceUInt flags;      // meanig unknown
-        SceUInt res;        // unused?
-} SceSegmentInfo;
-
-typedef struct
-{
-        SceUInt size;                   // 0x1B8 for Vita 1.x
-        SceUInt handle;                 // kernel module handle?
-        SceUInt flags;                  // some bits. could be priority or whatnot
-        char module_name[28];
-        SceUInt unkn_28;
-        void            *module_start;
-        SceUInt unkn_30;
-        void            *module_stop;
-        void            *exidx_start;
-        void            *exidx_end;
-        SceUInt unkn_40;
-        SceUInt unkn_44;
-        void            *tls_init_data;
-        SceUInt tls_init_size;
-        SceUInt tls_area_size;
-        char file_path[256];              //
-        SceSegmentInfo segments[SEGMENT_COUNT];
-        SceUInt type;           // 6 = user-mode PRX?
-} SceLoadedModuleInfo;
-
-typedef struct // thanks roxfan
-{
-        SceUInt16 modattribute; // ??
-        SceUInt16 modversion;  // always 1,1?
-        char modname[27];  ///< Name of the module
-        SceUInt8 type;         // 6 = user-mode prx?
-        void    *gp_value; // always 0 on ARM
-        SceUInt ent_top;     // beginning of the export list (sceModuleExports array)
-        SceUInt ent_end;     // end of same
-        SceUInt stub_top;    // beginning of the import list (sceModuleStubInfo array)
-        SceUInt stub_end;    // end of same
-        SceUInt module_nid;  // ID of the PRX? seems to be unused
-        SceUInt field_38;    // unused in samples
-        SceUInt field_3C;    // I suspect these may contain TLS info
-        SceUInt field_40;    //
-        SceUInt mod_start;   // module start function; can be 0 or -1; also present in exports
-        SceUInt mod_stop;    // module stop function
-        SceUInt exidx_start; // ARM EABI style exception tables
-        SceUInt exidx_end;   //
-        SceUInt extab_start; //
-        SceUInt extab_end;   //
-} SceModuleInfo;
-
+/** \name Vita supported relocations
+ *  @{
+ */
+#define R_ARM_NONE              0
+#define R_ARM_ABS32             2
+#define R_ARM_REL32             3
+#define R_ARM_THM_CALL          10
+#define R_ARM_CALL              28
+#define R_ARM_JUMP24            29
+#define R_ARM_TARGET1           38
+#define R_ARM_V4BX              40
+#define R_ARM_TARGET2           41
+#define R_ARM_PREL31            42
+#define R_ARM_MOVW_ABS_NC       43
+#define R_ARM_MOVT_ABS          44
+#define R_ARM_THM_MOVW_ABS_NC   47
+#define R_ARM_THM_MOVT_ABS      48
 
 
 #endif

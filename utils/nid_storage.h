@@ -6,6 +6,7 @@
 #include "../config.h"
 
 #define NID_STORAGE_BUCKET_COUNT 256
+#define NID_STORAGE_HOOK_MULTIPLIER 1
 #define NID_STORAGE_CACHE_FILE VHL_DATA_PATH"/nidCache.bin"
 
 

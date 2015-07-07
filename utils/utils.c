@@ -23,16 +23,13 @@ void * memcpy(void * dst, const void * src, size_t len)
         return dst;
 }
 
-void * memset(void * s, char c, size_t n)
+void * memset(void * s, int c, size_t n)
 {
-        unsigned char* p=s;
+        int* p=s;
 
-        for(int i = 0; i < n;)
+        for(int i = 0; i < n; i+=sizeof(int))
         {
-                p[i++] = c;
-                p[i++] = c;
-                p[i++] = c;
-                p[i++] = c;
+                *p++ = c;
         }
 
         return s;

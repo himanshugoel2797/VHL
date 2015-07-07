@@ -68,7 +68,7 @@ int Disassemble(void *instruction, ARM_INSTRUCTION *instData)
         return 0;
 }
 
-int Assemble(ARM_INSTRUCTION *instData, unsigned int *instruction)
+int Assemble(ARM_INSTRUCTION *instData, SceUInt *instruction)
 {
 
 

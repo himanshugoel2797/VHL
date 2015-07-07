@@ -28,7 +28,7 @@ _start(UVL_Context *ctx)
         DEBUG_LOG_("Bootstrapping...");
         nidCacheInitialize(&calls);
 
-        int err = nidTable_resolveVHLImports(ctx, &calls);
+        int err = nid_table_resolveVHLImports(ctx, &calls);
         if(err < 0) {
                 calls.LogLine("Failed to resolve some functions... VHL will not work...");
                 return -1;
@@ -36,22 +36,23 @@ _start(UVL_Context *ctx)
 
         DEBUG_LOG_("Freeing memory...");
         //TODO
-        blockManager_initialize(&calls);  //Initialize the elf block slots
+        block_manager_initialize(&calls);  //Initialize the elf block slots
 
         DEBUG_LOG_("Loading plugins...");
         //TODO
 
         exports_initialize(&calls);
+        loader_initialize(&calls);
         DEBUG_LOG_("Loading menu...");
 
-        if(elfParser_Load(&calls, 0, "pss0:/top/Documents/homebrew.self", NULL) < 0) {
+        if(elf_parser_load(&calls, 0, "pss0:/top/Documents/homebrew.self", NULL) < 0) {
                 internal_printf("Load failed!");
                 return -1;
         }
         internal_printf("Load succeeded! Launching!");
 
         while(1) {
-          int ret = elfParser_Start(&calls, 0);
+          int ret = elf_parser_start(&calls, 0);
         DEBUG_LOG("0x%08x returned", ret);
                 //calls.LogLine("Menu exited! Relaunching...");
         }

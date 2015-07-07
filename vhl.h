@@ -1,5 +1,5 @@
-#ifndef  _VHL_COMMON_H_
-#define  _VHL_COMMON_H_
+#ifndef  _VHL_VHL_H_
+#define  _VHL_VHL_H_
 
 #include <psp2/types.h>
 #include <psp2/io/fcntl.h>
@@ -8,10 +8,9 @@
 #include <psp2/io/stat.h>
 #include <psp2/kernel/memorymgr.h>
 #include <psp2/kernel/threadmgr.h>
-#include "utils/mini-printf.h"
-#include "elf_headers.h"
 
-typedef SceUInt SceNID;
+#include "module_headers.h"
+#include "common.h"
 
 typedef struct {
         SceUInt loadAddress;
@@ -38,11 +37,11 @@ typedef struct {
         SceUID (*sceKernelFindMemBlockByAddr)(void*, int);
 
         //Sysmodule functions
-                int (*sceSysmoduleLoadModule)(SceUInt16);
-                int (*sceSysmoduleUnloadModule)(SceUInt16);
-                int (*sceSysmoduleIsLoaded)(SceUInt16);
+        int (*sceSysmoduleLoadModule)(SceUInt16);
+        int (*sceSysmoduleUnloadModule)(SceUInt16);
+        int (*sceSysmoduleIsLoaded)(SceUInt16);
 
-        int (*pss_suspend_thread)(SceUID tid);
+        //
 
         //UVL context calls
         void* (*AllocCodeMem)(SceUInt*);
@@ -63,7 +62,7 @@ typedef struct {
 
 typedef enum
 {
-        PSS_SUSPEND_THREAD = 3291295646,
+
         //TODO add sceKernelThread imports
 
         SCE_IO_OPEN = 1818274913,
@@ -94,13 +93,5 @@ typedef enum
 int __attribute__ ((section (".text.start"))) _start(UVL_Context *ctx);
 void logLine(const char *str);
 
-
-#ifdef DEBUG
-#define DEBUG_LOG(x, ...) internal_printf(x, __VA_ARGS__)
-#define DEBUG_LOG_(x) internal_printf(x);
-#else
-#define DEBUG_LOG(...)
-#define DEBUG_LOG_(x)
-#endif
 
 #endif
