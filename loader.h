@@ -4,9 +4,7 @@
 #include "vhl.h"
 #include "nid_table.h"
 #include "elf_parser.h"
-
-#define HOMEBREW_LOAD_NID 1
-#define HOMEBREW_START_NID 2
+#include "nids.h"
 
 //Contains functions to parse and load elfs
 int loader_initialize(VHLCalls *calls);

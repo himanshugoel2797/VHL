@@ -201,7 +201,7 @@ SceModuleInfo* nid_table_findModuleInfo(void* location, SceUInt size, char* libn
 int nid_table_addNIDCacheToTable(VHLCalls *calls, void *libraryBase)
 {
         SceModuleInfo *moduleInfo = nid_table_findModuleInfo(libraryBase, KERNEL_MODULE_SIZE, "SceLibKernel");
-        if(moduleInfo == NULL)return -1;
+        if(moduleInfo == NULL) return -1;
 
         SceUInt base = (SceUInt)moduleInfo - moduleInfo->ent_top + sizeof(SceModuleInfo);
         nidTable_entry entry;
@@ -289,10 +289,10 @@ int nid_table_resolveVHLImports(UVL_Context *ctx, VHLCalls *calls)
         DEBUG_LOG_("Resolving VHL Imports");
         if(nid_table_analyzeStub(ctx->libkernel_anchor, 0, &libKernelBase) >= 0) {
 
-                nid_storage_initialize(calls);
                 DEBUG_LOG_("Initializing cache");
+                nid_storage_initialize(calls);
 
-                if(nid_table_addNIDCacheToTable(calls, libKernelBase.value.function) < 0)return -1;
+                if(nid_table_addNIDCacheToTable(calls, libKernelBase.value.function) < 0) return -1;
 
                 libKernelBase.value.location = B_UNSET(libKernelBase.value.location, 0);
                 int err = nid_table_resolveImportFromNID(calls,(SceUInt*)&calls->sceKernelGetModuleList,
@@ -368,7 +368,6 @@ int nid_table_resolveVHLImports(UVL_Context *ctx, VHLCalls *calls)
                                                      libKernelBase.value.function, "SceLibKernel");
                 if(err < 0) return -1;
 
-
                 err = nid_table_resolveImportFromNID(calls, (SceUInt*)&calls->sceIOOpen,
                                                      SCE_IO_OPEN,
                                                      libKernelBase.value.function, "SceLibKernel");
@@ -383,6 +382,42 @@ int nid_table_resolveVHLImports(UVL_Context *ctx, VHLCalls *calls)
                                                      SCE_IO_CLOSE,
                                                      libKernelBase.value.function, "SceLibKernel");
                 if(err < 0) return -1;
+
+                err = nid_table_resolveImportFromNID(calls, (SceUInt*)&calls->sceKernelCreateThread,
+                                                     SCE_KERNEL_CREATE_THREAD,
+                                                     libKernelBase.value.function, "SceLibKernel");
+                if(err < 0) return -1;
+
+                err = nid_table_resolveImportFromNID(calls, (SceUInt*)&calls->sceKernelStartThread,
+                                                     SCE_KERNEL_START_THREAD,
+                                                     libKernelBase.value.function, "SceLibKernel");
+                if(err < 0) return -1;
+
+                err = nid_table_resolveImportFromNID(calls, (SceUInt*)&calls->sceKernelGetThreadId,
+                                                     SCE_KERNEL_GET_THREAD_ID,
+                                                     libKernelBase.value.function, "SceLibKernel");
+                if(err < 0) return -1;
+
+                err = nid_table_resolveImportFromNID(calls, (SceUInt*)&calls->sceKernelDelayThread,
+                                                     SCE_KERNEL_DELAY_THREAD,
+                                                     libKernelBase.value.function, "SceLibKernel");
+                if(err < 0) return -1;
+
+                err = nid_table_resolveImportFromNID(calls, (SceUInt*)&calls->sceKernelDeleteThread,
+                                                     SCE_KERNEL_DELETE_THREAD,
+                                                     libKernelBase.value.function, "SceLibKernel");
+                if(err < 0) return -1;
+
+                err = nid_table_resolveImportFromNID(calls, (SceUInt*)&calls->sceKernelExitDeleteThread,
+                                                     SCE_KERNEL_EXIT_DELETE_THREAD,
+                                                     libKernelBase.value.function, "SceLibKernel");
+                if(err < 0) return -1;
+
+                err = nid_table_resolveImportFromNID(calls, (SceUInt*)&calls->sceKernelGetThreadInfo,
+                                                     SCE_KERNEL_GET_THREAD_INFO,
+                                                     libKernelBase.value.function, "SceLibKernel");
+                if(err < 0) return -1;
+
 
                 return 0;
         }
@@ -405,63 +440,79 @@ int nid_table_exportFunc(VHLCalls *calls, void *target, SceNID nid)
         return 0;
 }
 
-int nid_table_resolveStub(VHLCalls *calls, void *stub, SceNID nid)
+int nid_table_resolveStub(VHLCalls *calls, int priority, void *stub, SceNID nid)
 {
         nidTable_entry entry;
-        if(nid_storage_getEntry(nid, &entry) >= 0) {
-                if(entry.nid == nid) {
-                        //Fill the stub with the code generated for this entry
-                        ARM_INSTRUCTION movt;
-                        ARM_INSTRUCTION movw;
-                        ARM_INSTRUCTION jmp;
 
-                        stub = (void*)((SceUInt)stub & ~1);
+        int result = 0;
+        if(priority > 0) result = nid_storage_getHookEntry(nid, &entry);
+        if(priority <= 0 || result < 0) result = nid_storage_getEntry(nid, &entry);
 
-                        switch(entry.type) {
-                        case ENTRY_TYPES_SYSCALL:
-                        case ENTRY_TYPES_RELOC:
-                        case ENTRY_TYPES_FUNCTION:
+        if(result >= 0) {
+                //Fill the stub with the code generated for this entry
+                ARM_INSTRUCTION movt;
+                ARM_INSTRUCTION movw;
+                ARM_INSTRUCTION jmp;
 
-                                movw.condition = ARM_CONDITION_ALWAYS;
-                                movw.type = ARM_MOV_INSTRUCTION;
-                                movw.instruction = ARM_INST_MOVW;
-                                movw.argCount = 2;
-                                movw.value[0] = ARM_R12;
-                                movw.value[1] = (SceUInt16)entry.stub_loc;
+                stub = (void*)((SceUInt)stub & ~1);
 
-                                movt.condition = ARM_CONDITION_ALWAYS;
-                                movt.type = ARM_MOV_INSTRUCTION;
-                                movt.instruction = ARM_INST_MOVT;
-                                movt.argCount = 2;
-                                movt.value[0] = ARM_R12;
-                                movt.value[1] = (SceUInt16)((SceUInt)entry.stub_loc >> 16);                  //Only the top part
+                switch(entry.type) {
+                case ENTRY_TYPES_SYSCALL:
+                case ENTRY_TYPES_RELOC:
+                case ENTRY_TYPES_FUNCTION:
 
-                                jmp.condition = ARM_CONDITION_ALWAYS;
-                                jmp.type = ARM_BRANCH_INSTRUCTION;
-                                jmp.instruction = ARM_INST_BX;
-                                jmp.argCount = 1;
-                                jmp.value[0] = ARM_R12;
-                                break;
-                        case ENTRY_TYPES_VARIABLE:
-                                calls->UnlockMem();
-                                *(SceUInt*)stub = entry.value.location;
-                                calls->LockMem();
-                                return 0;
-                                break;
-                        default:
-                                return -1;
-                                break;
-                        }
+                        movw.condition = ARM_CONDITION_ALWAYS;
+                        movw.type = ARM_MOV_INSTRUCTION;
+                        movw.instruction = ARM_INST_MOVW;
+                        movw.argCount = 2;
+                        movw.value[0] = ARM_R12;
+                        movw.value[1] = (SceUInt16)entry.stub_loc;
+
+                        movt.condition = ARM_CONDITION_ALWAYS;
+                        movt.type = ARM_MOV_INSTRUCTION;
+                        movt.instruction = ARM_INST_MOVT;
+                        movt.argCount = 2;
+                        movt.value[0] = ARM_R12;
+                        movt.value[1] = (SceUInt16)((SceUInt)entry.stub_loc >> 16);                          //Only the top part
+
+                        jmp.condition = ARM_CONDITION_ALWAYS;
+                        jmp.type = ARM_BRANCH_INSTRUCTION;
+                        jmp.instruction = ARM_INST_BX;
+                        jmp.argCount = 1;
+                        jmp.value[0] = ARM_R12;
+                        break;
+                case ENTRY_TYPES_VARIABLE:
                         calls->UnlockMem();
-                        Assemble(&movw, &((SceUInt*)stub)[0]);
-                        Assemble(&movt, &((SceUInt*)stub)[1]);
-                        Assemble(&jmp, &((SceUInt*)stub)[2]);
-
+                        *(SceUInt*)stub = entry.value.location;
                         calls->LockMem();
-                        calls->FlushICache(stub, 0x10);
                         return 0;
+                        break;
+                default:
+                        return -1;
+                        break;
                 }
+                calls->UnlockMem();
+                Assemble(&movw, &((SceUInt*)stub)[0]);
+                Assemble(&movt, &((SceUInt*)stub)[1]);
+                Assemble(&jmp, &((SceUInt*)stub)[2]);
+
+                calls->LockMem();
+                calls->FlushICache(stub, 0x10);
+                return 0;
         }
         DEBUG_LOG("Failed to find NID 0x%08x", nid);
+        return -1;
+}
+
+int nid_table_registerHook(VHLCalls *calls, void *func, SceNID nid, void **target)
+{
+        nidTable_entry entry;
+        if(nid_storage_getEntry(nid, &entry) >= 0)
+        {
+                *target = entry.stub_loc;
+                entry.stub_loc = func;
+                nid_storage_addHookEntry(calls, &entry);
+                return 0;
+        }
         return -1;
 }

@@ -8,6 +8,7 @@ int nidCacheInitialize(VHLCalls *calls){
         libkernel_nid_cache_header = ( calls->loadAddress + (SceUInt)libkernel_nid_cache_header_);
         libkernel_nid_cache = ( calls->loadAddress + (SceUInt)libkernel_nid_cache_);
         calls->LockMem();
+        return 0;
 }
 
 int nidCacheContainsModuleNID(SceNID nid, int *offset)

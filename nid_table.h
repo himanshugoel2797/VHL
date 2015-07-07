@@ -27,6 +27,7 @@ int nid_table_resolveImportFromNID(VHLCalls *calls, SceUInt *functionPtrLocation
 int nid_table_resolveVHLImports(UVL_Context *ctx, VHLCalls *calls);
 int nid_table_resolveAll(VHLCalls *calls);
 int nid_table_exportFunc(VHLCalls *calls, void *target, SceNID nid);
-int nid_table_resolveStub(VHLCalls *calls, void *stub, SceNID nid);
+int nid_table_resolveStub(VHLCalls *calls, int priority, void *stub, SceNID nid);
+int nid_table_registerHook(VHLCalls *calls, void *func, SceNID nid, void **target);
 
 #endif

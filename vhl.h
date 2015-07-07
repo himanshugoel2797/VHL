@@ -41,7 +41,16 @@ typedef struct {
         int (*sceSysmoduleUnloadModule)(SceUInt16);
         int (*sceSysmoduleIsLoaded)(SceUInt16);
 
-        //
+        //TODO set GPU mode so wifi doesn't autodisconnect
+
+        //Threading functions
+        SceUID (*sceKernelCreateThread)(const char*, SceKernelThreadEntry, int, int, SceUInt, int, const SceKernelThreadOptParam *);
+        int (*sceKernelExitDeleteThread)(int);
+        int (*sceKernelDelayThread)(SceUInt);
+        int (*sceKernelGetThreadId)();
+        int (*sceKernelGetThreadInfo)(SceUID, SceKernelThreadInfo*);
+        int (*sceKernelDeleteThread)(SceUID);
+        int (*sceKernelStartThread)(SceUID, SceSize, void *);
 
         //UVL context calls
         void* (*AllocCodeMem)(SceUInt*);
@@ -62,8 +71,13 @@ typedef struct {
 
 typedef enum
 {
-
-        //TODO add sceKernelThread imports
+        SCE_KERNEL_CREATE_THREAD = 3317767911,
+        SCE_KERNEL_START_THREAD = 4035830089,
+        SCE_KERNEL_EXIT_DELETE_THREAD = 488103631,
+        SCE_KERNEL_DELAY_THREAD = 1265065221,
+        SCE_KERNEL_GET_THREAD_ID = 263811833,
+        SCE_KERNEL_GET_THREAD_INFO = 2375832673,
+        SCE_KERNEL_DELETE_THREAD = 465429465,
 
         SCE_IO_OPEN = 1818274913,
         SCE_IO_CLOSE = 3339421830,
@@ -83,6 +97,7 @@ typedef enum
         SCE_KERNEL_FREE_MEMBLOCK = 2837321198,
         SCE_KERNEL_GET_MEMBLOCK_BASE = 3102693400,
         SCE_KERNEL_FIND_MEMBLOCK_BY_ADDR = 0xA33B99D1,
+        SCE_KERNE_GET_FREE_MEMORY_SIZE = 2278316043,
 
         SCE_SYSMODULE_LOADMODULE = 2040534538,
         SCE_SYSMODULE_UNLOADMODULE = 836270085,

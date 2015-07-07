@@ -35,6 +35,13 @@ void * memset(void * s, int c, size_t n)
         return s;
 }
 
+int strcpy(const char *dst, const char *src)
+{
+  size_t len = strlen(src);
+  memcpy(dst, src, len);
+  return len;
+}
+
 void make_delta1(int *delta1, char *pat, int patlen) {
         int i;
         for (i=0; i < ALPHABET_LEN; i++) {

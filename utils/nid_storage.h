@@ -33,5 +33,6 @@ int nid_storage_initialize(VHLCalls *calls);
 int nid_storage_addEntry(VHLCalls *calls, nidTable_entry *entry);
 int nid_storage_getEntry(SceNID nid, nidTable_entry *entry);
 int nid_storage_addHookEntry(VHLCalls *calls, nidTable_entry *entry);
+int nid_storage_getHookEntry(SceNID nid, nidTable_entry *entry);
 
 #endif

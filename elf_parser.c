@@ -20,6 +20,7 @@ int block_manager_free_old_data(VHLCalls *calls, int curSlot)
         allocatedBlocks[curSlot].elf_mem_uid = 0;
         allocatedBlocks[curSlot].elf_mem_size = 0;
         allocatedBlocks[curSlot].entryPoint = NULL;
+        allocatedBlocks[curSlot].path[0] = NULL;
         calls->LockMem();
 
         return 0;
@@ -38,13 +39,14 @@ int block_manager_initialize(VHLCalls *calls)
                 allocatedBlocks[curSlot].elf_mem_loc = 0;
                 allocatedBlocks[curSlot].elf_mem_uid = 0;
                 allocatedBlocks[curSlot].elf_mem_size = 0;
+                allocatedBlocks[curSlot].path[0] = NULL;
         }
         calls->LockMem();
 }
 
 
 /*
-  elf_parser_write_segment and elf_parser_relocate taken from UVL
+   elf_parser_write_segment and elf_parser_relocate taken from UVL
  * relocate.c - Performs SCE ELF relocations
  * Copyright 2015 Yifan Lu
  *
@@ -321,17 +323,17 @@ int elf_parser_check_hdr(Elf32_Ehdr *hdr)
 }
 
 
-int elf_parser_load_exec(VHLCalls *calls, int curSlot, SceUID fd, unsigned int len, Elf32_Ehdr *hdr, void **entryPoint)
+int elf_parser_load_exec(VHLCalls *calls, int priority, int curSlot, SceUID fd, unsigned int len, Elf32_Ehdr *hdr, void **entryPoint)
 {
         return -1;
 }
 
-int elf_parser_load_sce_exec(VHLCalls *calls, int curSlot, SceUID fd, unsigned int len, Elf32_Ehdr *hdr, void **entryPoint)
+int elf_parser_load_sce_exec(VHLCalls *calls, int priority, int curSlot, SceUID fd, unsigned int len, Elf32_Ehdr *hdr, void **entryPoint)
 {
         return -1;
 }
 
-int elf_parser_load_sce_relexec(VHLCalls *calls, int curSlot, SceUID fd, unsigned int len, Elf32_Ehdr *hdr, void **entryPoint)
+int elf_parser_load_sce_relexec(VHLCalls *calls, int priority, int curSlot, SceUID fd, unsigned int len, Elf32_Ehdr *hdr, void **entryPoint)
 {
         if(allocatedBlocks[curSlot].data_mem_uid != 0) block_manager_free_old_data(calls, curSlot); //Make sure the block is empty to prevent memory leaks
         char tmpDS_name[18];
@@ -488,7 +490,7 @@ int elf_parser_load_sce_relexec(VHLCalls *calls, int curSlot, SceUID fd, unsigne
 
                 for(int i = 0; i < GET_FUNCTION_COUNT(imports); i++)
                 {
-                        int err = nid_table_resolveStub(calls, entryTable[i], nidTable[i]);
+                        int err = nid_table_resolveStub(calls, priority, entryTable[i], nidTable[i]);
                         if(err < 0) DEBUG_LOG("Failed to resolve import NID 0x%08x", nidTable[i]);
                 }
 
@@ -497,7 +499,7 @@ int elf_parser_load_sce_relexec(VHLCalls *calls, int curSlot, SceUID fd, unsigne
 
                 for(int i = 0; i < GET_VARIABLE_COUNT(imports); i++)
                 {
-                        int err = nid_table_resolveStub(calls, entryTable[i], nidTable[i]);
+                        int err = nid_table_resolveStub(calls, priority, entryTable[i], nidTable[i]);
                         if(err < 0) DEBUG_LOG("Failed to resolve variable NID 0x%08x", nidTable[i]);
                 }
         }
@@ -518,7 +520,7 @@ freeTmpDataAndError:
         return -1;
 }
 
-int elf_parser_load(VHLCalls *calls, int curSlot, const char *file, void **entryPoint)
+int elf_parser_load(VHLCalls *calls, int priority, int curSlot, const char *file, void **entryPoint)
 {
         DEBUG_LOG_("elf_parser_Load");
         SceUID fd = calls->sceIOOpen(file, PSP2_O_RDONLY, 0777);
@@ -528,6 +530,9 @@ int elf_parser_load(VHLCalls *calls, int curSlot, const char *file, void **entry
         calls->sceIOLseek(fd, 0LL, PSP2_SEEK_SET);
         DEBUG_LOG("File length : %d", len);
 
+        calls->UnlockMem();
+        strcpy(allocatedBlocks[curSlot].path, file);
+        calls->LockMem();
 
         Elf32_Ehdr hdr;
         calls->sceIORead(fd, &hdr, sizeof(Elf32_Ehdr));
@@ -538,15 +543,15 @@ int elf_parser_load(VHLCalls *calls, int curSlot, const char *file, void **entry
         switch(hdr.e_type)
         {
         case ET_SCE_RELEXEC:
-                return elf_parser_load_sce_relexec(calls, curSlot, fd, len, &hdr, entryPoint);
+                return elf_parser_load_sce_relexec(calls, priority, curSlot, fd, len, &hdr, entryPoint);
                 break;
         case ET_SCE_EXEC:
                 internal_printf("ET_SCE_EXEC format not supported at the moment");
-                return elf_parser_load_sce_exec(calls, curSlot, fd, len, &hdr, entryPoint);
+                return elf_parser_load_sce_exec(calls, priority, curSlot, fd, len, &hdr, entryPoint);
                 break;
         case ET_EXEC:
                 internal_printf("ET_EXEC format not supported at the moment");
-                return elf_parser_load_sce_exec(calls, curSlot, fd, len, &hdr, entryPoint);
+                return elf_parser_load_sce_exec(calls, priority,curSlot, fd, len, &hdr, entryPoint);
                 break;
         default:
                 return -1;
@@ -561,5 +566,10 @@ int elf_parser_load(VHLCalls *calls, int curSlot, const char *file, void **entry
 int elf_parser_start(VHLCalls *calls, int curSlot)
 {
         internal_printf("0x%08x", allocatedBlocks[curSlot].entryPoint);
-        return allocatedBlocks[curSlot].entryPoint(0, NULL);
+        char tmp[512];
+        strcpy(tmp, allocatedBlocks[curSlot].path);
+
+        //TODO Create a new thread for the homebrew
+
+        return allocatedBlocks[curSlot].entryPoint(1, &tmp);
 }
