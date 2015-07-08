@@ -12,8 +12,14 @@ int loader_initialize(VHLCalls *calls)
 
         nid_table_exportFunc(calls, loader_loadHomebrew, HOMEBREW_LOAD_NID);
         nid_table_exportFunc(calls, loader_startHomebrew, HOMEBREW_START_NID);
+        nid_table_exportFunc(calls, loader_loadExec, LOAD_EXEC);
 
         return 0;
+}
+
+int loader_loadExec(const char *path, const char *argv[], void *opt)
+{
+    return loader_loadHomebrew(path, 1);
 }
 
 int loader_loadHomebrew(const char *path, int slot)

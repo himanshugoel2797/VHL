@@ -12,9 +12,10 @@ typedef enum {
         HOMEBREW_LOAD_NID = 1,
         HOMEBREW_START_NID = 2,
         HOMEBREW_EXIT = 1972754858,
+        LOAD_EXEC = 3866577596,
         GET_INT_VALUE = 3,
         SET_INT_VALUE = 4,
-        
+
 } EXPORT_NIDS;
 
 #endif

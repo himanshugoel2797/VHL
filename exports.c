@@ -4,23 +4,13 @@ static VHLCalls func_calls;
 
 static int export_printf(const char* fmt, ...)
 {
-        char buffer[INTERNAL_PRINTF_MAX_LENGTH];
+        char buffer[INTERNAL_PRINTF_MAX_LENGTH * 5];  //Larger buffer for exported stuff
         va_list va;
         va_start(va, fmt);
-        mini_vsnprintf(buffer, INTERNAL_PRINTF_MAX_LENGTH, fmt, va);
+        mini_vsnprintf(buffer, INTERNAL_PRINTF_MAX_LENGTH * 5, fmt, va);
         va_end(va);
         func_calls.LogLine(buffer);
         return 0;
-}
-
-static int homebrew_pause(int slot)
-{
-  return -1;
-}
-
-static int homebrew_stop(int slot)
-{
-  return -1;
 }
 
 static SceUID allocCodeMem(int size)

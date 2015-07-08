@@ -10,6 +10,7 @@
 int loader_initialize(VHLCalls *calls);
 int loader_loadHomebrew(const char *str, int slot);
 int loader_startHomebrew(int slot);
+int loader_loadExec(const char *path, const char *argv[], void *opt);
 
 
 #endif
