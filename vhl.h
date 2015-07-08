@@ -51,6 +51,7 @@ typedef struct {
         int (*sceKernelGetThreadInfo)(SceUID, SceKernelThreadInfo*);
         int (*sceKernelDeleteThread)(SceUID);
         int (*sceKernelStartThread)(SceUID, SceSize, void *);
+        int (*sceKernelWaitThreadEnd)(SceUID, SceInt*, SceUInt*);
 
         //UVL context calls
         void* (*AllocCodeMem)(SceUInt*);
@@ -78,6 +79,7 @@ typedef enum
         SCE_KERNEL_GET_THREAD_ID = 263811833,
         SCE_KERNEL_GET_THREAD_INFO = 2375832673,
         SCE_KERNEL_DELETE_THREAD = 465429465,
+        SCE_KERNEL_WAIT_THREAD_END = 3719533993,
 
         SCE_IO_OPEN = 1818274913,
         SCE_IO_CLOSE = 3339421830,

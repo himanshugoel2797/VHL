@@ -31,7 +31,7 @@ int loader_startHomebrew(int slot)
         vhl->UnlockMem();
         currentHomebrew = slot;
         vhl->LockMem();
-        return elf_parser_start(vhl, slot);
+        return elf_parser_start(vhl, slot, -1); //Wait endlessly until homebrew exit or suspend
 }
 
 int loader_exitHomebrew(int errorCode)

@@ -1,6 +1,7 @@
 #include "elf_parser.h"
 
 static allocData allocatedBlocks[MAX_SLOTS];
+static SceKernelThreadInfo mainThreadInfo;
 
 int block_manager_free_old_data(VHLCalls *calls, int curSlot)
 {
@@ -41,6 +42,8 @@ int block_manager_initialize(VHLCalls *calls)
                 allocatedBlocks[curSlot].elf_mem_size = 0;
                 allocatedBlocks[curSlot].path[0] = NULL;
         }
+        mainThreadInfo.size = sizeof(SceKernelThreadInfo);
+        calls->sceKernelGetThreadInfo(calls->sceKernelGetThreadId(), &mainThreadInfo);
         calls->LockMem();
 }
 
@@ -563,13 +566,46 @@ int elf_parser_load(VHLCalls *calls, int priority, int curSlot, const char *file
         return 0;
 }
 
-int elf_parser_start(VHLCalls *calls, int curSlot)
+int homebrew_thread_entry(int argc, int *argv)
 {
-        internal_printf("0x%08x", allocatedBlocks[curSlot].entryPoint);
+
+        int curSlot = argv[0];
+        VHLCalls *calls = (VHLCalls*)argv[1];
         char tmp[512];
         strcpy(tmp, allocatedBlocks[curSlot].path);
 
-        //TODO Create a new thread for the homebrew
+        //TODO start managing resources for this
+        int retVal = allocatedBlocks[curSlot].entryPoint(1, &tmp);
+        //TODO stop managing and clear all resources
 
-        return allocatedBlocks[curSlot].entryPoint(1, &tmp);
+        calls->sceKernelExitDeleteThread(retVal);
+        return 0;
+}
+
+int elf_parser_start(VHLCalls *calls, int curSlot, int wait)
+{
+        char tmp[512];
+        strcpy(tmp, allocatedBlocks[curSlot].path);
+
+        int hb_tid[2];
+        hb_tid[0] = curSlot;
+        hb_tid[1] = (int)calls;
+
+        SceUID tid = calls->sceKernelCreateThread("homebrew_thread", homebrew_thread_entry, mainThreadInfo.currentPriority, 0x10000, mainThreadInfo.attr, 0, NULL);
+        calls->sceKernelStartThread(tid, 2 * sizeof(int), hb_tid);
+
+        calls->UnlockMem();
+        allocatedBlocks[curSlot].thid = tid;
+        calls->LockMem();
+
+        int exitStatus = 0;
+
+        while(!wait)
+        {
+                calls->sceKernelDelayThread(16000); //Delay for 16 ms
+                //TODO devise a way to determine the homebrew state
+                wait = (wait > 0) ? wait-16 : wait;
+        }
+
+        return exitStatus;
 }

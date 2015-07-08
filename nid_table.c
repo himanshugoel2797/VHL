@@ -64,6 +64,7 @@ int nid_table_isValidModuleInfo(SceModuleInfo *m_info)
 int nid_table_resolveFromModule(VHLCalls *calls, SceLoadedModuleInfo *target)
 {
         nidTable_entry entry;
+        DEBUG_LOG_("Searching for module info");
         SceModuleInfo *orig_mod_info = nid_table_findModuleInfo(target->segments[0].vaddr, target->segments[0].memsz, target->module_name);
         if(orig_mod_info != NULL) {
 
@@ -81,6 +82,8 @@ int nid_table_resolveFromModule(VHLCalls *calls, SceLoadedModuleInfo *target)
                         }
                 }
                 calls->LockMem();
+                DEBUG_LOG_("Exports resolved");
+                //NOTE: The problem is somewhere here
 
                 //Build entries from import table
 
@@ -157,16 +160,18 @@ int nid_table_resolveAll(VHLCalls *calls)
                 return -1;
         }
         SceLoadedModuleInfo loadedModuleInfo;
+        loadedModuleInfo.size = sizeof(loadedModuleInfo);
 
         for(int i = 0; i < numEntries; i++)
         {
-                loadedModuleInfo.size = sizeof(loadedModuleInfo);
                 if(calls->sceKernelGetModuleInfo(uids[i], &loadedModuleInfo) < 0) {
                         DEBUG_LOG_("Failed to get module info... Skipping...");
                 }else{
+                        DEBUG_LOG_("Mod info obtained");
                         nid_table_resolveFromModule(calls, &loadedModuleInfo);
                 }
         }
+        DEBUG_LOG_("All modules resolved");
         return 0;
 }
 
@@ -226,11 +231,8 @@ int nid_table_addNIDCacheToTable(VHLCalls *calls, void *libraryBase)
 
 int nid_table_resolveImportFromNID(VHLCalls *calls, SceUInt *functionPtrLocation, SceNID nid, void *libraryBase, char* libName)
 {
-        //Find the module info struct
-        SceModuleInfo *moduleInfo = nid_table_findModuleInfo(libraryBase, KERNEL_MODULE_SIZE, libName);
-        SceUInt base = (SceUInt)moduleInfo - moduleInfo->ent_top + sizeof(SceModuleInfo);
 
-        DEBUG_LOG("Searching for NID 0x%08x in module %s", nid, libName);
+        if(libName != NULL)DEBUG_LOG("Searching for NID 0x%08x in module %s", nid, libName);
 
         calls->UnlockMem();
         //Check the cache if it's ready
@@ -241,6 +243,12 @@ int nid_table_resolveImportFromNID(VHLCalls *calls, SceUInt *functionPtrLocation
                 calls->LockMem();
                 return 0;
         }
+
+        if(libraryBase == NULL | libName == NULL)return -1;
+
+        //Find the module info struct
+        SceModuleInfo *moduleInfo = nid_table_findModuleInfo(libraryBase, KERNEL_MODULE_SIZE, libName);
+        SceUInt base = (SceUInt)moduleInfo - moduleInfo->ent_top + sizeof(SceModuleInfo);
 
         //Check the export tables to see if the NID is present
         //If so assign the respective pointer to functionPtrLocation
@@ -415,6 +423,11 @@ int nid_table_resolveVHLImports(UVL_Context *ctx, VHLCalls *calls)
 
                 err = nid_table_resolveImportFromNID(calls, (SceUInt*)&calls->sceKernelGetThreadInfo,
                                                      SCE_KERNEL_GET_THREAD_INFO,
+                                                     libKernelBase.value.function, "SceLibKernel");
+                if(err < 0) return -1;
+
+                err = nid_table_resolveImportFromNID(calls, (SceUInt*)&calls->sceKernelWaitThreadEnd,
+                                                     SCE_KERNEL_WAIT_THREAD_END,
                                                      libKernelBase.value.function, "SceLibKernel");
                 if(err < 0) return -1;
 

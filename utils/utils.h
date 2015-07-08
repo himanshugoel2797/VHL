@@ -7,6 +7,8 @@ size_t strlen(const char *str);
 char* memstr(char *string, SceUInt len, char *pat, SceUInt patlen);
 void* memcpy(void * dst, const void * src, size_t len);
 void* memset(void * s, int c, size_t n);
-int strcpy(const char *dst, const char *src);
+int strcpy(char *dst, const char *src);
+int substr(char *dst, const char *src, int start, size_t len);
+int strcat(char *dst, const char *src, size_t copyLen);
 
 #endif
