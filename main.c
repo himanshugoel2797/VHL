@@ -54,7 +54,7 @@ _start(UVL_Context *ctx)
                 internal_printf("Load failed!");
                 return -1;
         }
-        internal_printf("Load succeeded! Launching!");
+        calls.LogLine("Load succeeded! Launching!");
 
         elf_parser_start(&calls, 0, 0);
 

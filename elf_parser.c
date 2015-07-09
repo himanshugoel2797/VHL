@@ -575,18 +575,15 @@ int homebrew_thread_entry(int argc, int *argv)
         strcpy(tmp, allocatedBlocks[curSlot].path);
 
         //TODO start managing resources for this
-        int retVal = allocatedBlocks[curSlot].entryPoint(1, &tmp);
+        int retVal = allocatedBlocks[curSlot].entryPoint(0, NULL);
         //TODO stop managing and clear all resources
 
         calls->sceKernelExitDeleteThread(retVal);
-        return 0;
+        return retVal;
 }
 
 int elf_parser_start(VHLCalls *calls, int curSlot, int wait)
 {
-        char tmp[512];
-        strcpy(tmp, allocatedBlocks[curSlot].path);
-
         int hb_tid[2];
         hb_tid[0] = curSlot;
         hb_tid[1] = (int)calls;
@@ -599,13 +596,10 @@ int elf_parser_start(VHLCalls *calls, int curSlot, int wait)
         calls->LockMem();
 
         int exitStatus = 0;
+        int *delay = &wait;
+        if(wait < 0) delay = NULL;
 
-        while(!wait)
-        {
-                calls->sceKernelDelayThread(16000); //Delay for 16 ms
-                //TODO devise a way to determine the homebrew state
-                wait = (wait > 0) ? wait-16 : wait;
-        }
+        calls->sceKernelWaitThreadEnd(tid, &exitStatus, delay);
 
         return exitStatus;
 }

@@ -203,11 +203,17 @@ mini_snprintf(char* buffer, unsigned int buffer_len, char *fmt, ...)
 
 int internal_printf(const char* fmt, ...)
 {
+	#ifdef DEBUG
 								char buffer[INTERNAL_PRINTF_MAX_LENGTH];
+	#endif
 								va_list va;
 								va_start(va, fmt);
+	#ifdef DEBUG
 								mini_vsnprintf(buffer, INTERNAL_PRINTF_MAX_LENGTH, fmt, va);
+	#endif
 								va_end(va);
+	#ifdef DEBUG
 								logLine(buffer);
+	#endif
 								return 0;
 }

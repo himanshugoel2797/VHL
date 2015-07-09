@@ -49,6 +49,7 @@ typedef struct {
         int (*sceKernelDelayThread)(SceUInt);
         int (*sceKernelGetThreadId)();
         int (*sceKernelGetThreadInfo)(SceUID, SceKernelThreadInfo*);
+        int (*sceKernelGetThreadExitStatus)(SceUID, int*);
         int (*sceKernelDeleteThread)(SceUID);
         int (*sceKernelStartThread)(SceUID, SceSize, void *);
         int (*sceKernelWaitThreadEnd)(SceUID, SceInt*, SceUInt*);
@@ -80,6 +81,7 @@ typedef enum
         SCE_KERNEL_GET_THREAD_INFO = 2375832673,
         SCE_KERNEL_DELETE_THREAD = 465429465,
         SCE_KERNEL_WAIT_THREAD_END = 3719533993,
+        SCE_KERNEL_GET_THREAD_EXITSTATUS = 3587974852,
 
         SCE_IO_OPEN = 1818274913,
         SCE_IO_CLOSE = 3339421830,

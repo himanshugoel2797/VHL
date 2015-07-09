@@ -7,13 +7,13 @@
 
 typedef SceUInt SceNID;
 
-#ifdef DEBUG
+//#ifdef DEBUG
         #define DEBUG_LOG(x, ...) internal_printf(x, __VA_ARGS__)
-        #define DEBUG_LOG_(x) internal_printf(x);
-#else
-        #define DEBUG_LOG(...)
-        #define DEBUG_LOG_(x)
-#endif
+        #define DEBUG_LOG_(x) internal_printf(x)
+//#else
+//        #define DEBUG_LOG(...)
+//        #define DEBUG_LOG_(x)
+//#endif
 
 
 #endif

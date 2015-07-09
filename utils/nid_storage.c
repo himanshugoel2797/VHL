@@ -15,6 +15,7 @@ int nid_storage_initialize(VHLCalls *calls)
         return 0;
 }
 
+__attribute__((hot))
 int nid_storage_addEntry(VHLCalls *calls, nidTable_entry *entry)
 {
         int key = (char)(entry->nid >> 24);
@@ -22,8 +23,8 @@ int nid_storage_addEntry(VHLCalls *calls, nidTable_entry *entry)
         {
                 if(nid_storage_table[i].nid == 0 || nid_storage_table[i].nid == entry->nid) { //Search for empty spot to add entry or update duplicate
 
+                        //DEBUG_LOG("Entry %d", i);
                         calls->UnlockMem();
-
                         //Make sure that the next entry is only cleared if we aren't overwriting an existing entry
                         if(nid_storage_table[i].nid != entry->nid && i + 1 < (key + 1) * NID_STORAGE_MAX_BUCKET_ENTRIES) nid_storage_table[i + 1].nid = 0;
 
@@ -39,6 +40,7 @@ int nid_storage_addEntry(VHLCalls *calls, nidTable_entry *entry)
         return -1;
 }
 
+__attribute__((hot))
 int nid_storage_getEntry(SceNID nid, nidTable_entry *entry)
 {
         int key = (char)(nid >> 24);
@@ -55,6 +57,7 @@ int nid_storage_getEntry(SceNID nid, nidTable_entry *entry)
         return -1;
 }
 
+__attribute__((hot))
 int nid_storage_addHookEntry(VHLCalls *calls, nidTable_entry *entry)
 {
 
@@ -75,6 +78,7 @@ int nid_storage_addHookEntry(VHLCalls *calls, nidTable_entry *entry)
         return -1;
 }
 
+__attribute__((hot))
 int nid_storage_getHookEntry(SceNID nid, nidTable_entry *entry)
 {
         int key = (char)(nid >> 24);

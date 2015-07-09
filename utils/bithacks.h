@@ -8,6 +8,14 @@
 #ifndef BITHACKS_H
 #define BITHACKS_H
 
+
+static inline int align(int x, int n) {
+  return (((x >> n) + 1) << n );
+}
+
+#define FOUR_KB_ALIGN(x) align(x, 12)
+#define MB_ALIGN(x) align(x, 20)
+
 #define HEXIFY(X) 0x ## X ## LU
 
 #define B_JOIN(a, b, shift) (a | (b << shift))

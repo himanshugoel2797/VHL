@@ -1,6 +1,6 @@
 #include "nid_table.h"
 
-
+__attribute__((hot))
 int nid_table_analyzeStub(void *stub, SceNID nid, nidTable_entry *entry)
 {
         entry->nid = nid;
@@ -61,18 +61,19 @@ int nid_table_isValidModuleInfo(SceModuleInfo *m_info)
         return 1;
 }
 
+__attribute__((hot))
 int nid_table_resolveFromModule(VHLCalls *calls, SceLoadedModuleInfo *target)
 {
         nidTable_entry entry;
         DEBUG_LOG_("Searching for module info");
         SceModuleInfo *orig_mod_info = nid_table_findModuleInfo(target->segments[0].vaddr, target->segments[0].memsz, target->module_name);
+        DEBUG_LOG_("Found");
         if(orig_mod_info != NULL) {
 
                 //Build entries from export table
                 SceUInt base_orig = (SceUInt)orig_mod_info - orig_mod_info->ent_top + sizeof(SceModuleInfo);
                 SceModuleExports *exportTable_orig = (SceModuleExports*)(base_orig + orig_mod_info->ent_top);
 
-                calls->UnlockMem();
                 for(; (SceUInt)exportTable_orig < (SceUInt)(base_orig + orig_mod_info->ent_end); exportTable_orig++)
                 {
                         for(int i = 0; i < exportTable_orig->num_functions; i++)
@@ -81,7 +82,6 @@ int nid_table_resolveFromModule(VHLCalls *calls, SceLoadedModuleInfo *target)
                                 if(entry.nid != 0) nid_storage_addEntry(calls, &entry);
                         }
                 }
-                calls->LockMem();
                 DEBUG_LOG_("Exports resolved");
                 //NOTE: The problem is somewhere here
 
@@ -114,7 +114,6 @@ int nid_table_resolveFromModule(VHLCalls *calls, SceLoadedModuleInfo *target)
 
                         //Check the export tables to see if the NID is present
                         //If so assign the respective pointer to functionPtrLocation
-                        calls->UnlockMem();
                         FOREACH_IMPORT(base_orig, orig_mod_info, importTable_orig)
                         {
                                 void **entryTable = GET_FUNCTIONS_ENTRYTABLE(importTable_orig);
@@ -140,7 +139,6 @@ int nid_table_resolveFromModule(VHLCalls *calls, SceLoadedModuleInfo *target)
 
                                 importTable_l = GET_NEXT_IMPORT(importTable_l);
                         }
-                        calls->LockMem();
                         DEBUG_LOG_("NID cache updated");
                 }
 
@@ -182,6 +180,7 @@ SceModuleInfo* nid_table_findModuleInfo(void* location, SceUInt size, char* libn
         //Find the module info string in this memory region
         while(size > 0)
         {
+                DEBUG_LOG_("test");
                 location = memstr(location, size, libname, strlen(libname));
                 if(location == NULL)
                 {
@@ -203,6 +202,7 @@ SceModuleInfo* nid_table_findModuleInfo(void* location, SceUInt size, char* libn
         return moduleInfo;
 }
 
+__attribute__((hot))
 int nid_table_addNIDCacheToTable(VHLCalls *calls, void *libraryBase)
 {
         SceModuleInfo *moduleInfo = nid_table_findModuleInfo(libraryBase, KERNEL_MODULE_SIZE, "SceLibKernel");
@@ -232,19 +232,19 @@ int nid_table_addNIDCacheToTable(VHLCalls *calls, void *libraryBase)
 int nid_table_resolveImportFromNID(VHLCalls *calls, SceUInt *functionPtrLocation, SceNID nid, void *libraryBase, char* libName)
 {
 
-        if(libName != NULL)DEBUG_LOG("Searching for NID 0x%08x in module %s", nid, libName);
+        if(libName != NULL) DEBUG_LOG("Searching for NID 0x%08x in module %s", nid, libName);
 
-        calls->UnlockMem();
         //Check the cache if it's ready
         DEBUG_LOG_("Searching NID database...");
         nidTable_entry entry;
         if(nid_storage_getEntry(nid, &entry) >= 0) {
+                calls->UnlockMem();
                 *functionPtrLocation = (SceUInt)entry.stub_loc;
                 calls->LockMem();
                 return 0;
         }
 
-        if(libraryBase == NULL | libName == NULL)return -1;
+        if(libraryBase == NULL | libName == NULL) return -1;
 
         //Find the module info struct
         SceModuleInfo *moduleInfo = nid_table_findModuleInfo(libraryBase, KERNEL_MODULE_SIZE, libName);
@@ -259,6 +259,7 @@ int nid_table_resolveImportFromNID(VHLCalls *calls, SceUInt *functionPtrLocation
                         if(exportTable->nid_table[i] == nid) {
                                 //Found the nid
                                 DEBUG_LOG_("Match found!");
+                                calls->UnlockMem();
                                 *functionPtrLocation = (SceUInt)exportTable->entry_table[i];
                                 calls->LockMem();
                                 return 0;
@@ -278,6 +279,7 @@ int nid_table_resolveImportFromNID(VHLCalls *calls, SceUInt *functionPtrLocation
                 {
                         if(nids[i] == nid) {
                                 DEBUG_LOG_("Match found!");
+                                calls->UnlockMem();
                                 *functionPtrLocation = (SceUInt)entryTable[i];
                                 calls->LockMem();
                                 return 0;
@@ -431,6 +433,11 @@ int nid_table_resolveVHLImports(UVL_Context *ctx, VHLCalls *calls)
                                                      libKernelBase.value.function, "SceLibKernel");
                 if(err < 0) return -1;
 
+                err = nid_table_resolveImportFromNID(calls, (SceUInt*)&calls->sceKernelGetThreadExitStatus,
+                                                     SCE_KERNEL_GET_THREAD_EXITSTATUS,
+                                                     libKernelBase.value.function, "SceLibKernel");
+                if(err < 0) return -1;
+
 
                 return 0;
         }
@@ -439,8 +446,6 @@ int nid_table_resolveVHLImports(UVL_Context *ctx, VHLCalls *calls)
 
 int nid_table_exportFunc(VHLCalls *calls, void *target, SceNID nid)
 {
-        calls->UnlockMem();
-
         nidTable_entry entry;
         entry.nid = nid;
         entry.type = ENTRY_TYPES_FUNCTION;
@@ -449,10 +454,10 @@ int nid_table_exportFunc(VHLCalls *calls, void *target, SceNID nid)
 
         nid_storage_addEntry(calls, &entry);
 
-        calls->LockMem();
         return 0;
 }
 
+__attribute__((hot))
 int nid_table_resolveStub(VHLCalls *calls, int priority, void *stub, SceNID nid)
 {
         nidTable_entry entry;

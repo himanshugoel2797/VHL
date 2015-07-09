@@ -6,13 +6,7 @@
 #include "elf_headers.h"
 #include "exports.h"
 #include "nid_table.h"
-
-static inline int align(int x, int n) {
-  return (((x >> n) + 1) << n );
-}
-
-#define FOUR_KB_ALIGN(x) align(x, 12)
-#define MB_ALIGN(x) align(x, 20)
+#include "utils/bithacks.h"
 
 typedef struct {
         void *data_mem_loc;
