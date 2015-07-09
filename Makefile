@@ -1,5 +1,5 @@
 CC=arm-none-eabi-gcc
-CFLAGS=-fPIE -fno-zero-initialized-in-bss -std=c99 -mcpu=cortex-a9 -D DEBUG -D PSV_3XX -mthumb-interwork -I$(PSP2SDK)/include
+CFLAGS=-specs=psp2.specs -fPIE -fno-zero-initialized-in-bss -std=c99 -D DEBUG -D PSV_3XX -mthumb-interwork
 CFLAGS_THUMB=-mthumb
 LD=arm-none-eabi-gcc
 LDFLAGS=-T linker.x -nodefaultlibs -nostdlib -pie
