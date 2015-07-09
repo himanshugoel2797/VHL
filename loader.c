@@ -24,6 +24,11 @@ int loader_loadExec(const char *path, const char *argv[], void *opt)
 
 int loader_loadHomebrew(const char *path, int slot)
 {
+    return loader_loadHomebrew(path, 1);
+}
+
+int loader_loadHomebrew(const char *path, int slot)
+{
         int (*load)(VHLCalls*, int, int, const char*, void**) = ((SceUInt)&elf_parser_load + vhl->loadAddress); //Offset is correct, jump still crashes
         return load(vhl, 1, slot, path, NULL);
 }
