@@ -1,5 +1,5 @@
 CC=arm-none-eabi-gcc
-CFLAGS=-specs=psp2.specs -fPIE -fno-zero-initialized-in-bss -std=c99 -D NO_CONSOLE_OUT -D PSV_3XX -mthumb-interwork
+CFLAGS=-specs=psp2.specs -fPIE -fno-zero-initialized-in-bss -std=c99 -DDEBUG -DNO_CONSOLE_OUT -DPSV_3XX -mthumb-interwork
 CFLAGS_THUMB=-mthumb
 LD=arm-none-eabi-gcc
 LDFLAGS=-T linker.x -nodefaultlibs -nostdlib -pie

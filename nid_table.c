@@ -286,8 +286,6 @@ int nid_table_resolveImportFromNID(VHLCalls *calls, SceUInt *functionPtrLocation
                         }
                 }
         }
-
-        calls->LockMem();
         DEBUG_LOG("Failed to find import NID 0x%08x in imports for %s", nid, libName);
 
         return -1;

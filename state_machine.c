@@ -40,12 +40,15 @@ int sceDisplayWaitVblankStart_hook()
         int exitMask = config_getIntValue(VARIABLE_EXIT_MASK);
         int suspendMask = config_getIntValue(VARIABLE_SUSPEND_MASK);
 
-        if(pad.buttons & suspendMask == suspendMask) {
+        if(suspendMask != 0 && pad.buttons == suspendMask) {
                 //suspend the homebrew
                 DEBUG_LOG_("Suspend Triggered");
-        }else if(pad.buttons & exitMask == exitMask) {
+        }
+        if(exitMask != 0 && pad.buttons == exitMask) {
                 //Kill the homebrew
                 DEBUG_LOG_("Exit Triggered");
+                vhl->sceKernelExitDeleteThread(0);
+                return 0;
         }
         return vblank_wait_start();
 }
