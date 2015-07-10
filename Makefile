@@ -10,14 +10,16 @@ TARGET=VHL
 
 OBJ=main.o nid_table.o arm_tools.o loader.o nidcache.o nidcache3xx.o elf_parser.o exports.o config.o state_machine.o utils/nid_storage.o utils/utils.o utils/mini-printf.o
 
-all: $(TARGET)
+all: $(TARGET).bin
 
 %.o: %.c
 	$(CC) -c -o $@ $< $(CFLAGS) $(CFLAGS_THUMB)
 
+$(TARGET).bin: $(TARGET)
+	$(OBJCOPY) -O binary $< $@
+
 $(TARGET): $(OBJ)
 	$(LD) -o $@ $^ $(LDFLAGS)
-	$(OBJCOPY) -O binary $@ $@.bin
 
 .PHONY: clean
 
