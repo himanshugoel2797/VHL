@@ -1,3 +1,21 @@
+/*
+   main.c : Initializes the loader and launches the menu
+   Copyright (C) 2015  hgoel0974
+
+   This program is free software; you can redistribute it and/or modify
+   it under the terms of the GNU General Public License as published by
+   the Free Software Foundation; either version 3 of the License, or
+   (at your option) any later version.
+
+   This program is distributed in the hope that it will be useful,
+   but WITHOUT ANY WARRANTY; without even the implied warranty of
+   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+   GNU General Public License for more details.
+
+   You should have received a copy of the GNU General Public License
+   along with this program; if not, write to the Free Software Foundation,
+   Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301  USA
+ */
 #include <psp2/types.h>
 #include <psp2/kernel/threadmgr.h>
 #include <psp2/kernel/memorymgr.h>
@@ -7,7 +25,6 @@
 #include "elf_parser.h"
 #include "exports.h"
 #include "state_machine.h"
-#include "hbrew_resource_manager/resource_manager.h"
 
 static VHLCalls calls;
 
@@ -45,7 +62,6 @@ _start(UVL_Context *ctx)
         exports_initialize(&calls);
         config_initialize(&calls);
         loader_initialize(&calls);
-        resource_manager_initialize(&calls);
         state_machine_initialize(&calls);
 
         DEBUG_LOG_("Loading menu...");

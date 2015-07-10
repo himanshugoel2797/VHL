@@ -1,3 +1,21 @@
+/*
+   loader.c : Wraps calls to load and launch elfs
+   Copyright (C) 2015  hgoel0974
+
+   This program is free software; you can redistribute it and/or modify
+   it under the terms of the GNU General Public License as published by
+   the Free Software Foundation; either version 3 of the License, or
+   (at your option) any later version.
+
+   This program is distributed in the hope that it will be useful,
+   but WITHOUT ANY WARRANTY; without even the implied warranty of
+   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+   GNU General Public License for more details.
+
+   You should have received a copy of the GNU General Public License
+   along with this program; if not, write to the Free Software Foundation,
+   Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301  USA
+ */
 #include "loader.h"
 
 static VHLCalls *vhl;
@@ -10,8 +28,6 @@ int loader_initialize(VHLCalls *calls)
         currentHomebrew = 0;
         calls->LockMem();
 
-        nid_table_exportFunc(calls, loader_loadHomebrew, HOMEBREW_LOAD_NID);
-        nid_table_exportFunc(calls, loader_startHomebrew, HOMEBREW_START_NID);
         nid_table_exportFunc(calls, loader_loadExec, LOAD_EXEC);
 
         return 0;
@@ -19,24 +35,10 @@ int loader_initialize(VHLCalls *calls)
 
 int loader_loadExec(const char *path, const char *argv[], void *opt)
 {
-    return loader_loadHomebrew(path, 1);
-}
-
-int loader_loadHomebrew(const char *path, int slot)
-{
-        int (*load)(VHLCalls*, int, int, const char*, void**) = ((SceUInt)&elf_parser_load + vhl->loadAddress); //Offset is correct, jump still crashes
-        return load(vhl, 1, slot, path, NULL);
-}
-
-int loader_startHomebrew(int slot)
-{
-        vhl->UnlockMem();
-        currentHomebrew = slot;
-        vhl->LockMem();
-        return elf_parser_start(vhl, slot, -1); //Wait endlessly until homebrew exit or suspend
+        //TODO implement this properly
 }
 
 int loader_exitHomebrew(int errorCode)
 {
-      return errorCode;
+        return errorCode;
 }
