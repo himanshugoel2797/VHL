@@ -1,28 +1,22 @@
-CC=arm-none-eabi-gcc
-CFLAGS=-specs=psp2.specs -fPIE -fno-zero-initialized-in-bss -std=c99 -DDEBUG -DNO_CONSOLE_OUT -DPSV_3XX -mthumb-interwork
-CFLAGS_THUMB=-mthumb
-LD=arm-none-eabi-gcc
-LDFLAGS=-T linker.x -nodefaultlibs -nostdlib -pie
-OBJCOPY=arm-none-eabi-objcopy
-OBJCOPYFLAGS=
+CC	:= arm-none-eabi-gcc
+OBJCOPY	:= arm-none-eabi-objcopy
 
-TARGET=VHL
+CFLAGS	:= -specs=psp2.specs -fPIE -fno-zero-initialized-in-bss -std=c99 -DDEBUG -D NO_CONSOLE_OUT -D PSV_3XX -mthumb -mthumb-interwork
+LDFLAGS	:= -T linker.x -nodefaultlibs -nostdlib -pie
 
-OBJ=main.o nid_table.o arm_tools.o loader.o nidcache.o nidcache3xx.o elf_parser.o exports.o config.o state_machine.o utils/nid_storage.o utils/utils.o utils/mini-printf.o
+TARGET	:= VHL
 
-all: $(TARGET)
+OBJS	:= main.o nid_table.o arm_tools.o loader.o nidcache.o nidcache3xx.o	\
+	elf_parser.o exports.o config.o state_machine.o	\
+	utils/nid_storage.o utils/utils.o utils/mini-printf.o
 
-%.o: %.c
-	$(CC) -c -o $@ $< $(CFLAGS) $(CFLAGS_THUMB)
+all: $(TARGET).bin
 
-$(TARGET): $(OBJ)
-	$(LD) -o $@ $^ $(LDFLAGS)
-	$(OBJCOPY) -O binary $@ $@.bin
-	cp $(TARGET).bin C:\Users\Himanshu\Documents\Vita\rejuvenate-0.2.1-beta\vhl.bin
+$(TARGET).bin: $(TARGET)
+	$(OBJCOPY) -O binary $< $@
 
-.PHONY: clean
+$(TARGET): $(OBJS)
+	$(CC) -o $@ $^ $(LDFLAGS)
 
 clean:
-	rm -rf *.o *.elf *.bin *.s $(TARGET)
-	cd utils && rm -rf *.o
-	cd hbrew_resource_manager && rm -rf *.o
+	rm -f $(OBJS) $(TARGET) $(TARGET).bin
