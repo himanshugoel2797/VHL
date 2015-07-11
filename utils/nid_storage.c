@@ -47,9 +47,8 @@ int nid_storage_addEntry(VHLCalls *calls, nidTable_entry *entry)
                         if(nid_storage_table[i].nid != entry->nid && i + 1 < (key + 1) * NID_STORAGE_MAX_BUCKET_ENTRIES) nid_storage_table[i + 1].nid = 0;
 
                         nid_storage_table[i].nid = entry->nid;
-                        nid_storage_table[i].stub_loc = entry->stub_loc;
                         nid_storage_table[i].type = entry->type;
-                        nid_storage_table[i].value.location = entry->value.location;
+                        nid_storage_table[i].value.i = entry->value.i;
                         calls->LockMem();
                         return 0;
                 }
@@ -66,9 +65,8 @@ int nid_storage_getEntry(SceNID nid, nidTable_entry *entry)
         {
                 if(nid_storage_table[i].nid == nid) {
                         entry->nid = nid_storage_table[i].nid;
-                        entry->stub_loc = nid_storage_table[i].stub_loc;
                         entry->type = nid_storage_table[i].type;
-                        entry->value.location = nid_storage_table[i].value.location;
+                        entry->value.i = nid_storage_table[i].value.i;
                         return 0;
                 }
         }
@@ -85,9 +83,8 @@ int nid_storage_addHookEntry(VHLCalls *calls, nidTable_entry *entry)
                 if(nid_storage_table_hooks[i].nid == 0) {   //Search for empty spot to add entry
                         calls->UnlockMem();
                         nid_storage_table_hooks[i].nid = entry->nid;
-                        nid_storage_table_hooks[i].stub_loc = entry->stub_loc;
                         nid_storage_table_hooks[i].type = entry->type;
-                        nid_storage_table_hooks[i].value.location = entry->value.location;
+                        nid_storage_table_hooks[i].value.i = entry->value.i;
                         if(i + 1 < (key + 1) * NID_STORAGE_MAX_BUCKET_ENTRIES * NID_STORAGE_HOOK_MULTIPLIER) nid_storage_table_hooks[i + 1].nid = 0;
                         calls->LockMem();
                         return 0;
@@ -104,9 +101,8 @@ int nid_storage_getHookEntry(SceNID nid, nidTable_entry *entry)
         {
                 if(nid_storage_table_hooks[i].nid == nid) {
                         entry->nid = nid_storage_table_hooks[i].nid;
-                        entry->stub_loc = nid_storage_table_hooks[i].stub_loc;
                         entry->type = nid_storage_table_hooks[i].type;
-                        entry->value.location = nid_storage_table_hooks[i].value.location;
+                        entry->value.i = nid_storage_table_hooks[i].value.i;
                         return 0;
                 }
         }

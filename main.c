@@ -18,7 +18,6 @@
  */
 #include <psp2/types.h>
 #include <psp2/kernel/threadmgr.h>
-#include <psp2/kernel/memorymgr.h>
 #include "vhl.h"
 #include "nid_table.h"
 #include "nidcache.h"
@@ -77,7 +76,7 @@ _start(UVL_Context *ctx)
         while(1) {
                 //Delay thread and check for flags and things to update every once in a while, check for exit combination
                 //calls.LogLine("Menu exited! Relaunching...");
-                calls.sceKernelDelayThread(16000);  //Update stuff once every 16 ms
+                sceKernelDelayThread(16000);  //Update stuff once every 16 ms
         }
 
         return 0;

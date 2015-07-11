@@ -29,21 +29,18 @@ Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301  USA
 
 
 typedef enum  {
-        ENTRY_TYPES_UNKN = 0,
         ENTRY_TYPES_FUNCTION,
         ENTRY_TYPES_SYSCALL,
-        ENTRY_TYPES_VARIABLE,
-        ENTRY_TYPES_RELOC,
+        ENTRY_TYPES_VARIABLE
 }EntryTypes;
 
 //Represents an entry in the NID table
 typedef struct {
         SceNID nid;
         int type;
-        void *stub_loc;
         union {
-                void *function;
-                SceUInt location;
+                void *p;
+                SceUInt i;
         } value;
 } nidTable_entry;
 

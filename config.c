@@ -33,8 +33,8 @@ int config_initialize(void *i)
         }
         ((VHLCalls*)i)->LockMem();
 
-        nid_table_exportFunc(calls, config_getIntValue, GET_INT_VALUE);
-        nid_table_exportFunc(calls, config_setIntValue, SET_INT_VALUE);
+        nid_table_exportFunc(calls, config_getIntValue, NID_vhlGetIntValue);
+        nid_table_exportFunc(calls, config_setIntValue, NID_vhlSetIntValue);
 
         return 0;
 }

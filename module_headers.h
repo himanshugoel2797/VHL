@@ -7,7 +7,6 @@
 #define MOD_INFO_VALID_VER      0x0101
 
 #define MODULE_FILENAME_LENGTH 256
-#define SEGMENT_COUNT 4
 
 //Structs from UVLoader
 /*
@@ -83,38 +82,6 @@ typedef union
         SceModuleImports_3x new_version;
 } SceModuleImports;
 
-typedef struct
-{
-        SceUInt size;       // this structure size (0x18)
-        SceUInt perms;      // probably rwx in low bits
-        void            *vaddr;// address in memory
-        SceUInt memsz;      // size in memory
-        SceUInt flags;      // meanig unknown
-        SceUInt res;        // unused?
-} SceSegmentInfo;
-
-typedef struct
-{
-        SceUInt size;                   // 0x1B8 for Vita 1.x
-        SceUInt handle;                 // kernel module handle?
-        SceUInt flags;                  // some bits. could be priority or whatnot
-        char module_name[28];
-        SceUInt unkn_28;
-        void            *module_start;
-        SceUInt unkn_30;
-        void            *module_stop;
-        void            *exidx_start;
-        void            *exidx_end;
-        SceUInt unkn_40;
-        SceUInt unkn_44;
-        void            *tls_init_data;
-        SceUInt tls_init_size;
-        SceUInt tls_area_size;
-        char file_path[256];              //
-        SceSegmentInfo segments[SEGMENT_COUNT];
-        SceUInt type;           // 6 = user-mode PRX?
-} SceLoadedModuleInfo;
-
 typedef struct // thanks roxfan
 {
         SceUInt16 modattribute; // ??
@@ -177,7 +144,7 @@ static inline SceModuleImports* GET_NEXT_IMPORT(SceModuleImports *x){
         return (SceModuleImports*)((SceUInt)x + x->size);
 }
 
-static inline SceModuleImports* GET_FIRST_IMPORT(SceUInt base, SceModuleInfo *x){
+static inline SceModuleImports* GET_FIRST_IMPORT(SceUInt base, const SceModuleInfo *x){
         return (SceModuleImports*)(base + (SceUInt)x->stub_top);
 }
 
