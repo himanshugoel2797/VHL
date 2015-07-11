@@ -18,7 +18,6 @@
  */
 #include <psp2/types.h>
 #include <psp2/kernel/threadmgr.h>
-#include <psp2/kernel/memorymgr.h>
 #include "vhl.h"
 #include "nid_table.h"
 #include "nidcache.h"

@@ -24,7 +24,6 @@ Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301  USA
 #include <psp2/io/devctl.h>
 #include <psp2/io/dirent.h>
 #include <psp2/io/stat.h>
-#include <psp2/kernel/memorymgr.h>
 #include <psp2/kernel/threadmgr.h>
 
 #include "module_headers.h"
