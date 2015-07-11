@@ -73,6 +73,11 @@ vhlStubPrimarySizeSym = . - vhlStubTop
         STUB(sceDisplayWaitVblankStart)
         STUB(sceIoRemove)
         STUB(sceIoRename)
+        STUB(sceIoDopen)
+        STUB(sceIoRmdir)
+        //STUB(sceIoChdir)
+        STUB(sceIoGetstat)
+        STUB(sceIoChstat)
 
         .global vhlStubSecondarySizeSym
 vhlStubSecondarySizeSym = . - (vhlStubTop + vhlStubPrimarySizeSym)

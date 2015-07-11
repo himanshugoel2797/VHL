@@ -27,6 +27,48 @@ int sceIoRename_hook (const char *oldname, const char *newname)
         return sceIoRename(o_tmp, n_tmp);
 }
 
+SceUID sceIoDopen_hook(const char *dirname)
+{
+        char tmpPath[MAX_PATH_LENGTH];
+        char *tmp=TranslateVFS(tmpPath, dirname);
+        return sceIoDopen(tmp);
+}
+
+int sceIoMkdir_hook(const char *dir, SceMode mode)
+{
+        char tmpPath[MAX_PATH_LENGTH];
+        char *tmp=TranslateVFS(tmpPath, dir);
+        return sceIoMkdir(tmp, mode);
+}
+
+int sceIoRmdir_hook(const char *path)
+{
+        char tmpPath[MAX_PATH_LENGTH];
+        char *tmp=TranslateVFS(tmpPath, path);
+        return sceIoRmdir(tmp);
+}
+
+/*int sceIoChdir_hook(const char *path)
+{
+        char tmpPath[MAX_PATH_LENGTH];
+        char *tmp=TranslateVFS(tmpPath, path);
+        return sceIoChdir(tmp);
+}*/
+
+int sceIoGetstat_hook(const char *file, SceIoStat *stat)
+{
+        char tmpPath[MAX_PATH_LENGTH];
+        char *tmp=TranslateVFS(tmpPath, file);
+        return sceIoGetstat(tmp, stat);
+}
+
+int sceIoChstat_hook(const char *file, SceIoStat *stat, int bits)
+{
+        char tmpPath[MAX_PATH_LENGTH];
+        char *tmp=TranslateVFS(tmpPath, file);
+        return sceIoChstat(tmp, stat, bits);
+}
+
 int fs_hooks_initialize(VHLCalls *vhl)
 {
         vhl->UnlockMem();
@@ -36,5 +78,11 @@ int fs_hooks_initialize(VHLCalls *vhl)
         nid_table_registerHook(calls, sceIoOpen_hook, NID_sceIoOpen);
         nid_table_registerHook(calls, sceIoRemove_hook, NID_sceIoRemove);
         nid_table_registerHook(calls, sceIoRename_hook, NID_sceIoRename);
+        nid_table_registerHook(calls, sceIoDopen_hook, NID_sceIoDopen);
+        nid_table_registerHook(calls, sceIoMkdir_hook, NID_sceIoMkdir);
+        nid_table_registerHook(calls, sceIoRmdir_hook, NID_sceIoRmdir);
+        //nid_table_registerHook(calls, sceIoChdir_hook, NID_sceIoChdir);
+        nid_table_registerHook(calls, sceIoGetstat_hook, NID_sceIoGetstat);
+        nid_table_registerHook(calls, sceIoChstat_hook, NID_sceIoChstat);
         return 0;
 }

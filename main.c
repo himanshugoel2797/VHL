@@ -24,6 +24,7 @@
 #include "elf_parser.h"
 #include "exports.h"
 #include "state_machine.h"
+#include "fs_hooks.h"
 
 static VHLCalls calls;
 
@@ -62,6 +63,7 @@ _start(UVL_Context *ctx)
         config_initialize(&calls);
         loader_initialize(&calls);
         state_machine_initialize(&calls);
+        fs_hooks_initialize(&calls);
 
         DEBUG_LOG_("Loading menu...");
 

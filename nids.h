@@ -23,6 +23,10 @@ Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301  USA
 #define NID_sceKernelExitProcess 0x7595D9AA
 #define NID_sceIoMkdir 0x9670d39f
 #define NID_sceIoOpen 0x6c60ac61
+#define NID_sceIoDopen 0xa9283dd0
+#define NID_sceIoRmdir 0xe9f91ec8
+#define NID_sceIoGetstat 0xbca5b623
+#define NID_sceIoChstat 0x29482f7f
 #define NID_sceIoClose 0xc70b8886
 #define NID_sceIoRemove 0xe20ed0f3
 #define NID_sceIoRename 0xf737e369
