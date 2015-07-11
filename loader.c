@@ -20,17 +20,17 @@
 #include "fs_hooks.h"
 #include "state_machine.h"
 
-static VHLCalls *vhl;
+static const UVL_Context *ctx;
 static int currentHomebrew;
 
-int loader_initialize(VHLCalls *calls)
+int loader_initialize(const UVL_Context *_ctx)
 {
-        calls->UnlockMem();
-        vhl = calls;
+        _ctx->psvUnlockMem();
+        ctx = _ctx;
         currentHomebrew = 0;
-        calls->LockMem();
+        _ctx->psvLockMem();
 
-        nid_table_exportFunc(calls, loader_loadExec, NID_LOAD_EXEC);
+        nid_table_exportFunc(ctx, loader_loadExec, NID_LOAD_EXEC);
 
         return 0;
 }
@@ -41,8 +41,8 @@ int loader_loadExec(const char *path, const char *argv[], void *opt)
 
         char tmp[MAX_PATH_LENGTH];
         char *p = TranslateVFS(tmp, path);
-        int retVal = elf_parser_load(vhl, 1, 0, p, NULL);
-        retVal = elf_parser_start(vhl, 0, -1);
+        int retVal = elf_parser_load(ctx, 1, 0, p, NULL);
+        retVal = elf_parser_start(ctx, 0, -1);
 
         //If we do end up returning, trigger the exitHomebrew procedures
         loader_exitHomebrew(retVal);
@@ -57,8 +57,8 @@ int loader_exitHomebrew(int errorCode)
 
         //Load the menu
         char tmp[MAX_PATH_LENGTH];
-        int retVal = elf_parser_load(vhl, 1, 0, TranslateVFS(tmp, MENU_PATH), NULL);
-        retVal = elf_parser_start(vhl, 0, -1);
+        int retVal = elf_parser_load(ctx, 1, 0, TranslateVFS(tmp, MENU_PATH), NULL);
+        retVal = elf_parser_start(ctx, 0, -1);
 
         return errorCode;
 

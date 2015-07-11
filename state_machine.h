@@ -25,7 +25,7 @@ Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301  USA
 #define MAX_THREAD_COUNT 128
 #define MAX_OTHER_OBJECT_COUNT 2048 //Max number of Mutex, Semaphore, Event flags, Condition variables, ReadWrite locks, lightweight mutex, lightweight condition variable, events, message pipes, timers, memory blocks
 
-int state_machine_initialize(VHLCalls *calls);
+int state_machine_initialize(const UVL_Context *ctx);
 int state_machine_pollControls();
 int state_machine_checkState();
 

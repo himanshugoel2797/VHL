@@ -26,7 +26,6 @@ typedef struct {
         SceUInt count;
 } NID_CACHE;
 
-int nidCacheInitialize(VHLCalls *calls);
 int nidCacheContainsModuleNID(SceNID nid, int *offset);
 
 NID_CACHE* nidCache_getHeader();

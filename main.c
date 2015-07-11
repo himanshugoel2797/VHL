@@ -26,54 +26,49 @@
 #include "state_machine.h"
 #include "fs_hooks.h"
 
-static VHLCalls calls;
+static UVL_Context ctx;
 
 int __attribute__ ((section (".text.start")))
-_start(UVL_Context *ctx)
+_start(UVL_Context *_ctx)
 {
-        ctx->logline("Starting VHL...");
+        _ctx->logline("Starting VHL...");
 
         //Initialize VHLCalls
-        ctx->psvUnlockMem();
-        calls.AllocCodeMem = ctx->psvCodeAllocMem;
-        calls.UnlockMem = ctx->psvUnlockMem;
-        calls.LockMem = ctx->psvLockMem;
-        calls.FlushICache = ctx->psvFlushIcache;
-        calls.LogLine = ctx->logline;
-        ctx->psvLockMem();
+        _ctx->psvUnlockMem();
+        memcpy(&ctx, _ctx, sizeof(UVL_Context));
+        _ctx->psvLockMem();
 
         DEBUG_LOG_("Initializing VHL...");
         DEBUG_LOG_("Bootstrapping...");
-        nidCacheInitialize(&calls);
 
-        int err = nid_table_resolveVHLImports(ctx, &calls);
+        int err = nid_table_resolveVHLImports(&ctx);
         if(err < 0) {
-                calls.LogLine("Failed to resolve some functions... VHL will not work...");
+                ctx.logline("Failed to resolve some functions... VHL will not work...");
                 return -1;
         }
 
         //TODO find a way to free unused memory
 
-        block_manager_initialize(&calls);  //Initialize the elf block slots
+        block_manager_initialize(&ctx);  //Initialize the elf block slots
 
         //TODO decide how to handle plugins
 
-        exports_initialize(&calls);
-        config_initialize(&calls);
-        loader_initialize(&calls);
-        state_machine_initialize(&calls);
-        fs_hooks_initialize(&calls);
+        exports_initialize(&ctx);
+        config_initialize(&ctx);
+        loader_initialize(&ctx);
+        state_machine_initialize(&ctx);
+        fs_hooks_initialize(&ctx);
 
         DEBUG_LOG("Delete All: 0x%08x", sceKernelDeleteThread(0xfffffff0));
         DEBUG_LOG_("Loading menu...");
 
-        if(elf_parser_load(&calls, 1, 0, "pss0:/top/Documents/homebrew.self", NULL) < 0) {
+        if(elf_parser_load(&ctx, 1, 0, "pss0:/top/Documents/homebrew.self", NULL) < 0) {
                 internal_printf("Load failed!");
                 return -1;
         }
-        calls.LogLine("Load succeeded! Launching!");
+        ctx.logline("Load succeeded! Launching!");
 
-        elf_parser_start(&calls, 0, 0);
+        elf_parser_start(&ctx, 0, 0);
 
         while(1) {
                 //Delay thread and check for flags and things to update every once in a while, check for exit combination
@@ -86,5 +81,5 @@ _start(UVL_Context *ctx)
 
 void logLine(const char *str)
 {
-        calls.LogLine(str);
+        ctx.logline(str);
 }

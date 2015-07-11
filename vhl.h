@@ -30,15 +30,6 @@ Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301  USA
 #include "common.h"
 
 typedef struct {
-        //UVL context calls
-        void* (*AllocCodeMem)(SceUInt*);
-        void (*UnlockMem)();
-        void (*LockMem)();
-        void (*FlushICache)(void*, SceUInt);
-        int (*LogLine)(const char*);
-} VHLCalls;
-
-typedef struct {
         void* (*psvCodeAllocMem)(unsigned int *p_len); ///< Allocate code block
         void (*psvUnlockMem)(void);                ///< Unlock code block
         void (*psvLockMem)(void);                  ///< Relock code block

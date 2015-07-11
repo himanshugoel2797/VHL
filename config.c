@@ -21,20 +21,20 @@
 #include "nid_table.h"
 #include "nids.h"
 
-static VHLCalls *calls;
+static const UVL_Context *ctx;
 static int intOptions[INT_VARIABLE_OPTION_COUNT];
 
-int config_initialize(void *i)
+int config_initialize(const UVL_Context *_ctx)
 {
-        ((VHLCalls*)i)->UnlockMem();
-        calls = ((VHLCalls*)i);
+        _ctx->psvUnlockMem();
+        ctx = _ctx;
         for(int j = 0; j < INT_VARIABLE_OPTION_COUNT; j++) {
                 intOptions[j] = 0;
         }
-        ((VHLCalls*)i)->LockMem();
+        _ctx->psvLockMem();
 
-        nid_table_exportFunc(calls, config_getIntValue, NID_vhlGetIntValue);
-        nid_table_exportFunc(calls, config_setIntValue, NID_vhlSetIntValue);
+        nid_table_exportFunc(ctx, config_getIntValue, NID_vhlGetIntValue);
+        nid_table_exportFunc(ctx, config_setIntValue, NID_vhlSetIntValue);
 
         return 0;
 }
@@ -46,9 +46,9 @@ int config_getIntValue(INT_VARIABLE_OPTIONS option)
 
 int config_setIntValue(INT_VARIABLE_OPTIONS option, int val)
 {
-        calls->UnlockMem();
+        ctx->psvUnlockMem();
         intOptions[option - 1] = val;
-        calls->LockMem();
+        ctx->psvLockMem();
         DEBUG_LOG("Option %08x Set to %08x ", option, val);
         return val;
 }

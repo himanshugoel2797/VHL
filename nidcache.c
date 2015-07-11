@@ -22,12 +22,6 @@ Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301  USA
 #endif
 #include "nidcache.h"
 
-int nidCacheInitialize(VHLCalls *calls){
-        calls->UnlockMem();
-        calls->LockMem();
-        return 0;
-}
-
 int nidCacheContainsModuleNID(SceNID nid, int *offset)
 {
         int off = 0;
