@@ -16,15 +16,14 @@ You should have received a copy of the GNU General Public License
 along with this program; if not, write to the Free Software Foundation,
 Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301  USA
 */
-#include "nidcache.h"
 
-static SceUInt libkernel_nid_cache_header;
-static SceUInt libkernel_nid_cache;
+#if defined(PSV_3XX)
+#include "nidcache3xx.c"
+#endif
+#include "nidcache.h"
 
 int nidCacheInitialize(VHLCalls *calls){
         calls->UnlockMem();
-        libkernel_nid_cache_header = ( calls->loadAddress + (SceUInt)libkernel_nid_cache_header_);
-        libkernel_nid_cache = ( calls->loadAddress + (SceUInt)libkernel_nid_cache_);
         calls->LockMem();
         return 0;
 }

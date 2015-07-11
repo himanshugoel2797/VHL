@@ -35,7 +35,6 @@ _start(UVL_Context *ctx)
 
         //Initialize VHLCalls
         ctx->psvUnlockMem();
-        calls.loadAddress = (SceUInt)&_start & ~1;
         calls.AllocCodeMem = ctx->psvCodeAllocMem;
         calls.UnlockMem = ctx->psvUnlockMem;
         calls.LockMem = ctx->psvLockMem;

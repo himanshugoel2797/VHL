@@ -47,7 +47,6 @@ static SceUID allocCodeMem(int size)
 int exports_initialize(VHLCalls *calls)
 {
         calls->UnlockMem();
-        func_calls.loadAddress = calls->loadAddress;
         func_calls.AllocCodeMem = calls->AllocCodeMem;
         func_calls.FlushICache = calls->FlushICache;
         func_calls.UnlockMem = calls->UnlockMem;

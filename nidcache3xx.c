@@ -1,7 +1,6 @@
 #include "nidcache.h"
 
-#if defined(PSV_3XX)
-const NID_CACHE libkernel_nid_cache_header_[] = {
+const NID_CACHE libkernel_nid_cache_header[] = {
     {0x37FE725A, 4},  // SceSysmem
     {0x859A24B1, 98}, // SceThreadmgr
     {0xEAED1616, 12}, // SceModulemgr
@@ -10,7 +9,7 @@ const NID_CACHE libkernel_nid_cache_header_[] = {
     {0, 0}
 };
 
-const SceNID libkernel_nid_cache_[] = {
+const SceNID libkernel_nid_cache[] = {
 // SceSysmem
     0xA33B99D1,
     0xA91E15EE,
@@ -173,4 +172,3 @@ const SceNID libkernel_nid_cache_[] = {
     0xFDB32293,
     0xFFFB4D76
 };
-#endif
