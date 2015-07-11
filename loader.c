@@ -18,6 +18,7 @@
  */
 #include "loader.h"
 #include "fs_hooks.h"
+#include "state_machine.h"
 
 static VHLCalls *vhl;
 static int currentHomebrew;

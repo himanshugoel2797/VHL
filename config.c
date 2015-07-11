@@ -41,13 +41,13 @@ int config_initialize(void *i)
 
 int config_getIntValue(INT_VARIABLE_OPTIONS option)
 {
-        return intOptions[option];
+        return intOptions[option - 1];
 }
 
 int config_setIntValue(INT_VARIABLE_OPTIONS option, int val)
 {
         calls->UnlockMem();
-        intOptions[option] = val;
+        intOptions[option - 1] = val;
         calls->LockMem();
         DEBUG_LOG("Option %08x Set to %08x ", option, val);
         return val;

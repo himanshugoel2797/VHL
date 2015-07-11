@@ -10,16 +10,15 @@ int fs_hooks_initialize(VHLCalls *calls);
 static inline char* TranslateVFS(char *dest, char *path)
 {
         //Only substitute the file system path if the root is present
-        if(strcmp(path, VFS_ROOT) == 1) {
-                DEBUG_LOG_("Translating path");
-                char *updatedPath = dest;
-                DEBUG_LOG_(path);
-                strcpy(updatedPath, FS_ROOT);
-                DEBUG_LOG_(updatedPath);
-                DEBUG_LOG("%d", strlen(VFS_ROOT));
-                strcat(updatedPath, &path[strlen(VFS_ROOT)]);
-                DEBUG_LOG_(updatedPath);
-                return updatedPath;
+        if(strcmp(path, VFS_APPS_DIR) == 1){
+                strcpy(dest, FS_APPS_DIR);
+                strcat(dest, &path[strlen(VFS_APPS_DIR)]);
+                return dest;
+        }
+        else if(strcmp(path, VFS_ROOT) == 1) {
+                strcpy(dest, FS_ROOT);
+                strcat(dest, &path[strlen(VFS_ROOT)]);
+                return dest;
         }
         return path;
 }

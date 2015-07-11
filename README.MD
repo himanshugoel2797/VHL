@@ -12,7 +12,6 @@ Relocation code (elf_parser.c) and module info structs (elf_headers.h) taken fro
 * Force exit combination (WIP)
 * Careful homebrew memory management
 * Plugin support
-* Virtual File System
 
 ## Thanks to:
 * 173210

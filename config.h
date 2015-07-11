@@ -20,10 +20,9 @@ Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301  USA
 #define _VHL_CONFIG_H_
 
 typedef enum{
-  VARIABLE_EXIT_MASK = 1,
-  VARIABLE_SUSPEND_MASK = 2
+  VARIABLE_EXIT_MASK = 1
 } INT_VARIABLE_OPTIONS;
-#define INT_VARIABLE_OPTION_COUNT 3
+#define INT_VARIABLE_OPTION_COUNT 1
 
 
 #define KERNEL_MODULE_SIZE 0x10000
@@ -31,10 +30,17 @@ typedef enum{
 #define MAX_PATH_LENGTH 512
 
 //Homebrew filesystem root
-#define FS_ROOT "pss0:/top/Documents"
+#ifdef REJUVENATE_PSM
+        #define FS_ROOT "pss0:/top/Documents"
+#elif REJUVENATE_UNITY
+        #define FS_ROOT "unity0:/Documents"
+#else
+        #error Define either REJUVENATE_UNITY or REJUVENATE_PSM depending on the target platform
+#endif
+
 #define VFS_ROOT "vfs0:"
 //Application directory
-#define APPS_PATH FS_ROOT"/app/"
+#define FS_APPS_DIR FS_ROOT"/app/"
 #define VFS_APPS_DIR VFS_ROOT"app/"
 
 #define MENU_PATH VFS_ROOT"/homebrew.self"
