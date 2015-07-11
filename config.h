@@ -31,11 +31,13 @@ typedef enum{
 #define MAX_PATH_LENGTH 512
 
 //Homebrew filesystem root
-#define FS_ROOT "pss0:/top/Documents/"
+#define FS_ROOT "pss0:/top/Documents"
 #define VFS_ROOT "vfs0:"
 //Application directory
 #define APPS_PATH FS_ROOT"/app/"
 #define VFS_APPS_DIR VFS_ROOT"app/"
+
+#define MENU_PATH VFS_ROOT"/homebrew.self"
 
 #define NID_STORAGE_MAX_BUCKET_ENTRIES 64
 #define MAX_SLOTS 64

@@ -72,8 +72,16 @@ mini_itoa(int value, unsigned int radix, unsigned int uppercase, unsigned int un
 
 								/* This builds the string back to front ... */
 								do {
-																int quotient = 0, rem = value;
-																while(rem >= radix) {rem -= radix; quotient++; }
+																SceUInt quotient = 0, rem = value;
+																if(radix == 16) {
+																								quotient = rem >> 4; //Divide by 16
+																								rem = rem - (quotient * radix);
+																}else if (radix == 2){
+																								quotient = rem >> 1;
+																								rem = rem - (quotient * radix);
+																}else{
+																								while(rem >= radix) {rem -= radix; quotient++; }
+																}
 
 																int digit = rem;
 																*(pbuffer++) = (digit < 10 ? '0' + digit : (uppercase ? 'A' : 'a') + digit - 10);

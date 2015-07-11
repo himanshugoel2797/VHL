@@ -17,6 +17,7 @@
    Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301  USA
  */
 #include "loader.h"
+#include "fs_hooks.h"
 
 static VHLCalls *vhl;
 static int currentHomebrew;
@@ -35,10 +36,29 @@ int loader_initialize(VHLCalls *calls)
 
 int loader_loadExec(const char *path, const char *argv[], void *opt)
 {
-        //TODO implement this properly
+        //Trigger a cleanup here
+
+        char tmp[MAX_PATH_LENGTH];
+        char *p = TranslateVFS(tmp, path);
+        int retVal = elf_parser_load(vhl, 1, 0, p, NULL);
+        retVal = elf_parser_start(vhl, 0, -1);
+
+        //If we do end up returning, trigger the exitHomebrew procedures
+        loader_exitHomebrew(retVal);
+
+        return 0;
+        //TODO implement this properly, loads homebrew, kills current homebrew, launches loaded homebrew, maybe this should be moved to state machine
 }
 
 int loader_exitHomebrew(int errorCode)
 {
+        //Trigger a cleanup here
+
+        //Load the menu
+        char tmp[MAX_PATH_LENGTH];
+        int retVal = elf_parser_load(vhl, 1, 0, TranslateVFS(tmp, MENU_PATH), NULL);
+        retVal = elf_parser_start(vhl, 0, -1);
+
         return errorCode;
+
 }

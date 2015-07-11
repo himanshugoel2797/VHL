@@ -27,6 +27,7 @@ void* memcpy(void * dst, const void * src, size_t len);
 void* memset(void * s, int c, size_t n);
 int strcpy(char *dst, const char *src);
 int substr(char *dst, const char *src, int start, size_t len);
-int strcat(char *dst, const char *src, size_t copyLen);
+char* strcat(char *dest, const char *src);
+int strcmp(const char *a, const char *b);
 
 #endif

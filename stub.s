@@ -71,6 +71,8 @@ vhlStubPrimarySizeSym = . - vhlStubTop
         STUB(sceKernelGetThreadExitStatus)
         STUB(sceCtrlPeekBufferPositive)
         STUB(sceDisplayWaitVblankStart)
+        STUB(sceIoRemove)
+        STUB(sceIoRename)
 
         .global vhlStubSecondarySizeSym
 vhlStubSecondarySizeSym = . - (vhlStubTop + vhlStubPrimarySizeSym)

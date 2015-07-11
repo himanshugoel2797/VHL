@@ -68,11 +68,29 @@ int substr(char *dst, const char *src, int start, size_t len)
         return len;
 }
 
-int strcat(char *dst, const char *src, size_t copyLen)
+char *strcat(char *dest, const char *src)
 {
-        size_t len = strlen(dst);
-        memcpy(&dst[len], src, copyLen);
-        return copyLen;
+    size_t i,j;
+    for (i = 0; dest[i] != '\0'; i++)
+        ;
+    for (j = 0; src[j] != '\0'; j++)
+        dest[i+j] = src[j];
+    dest[i+j] = '\0';
+    return dest;
+}
+
+int strcmp(const char *a, const char *b)
+{
+        int aLen = strlen(a);
+        int bLen = strlen(b);
+
+        int len = (aLen > bLen) ? bLen : aLen;
+
+        for(int i = 0; i < len; i++)
+        {
+                if(a[i] != b[i]) return 0;
+        }
+        return 1;
 }
 
 void make_delta1(int *delta1, char *pat, int patlen) {
