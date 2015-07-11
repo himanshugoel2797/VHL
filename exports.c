@@ -16,6 +16,8 @@
    along with this program; if not, write to the Free Software Foundation,
    Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301  USA
  */
+
+#include <psp2/kernel/sysmem.h>
 #include "exports.h"
 
 static VHLCalls func_calls;
@@ -51,30 +53,22 @@ int exports_initialize(VHLCalls *calls)
         func_calls.UnlockMem = calls->UnlockMem;
         func_calls.LockMem = calls->LockMem;
         func_calls.LogLine = calls->LogLine;
-        func_calls.sceKernelAllocMemBlock = calls->sceKernelAllocMemBlock;
-        func_calls.sceKernelFreeMemBlock = calls->sceKernelFreeMemBlock;
-        func_calls.sceKernelGetMemBlockBase = calls->sceKernelGetMemBlockBase;
-        func_calls.sceKernelFindMemBlockByAddr = calls->sceKernelFindMemBlockByAddr;
-        func_calls.sceIOOpen = calls->sceIOOpen;
-        func_calls.sceIORead = calls->sceIORead;
-        func_calls.sceIOLseek = calls->sceIOLseek;
-        func_calls.sceIOClose = calls->sceIOClose;
         calls->LockMem();
 
-        nid_table_exportFunc(calls, &allocCodeMem, ALLOC_CODE_MEM);
-        nid_table_exportFunc(calls, &export_printf, PRINTF);
-        nid_table_exportFunc(calls, func_calls.LogLine, PUTS);
-        nid_table_exportFunc(calls, func_calls.LogLine, LOG);
-        nid_table_exportFunc(calls, func_calls.UnlockMem, UNLOCK);
-        nid_table_exportFunc(calls, func_calls.LockMem, LOCK);
-        nid_table_exportFunc(calls, func_calls.FlushICache, FLUSH);
+        nid_table_exportFunc(calls, &allocCodeMem, NID_ALLOC_CODE_MEM);
+        nid_table_exportFunc(calls, &export_printf, NID_printf);
+        nid_table_exportFunc(calls, func_calls.LogLine, NID_puts);
+        nid_table_exportFunc(calls, func_calls.LogLine, NID_LOG);
+        nid_table_exportFunc(calls, func_calls.UnlockMem, NID_UNLOCK);
+        nid_table_exportFunc(calls, func_calls.LockMem, NID_LOCK);
+        nid_table_exportFunc(calls, func_calls.FlushICache, NID_FLUSH);
 
         return 0;
 }
 
 SceUID AllocCodeMemBlock(int size)
 {
-        return func_calls.sceKernelFindMemBlockByAddr(func_calls.AllocCodeMem(&size), 0);
+        return sceKernelFindMemBlockByAddr(func_calls.AllocCodeMem(&size), 0);
 }
 
 //TODO export module functions so they can be called from other threads

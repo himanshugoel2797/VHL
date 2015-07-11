@@ -1,5 +1,5 @@
 /*
-   loader.c : Wraps calls to load and launch elfs
+   stub.h : Symbols of stub.s
    Copyright (C) 2015  hgoel0974
 
    This program is free software; you can redistribute it and/or modify
@@ -16,29 +16,18 @@
    along with this program; if not, write to the Free Software Foundation,
    Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301  USA
  */
-#include "loader.h"
 
-static VHLCalls *vhl;
-static int currentHomebrew;
+#ifndef STUB_H
+#define STUB_H
 
-int loader_initialize(VHLCalls *calls)
-{
-        calls->UnlockMem();
-        vhl = calls;
-        currentHomebrew = 0;
-        calls->LockMem();
+#include <stddef.h>
 
-        nid_table_exportFunc(calls, loader_loadExec, NID_LOAD_EXEC);
+void *getVhlStubTop();
 
-        return 0;
-}
+extern int vhlStubPrimarySizeSym[];
+extern int vhlStubSecondarySizeSym[];
 
-int loader_loadExec(const char *path, const char *argv[], void *opt)
-{
-        //TODO implement this properly
-}
+#define vhlStubPrimarySize ((size_t)&vhlStubPrimarySizeSym)
+#define vhlStubSecondarySize ((size_t)&vhlStubSecondarySizeSym)
 
-int loader_exitHomebrew(int errorCode)
-{
-        return errorCode;
-}
+#endif

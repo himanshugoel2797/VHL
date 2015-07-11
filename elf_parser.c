@@ -24,9 +24,9 @@ static SceKernelThreadInfo mainThreadInfo;
 int block_manager_free_old_data(VHLCalls *calls, int curSlot)
 {
 
-        calls->sceKernelFreeMemBlock(allocatedBlocks[curSlot].data_mem_uid);
-        calls->sceKernelFreeMemBlock(allocatedBlocks[curSlot].exec_mem_uid);
-        calls->sceKernelFreeMemBlock(allocatedBlocks[curSlot].elf_mem_uid);
+        sceKernelFreeMemBlock(allocatedBlocks[curSlot].data_mem_uid);
+        sceKernelFreeMemBlock(allocatedBlocks[curSlot].exec_mem_uid);
+        sceKernelFreeMemBlock(allocatedBlocks[curSlot].elf_mem_uid);
 
         calls->UnlockMem();
         allocatedBlocks[curSlot].data_mem_loc = 0;
@@ -61,7 +61,7 @@ int block_manager_initialize(VHLCalls *calls)
                 allocatedBlocks[curSlot].path[0] = NULL;
         }
         mainThreadInfo.size = sizeof(SceKernelThreadInfo);
-        calls->sceKernelGetThreadInfo(calls->sceKernelGetThreadId(), &mainThreadInfo);
+        sceKernelGetThreadInfo(sceKernelGetThreadId(), &mainThreadInfo);
         calls->LockMem();
 }
 
@@ -361,20 +361,20 @@ int elf_parser_load_sce_relexec(VHLCalls *calls, int priority, int curSlot, SceU
         snprintf(tmpDS_name, 18, "elf_data_store%d", curSlot);
 
 
-        SceUID tmpDataStore_uid = calls->sceKernelAllocMemBlock(tmpDS_name, SCE_KERNEL_MEMBLOCK_TYPE_USER_RW, FOUR_KB_ALIGN(len), NULL);
+        SceUID tmpDataStore_uid = sceKernelAllocMemBlock(tmpDS_name, SCE_KERNEL_MEMBLOCK_TYPE_USER_RW, FOUR_KB_ALIGN(len), NULL);
         void *tmpDataStore_loc = NULL;
 
         if(tmpDataStore_uid < 0) {
                 DEBUG_LOG_("Failed to allocate memory for homebrew");
                 return -1;
         }
-        if(calls->sceKernelGetMemBlockBase(tmpDataStore_uid, &tmpDataStore_loc) < 0) {
+        if(sceKernelGetMemBlockBase(tmpDataStore_uid, &tmpDataStore_loc) < 0) {
                 DEBUG_LOG_("Failed to retrieve allocated memory for homebrew");
                 goto freeTmpDataAndError;
         }
 
-        calls->sceIOLseek(fd, 0, PSP2_SEEK_SET);
-        if(calls->sceIORead(fd, tmpDataStore_loc, len) <= 0) {
+        sceIoLseek(fd, 0, PSP2_SEEK_SET);
+        if(sceIoRead(fd, tmpDataStore_loc, len) <= 0) {
                 DEBUG_LOG_("Read failed");
                 goto freeTmpDataAndError;
         }
@@ -421,18 +421,18 @@ int elf_parser_load_sce_relexec(VHLCalls *calls, int priority, int curSlot, SceU
                 goto freeAllAndError;
         }
 
-        data_mem_uid = calls->sceKernelAllocMemBlock(data_store_name, SCE_KERNEL_MEMBLOCK_TYPE_USER_RW, data_mem_size, NULL);
+        data_mem_uid = sceKernelAllocMemBlock(data_store_name, SCE_KERNEL_MEMBLOCK_TYPE_USER_RW, data_mem_size, NULL);
         if(data_mem_uid < 0) {
                 DEBUG_LOG_("Failed to allocate data memory!");
                 goto freeAllAndError;
         }
 
-        if(calls->sceKernelGetMemBlockBase(exec_mem_uid, &exec_mem_loc) < 0) {
+        if(sceKernelGetMemBlockBase(exec_mem_uid, &exec_mem_loc) < 0) {
                 DEBUG_LOG_("Failed to retrieve allocated executable memory!");
                 goto freeAllAndError;
         }
 
-        if(calls->sceKernelGetMemBlockBase(data_mem_uid, &data_mem_loc) < 0) {
+        if(sceKernelGetMemBlockBase(data_mem_uid, &data_mem_loc) < 0) {
                 DEBUG_LOG_("Failed to retrieve allocated data memory!");
                 goto freeAllAndError;
         }
@@ -537,18 +537,18 @@ int elf_parser_load_sce_relexec(VHLCalls *calls, int priority, int curSlot, SceU
 freeAllAndError:
         block_manager_free_old_data(calls, curSlot);
 freeTmpDataAndError:
-        calls->sceKernelFreeMemBlock(tmpDataStore_uid);
+        sceKernelFreeMemBlock(tmpDataStore_uid);
         return -1;
 }
 
 int elf_parser_load(VHLCalls *calls, int priority, int curSlot, const char *file, void **entryPoint)
 {
         DEBUG_LOG_("elf_parser_Load");
-        SceUID fd = calls->sceIOOpen(file, PSP2_O_RDONLY, 0777);
+        SceUID fd = sceIoOpen(file, PSP2_O_RDONLY, 0777);
         DEBUG_LOG("Opened %s as %d", file, fd);
 
-        unsigned int len = calls->sceIOLseek(fd, 0LL, PSP2_SEEK_END);
-        calls->sceIOLseek(fd, 0LL, PSP2_SEEK_SET);
+        unsigned int len = sceIoLseek(fd, 0LL, PSP2_SEEK_END);
+        sceIoLseek(fd, 0LL, PSP2_SEEK_SET);
         DEBUG_LOG("File length : %d", len);
 
         calls->UnlockMem();
@@ -556,7 +556,7 @@ int elf_parser_load(VHLCalls *calls, int priority, int curSlot, const char *file
         calls->LockMem();
 
         Elf32_Ehdr hdr;
-        calls->sceIORead(fd, &hdr, sizeof(Elf32_Ehdr));
+        sceIoRead(fd, &hdr, sizeof(Elf32_Ehdr));
         if(elf_parser_check_hdr(&hdr) < 0) {
                 DEBUG_LOG_("Invalid header!");
                 return -1;
@@ -578,7 +578,7 @@ int elf_parser_load(VHLCalls *calls, int priority, int curSlot, const char *file
                 return -1;
                 break;
         }
-        calls->sceIOClose(fd);
+        sceIoClose(fd);
         //TODO figure out how to determine if a homebrew is still running, it might be necessary to export a function to kill a homebrew, along with a hook somewhere in the homebrew to check the status
 
         return 0;
@@ -596,7 +596,7 @@ int homebrew_thread_entry(int argc, int *argv)
         int retVal = allocatedBlocks[curSlot].entryPoint(0, NULL);
         //TODO stop managing and clear all resources
 
-        calls->sceKernelExitDeleteThread(retVal);
+        sceKernelExitDeleteThread(retVal);
         return retVal;
 }
 
@@ -606,8 +606,8 @@ int elf_parser_start(VHLCalls *calls, int curSlot, int wait)
         hb_tid[0] = curSlot;
         hb_tid[1] = (int)calls;
 
-        SceUID tid = calls->sceKernelCreateThread("homebrew_thread", homebrew_thread_entry, mainThreadInfo.currentPriority, 0x10000, mainThreadInfo.attr, 0, NULL);
-        calls->sceKernelStartThread(tid, 2 * sizeof(int), hb_tid);
+        SceUID tid = sceKernelCreateThread("homebrew_thread", homebrew_thread_entry, mainThreadInfo.currentPriority, 0x10000, mainThreadInfo.attr, 0, NULL);
+        sceKernelStartThread(tid, 2 * sizeof(int), hb_tid);
 
         calls->UnlockMem();
         allocatedBlocks[curSlot].thid = tid;
@@ -617,7 +617,7 @@ int elf_parser_start(VHLCalls *calls, int curSlot, int wait)
         int *delay = &wait;
         if(wait < 0) delay = NULL;
 
-        calls->sceKernelWaitThreadEnd(tid, &exitStatus, delay);
+        sceKernelWaitThreadEnd(tid, &exitStatus, delay);
 
         return exitStatus;
 }

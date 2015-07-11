@@ -77,7 +77,7 @@ _start(UVL_Context *ctx)
         while(1) {
                 //Delay thread and check for flags and things to update every once in a while, check for exit combination
                 //calls.LogLine("Menu exited! Relaunching...");
-                calls.sceKernelDelayThread(16000);  //Update stuff once every 16 ms
+                sceKernelDelayThread(16000);  //Update stuff once every 16 ms
         }
 
         return 0;

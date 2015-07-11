@@ -20,6 +20,7 @@ Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301  USA
 #ifndef _VHL_NID_TABLE_H_
 #define _VHL_NID_TABLE_H_
 
+#include <psp2/kernel/modulemgr.h>
 #include "utils/bithacks.h"
 #include "utils/utils.h"
 #include "utils/nid_storage.h"
@@ -41,12 +42,11 @@ int nid_table_initialize();
 int nid_table_analyzeStub(void *stub, SceNID nid, nidTable_entry *entry);
 SceModuleInfo* nid_table_findModuleInfo(void* location, SceUInt size, char* libname);
 int nid_table_isValidModuleInfo(SceModuleInfo *m_info);
-int nid_table_resolveFromModule(VHLCalls *calls, SceLoadedModuleInfo *target);
-int nid_table_resolveImportFromNID(VHLCalls *calls, SceUInt *functionPtrLocation, SceNID nid, void *libraryBase, char* libName);
+int nid_table_resolveFromModule(VHLCalls *calls, Psp2LoadedModuleInfo *target);
 int nid_table_resolveVHLImports(UVL_Context *ctx, VHLCalls *calls);
 int nid_table_resolveAll(VHLCalls *calls);
 int nid_table_exportFunc(VHLCalls *calls, void *target, SceNID nid);
 int nid_table_resolveStub(VHLCalls *calls, int priority, void *stub, SceNID nid);
-int nid_table_registerHook(VHLCalls *calls, void *func, SceNID nid, void **target);
+int nid_table_registerHook(VHLCalls *calls, void *func, SceNID nid);
 
 #endif
