@@ -96,8 +96,11 @@ int nid_table_resolveFromModule(VHLCalls *calls, SceLoadedModuleInfo *target)
                 {
                         for(int i = 0; i < exportTable_orig->num_functions; i++)
                         {
-                                int err = nid_table_analyzeStub(exportTable_orig->entry_table[i], exportTable_orig->nid_table[i], &entry);
-                                if(entry.nid != 0) nid_storage_addEntry(calls, &entry);
+                                entry.nid = exportTable_orig->nid_table[i];
+                                entry.type = ENTRY_TYPES_FUNCTION;
+                                entry.value.function = exportTable_orig->entry_table[i];
+                                entry.stub_loc = NULL;
+                                nid_storage_addEntry(calls, &entry);
                         }
                 }
                 DEBUG_LOG_("Exports resolved");
