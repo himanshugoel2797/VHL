@@ -177,7 +177,7 @@ static inline SceModuleImports* GET_NEXT_IMPORT(SceModuleImports *x){
         return (SceModuleImports*)((SceUInt)x + x->size);
 }
 
-static inline SceModuleImports* GET_FIRST_IMPORT(SceUInt base, SceModuleInfo *x){
+static inline SceModuleImports* GET_FIRST_IMPORT(SceUInt base, const SceModuleInfo *x){
         return (SceModuleImports*)(base + (SceUInt)x->stub_top);
 }
 
