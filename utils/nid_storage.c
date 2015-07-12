@@ -20,7 +20,6 @@
 #include "nid_storage.h"
 
 static nidTable_entry nid_storage_table[NID_STORAGE_BUCKET_COUNT * NID_STORAGE_MAX_BUCKET_ENTRIES];
-static nidTable_entry nid_storage_table_hooks[NID_STORAGE_BUCKET_COUNT * NID_STORAGE_MAX_BUCKET_ENTRIES * NID_STORAGE_HOOK_MULTIPLIER];
 
 int nid_storage_initialize()
 {
@@ -28,7 +27,6 @@ int nid_storage_initialize()
         for(int i = 0; i < NID_STORAGE_BUCKET_COUNT; i++)
         {
                 nid_storage_table[i * NID_STORAGE_MAX_BUCKET_ENTRIES].nid = 0;
-                nid_storage_table_hooks[i * NID_STORAGE_HOOK_MULTIPLIER * NID_STORAGE_MAX_BUCKET_ENTRIES].nid = 0;
         }
         pss_code_mem_lock();
         return 0;
@@ -68,42 +66,6 @@ int nid_storage_getEntry(SceNID nid, nidTable_entry *entry)
                         entry->nid = nid_storage_table[i].nid;
                         entry->type = nid_storage_table[i].type;
                         entry->value.i = nid_storage_table[i].value.i;
-                        return 0;
-                }
-        }
-        return -1;
-}
-
-__attribute__((hot))
-int nid_storage_addHookEntry(nidTable_entry *entry)
-{
-
-        int key = (char)(entry->nid >> 24);
-        for(int i = (key * NID_STORAGE_MAX_BUCKET_ENTRIES * NID_STORAGE_HOOK_MULTIPLIER); i < (key + 1) * NID_STORAGE_MAX_BUCKET_ENTRIES * NID_STORAGE_HOOK_MULTIPLIER; i++)
-        {
-                if(nid_storage_table_hooks[i].nid == 0) {   //Search for empty spot to add entry
-                        pss_code_mem_unlock();
-                        nid_storage_table_hooks[i].nid = entry->nid;
-                        nid_storage_table_hooks[i].type = entry->type;
-                        nid_storage_table_hooks[i].value.i = entry->value.i;
-                        if(i + 1 < (key + 1) * NID_STORAGE_MAX_BUCKET_ENTRIES * NID_STORAGE_HOOK_MULTIPLIER) nid_storage_table_hooks[i + 1].nid = 0;
-                        pss_code_mem_lock();
-                        return 0;
-                }
-        }
-        return -1;
-}
-
-__attribute__((hot))
-int nid_storage_getHookEntry(SceNID nid, nidTable_entry *entry)
-{
-        int key = (char)(nid >> 24);
-        for(int i = (key * NID_STORAGE_MAX_BUCKET_ENTRIES * NID_STORAGE_HOOK_MULTIPLIER); i < (key + 1) * NID_STORAGE_MAX_BUCKET_ENTRIES * NID_STORAGE_HOOK_MULTIPLIER; i++)
-        {
-                if(nid_storage_table_hooks[i].nid == nid) {
-                        entry->nid = nid_storage_table_hooks[i].nid;
-                        entry->type = nid_storage_table_hooks[i].type;
-                        entry->value.i = nid_storage_table_hooks[i].value.i;
                         return 0;
                 }
         }

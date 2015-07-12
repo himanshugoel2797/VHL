@@ -32,7 +32,6 @@
 #define __MINI_PRINTF__
 
 #include <stdarg.h>
-#include "../vhl.h"
 
 int mini_vsnprintf(char* buffer, unsigned int buffer_len, const char *fmt, va_list va);
 int mini_snprintf(char* buffer, unsigned int buffer_len, const char *fmt, ...);

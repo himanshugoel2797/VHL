@@ -24,12 +24,7 @@
 
 static HomebrewState state;
 
-int sceDisplayWaitVblankStart_hook ();
-
-int state_machine_initialize()
-{
-        return nid_table_registerHook(sceDisplayWaitVblankStart_hook, NID_sceDisplayWaitVblankStart);
-}
+int hook_sceDisplayWaitVblankStart ();
 
 int state_machine_checkState()
 {
@@ -37,7 +32,7 @@ int state_machine_checkState()
         SceCtrlData pad;
         sceCtrlPeekBufferPositive(0, &pad, 1);
 
-        int exitMask = config_getIntValue(VARIABLE_EXIT_MASK);
+        int exitMask = vhlGetIntValue(VARIABLE_EXIT_MASK);
         if(exitMask != 0 && pad.buttons == exitMask) {
                 //Kill the homebrew
                 DEBUG_LOG_("Exit Triggered");
@@ -50,7 +45,7 @@ int state_machine_checkState()
 
 //TODO hook all object creation functions for garbage management
 //TODO decide on desired means of determining homebrew status so appropriate action can be taken
-int sceDisplayWaitVblankStart_hook()
+int hook_sceDisplayWaitVblankStart()
 {
         //Check state
         state_machine_checkState();

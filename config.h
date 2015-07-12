@@ -51,7 +51,7 @@ typedef enum{
 #define MAX_SLOTS 64
 
 int config_initialize();
-int config_getIntValue(INT_VARIABLE_OPTIONS option);
-int config_setIntValue(INT_VARIABLE_OPTIONS option, int value);
+int vhlGetIntValue(INT_VARIABLE_OPTIONS option);
+int vhlSetIntValue(INT_VARIABLE_OPTIONS option, int val);
 
 #endif

@@ -45,8 +45,6 @@ int nid_table_isValidModuleInfo(SceModuleInfo *m_info);
 int nid_table_addStubsInModule(Psp2LoadedModuleInfo *target);
 int nid_table_resolveVHLImports(const UVL_Context *ctx);
 int nid_table_addAllStubs(void);
-int nid_table_exportFunc(void *target, SceNID nid);
-int nid_table_resolveStub(int priority, void *stub, SceNID nid);
-int nid_table_registerHook(void *func, SceNID nid);
+int nid_table_resolveStub(void *stub, SceNID nid);
 
 #endif

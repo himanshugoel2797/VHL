@@ -23,7 +23,6 @@
 #include "nid_table.h"
 #include "nidcache.h"
 #include "elf_parser.h"
-#include "exports.h"
 #include "state_machine.h"
 #include "fs_hooks.h"
 #include "loader.h"
@@ -46,15 +45,11 @@ _start(UVL_Context *ctx)
 
         //TODO decide how to handle plugins
 
-        exports_initialize();
         config_initialize();
-        loader_initialize();
-        state_machine_initialize();
-        fs_hooks_initialize();
 
         DEBUG_LOG_("Loading menu...");
 
-        if(elf_parser_load(1, 0, "pss0:/top/Documents/homebrew.self", NULL) < 0) {
+        if(elf_parser_load(0, "pss0:/top/Documents/homebrew.self", NULL) < 0) {
                 internal_printf("Load failed!");
                 return -1;
         }

@@ -41,6 +41,7 @@
  *
  */
 
+#include <psp2/types.h>
 #include <stdio.h>
 #include <string.h>
 #include <stdarg.h>

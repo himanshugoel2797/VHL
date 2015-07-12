@@ -22,7 +22,6 @@ Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301  USA
 #include "vhl.h"
 
 #include "elf_headers.h"
-#include "exports.h"
 #include "nid_table.h"
 #include "utils/bithacks.h"
 
@@ -49,7 +48,7 @@ int block_manager_initialize(void);
 int block_manager_free_old_data(int curSlot);
 
 int elf_parser_start(int curSlot, SceUInt wait);
-int elf_parser_load(int priority, int curSlot, const char* file, void** entryPoint);
+int elf_parser_load(int curSlot, const char* file, void** entryPoint);
 
 
 #endif
