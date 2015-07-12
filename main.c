@@ -26,6 +26,7 @@
 #include "exports.h"
 #include "state_machine.h"
 #include "fs_hooks.h"
+#include "loader.h"
 
 int __attribute__ ((section (".text.start")))
 _start(UVL_Context *ctx)

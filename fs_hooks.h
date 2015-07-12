@@ -7,7 +7,7 @@
 
 int fs_hooks_initialize();
 
-static inline char* TranslateVFS(char *dest, char *path)
+static inline char* TranslateVFS(char *dest, const char *path)
 {
         //Only substitute the file system path if the root is present
         if(strcmp(path, VFS_APPS_DIR) == 1){
@@ -20,7 +20,7 @@ static inline char* TranslateVFS(char *dest, char *path)
                 strcat(dest, &path[strlen(VFS_ROOT)]);
                 return dest;
         }
-        return path;
+        return (char *)path;
 }
 
 #endif

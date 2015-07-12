@@ -148,7 +148,7 @@ static inline SceModuleImports* GET_FIRST_IMPORT(SceUInt base, const SceModuleIn
         return (SceModuleImports*)(base + (SceUInt)x->stub_top);
 }
 
-static inline int IS_LAST_IMPORT(SceUInt base, SceModuleInfo *x, SceModuleImports *import){
+static inline int IS_LAST_IMPORT(SceUInt base, const SceModuleInfo *x, const SceModuleImports *import){
         return  (SceUInt)import < (base + (SceUInt)x->stub_end);
 }
 

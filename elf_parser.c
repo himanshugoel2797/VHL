@@ -40,7 +40,7 @@ int block_manager_free_old_data(int curSlot)
         allocatedBlocks[curSlot].elf_mem_uid = 0;
         allocatedBlocks[curSlot].elf_mem_size = 0;
         allocatedBlocks[curSlot].entryPoint = NULL;
-        allocatedBlocks[curSlot].path[0] = NULL;
+        allocatedBlocks[curSlot].path[0] = 0;
         pss_code_mem_lock();
 
         return 0;
@@ -59,7 +59,7 @@ int block_manager_initialize()
                 allocatedBlocks[curSlot].elf_mem_loc = 0;
                 allocatedBlocks[curSlot].elf_mem_uid = 0;
                 allocatedBlocks[curSlot].elf_mem_size = 0;
-                allocatedBlocks[curSlot].path[0] = NULL;
+                allocatedBlocks[curSlot].path[0] = 0;
         }
         pss_code_mem_lock();
 }
@@ -295,7 +295,7 @@ int elf_parser_find_SceModuleInfo(Elf32_Ehdr *elf_hdr, Elf32_Phdr *elf_phdrs, Sc
         SceUInt index = ((SceUInt)elf_hdr->e_entry & 0xC0000000) >> 30;
         SceUInt offset = (SceUInt)elf_hdr->e_entry & 0x3FFFFFFF;
 
-        if ((SceUInt)elf_phdrs[index].p_vaddr == NULL)
+        if ((SceUInt)elf_phdrs[index].p_vaddr == 0)
         {
                 DEBUG_LOG ("Invalid segment index %d\n", index);
                 return -1;
@@ -525,9 +525,9 @@ int elf_parser_load_sce_relexec(int priority, int curSlot, SceUID fd, unsigned i
         }
 
         DEBUG_LOG_("Retrieving entry point");
-        if(entryPoint != NULL) *entryPoint = prgmHDR[index].p_vaddr + mod_info->mod_start;
+        if(entryPoint != NULL) *entryPoint = (void *)(prgmHDR[index].p_vaddr + mod_info->mod_start);
         pss_code_mem_unlock();
-        allocatedBlocks[curSlot].entryPoint = prgmHDR[index].p_vaddr + mod_info->mod_start;
+        allocatedBlocks[curSlot].entryPoint = (void *)(prgmHDR[index].p_vaddr + mod_info->mod_start);
         pss_code_mem_lock();
         DEBUG_LOG_("Entry point retrieved");
 
@@ -583,10 +583,10 @@ int elf_parser_load(int priority, int curSlot, const char *file, void **entryPoi
         return 0;
 }
 
-int homebrew_thread_entry(int argc, int *argv)
+int homebrew_thread_entry(SceSize args, void *argp)
 {
 
-        int curSlot = *argv;
+        int curSlot = *(int *)argp;
         char tmp[512];
         strcpy(tmp, allocatedBlocks[curSlot].path);
 
@@ -598,7 +598,7 @@ int homebrew_thread_entry(int argc, int *argv)
         return retVal;
 }
 
-int elf_parser_start(int curSlot, int wait)
+int elf_parser_start(int curSlot, SceUInt wait)
 {
         SceKernelThreadInfo mainThreadInfo;
         SceUID tid;
@@ -614,7 +614,7 @@ int elf_parser_start(int curSlot, int wait)
         pss_code_mem_lock();
 
         int exitStatus = 0;
-        int *delay = &wait;
+        SceUInt *delay = &wait;
         if(wait < 0) delay = NULL;
 
         sceKernelWaitThreadEnd(tid, &exitStatus, delay);

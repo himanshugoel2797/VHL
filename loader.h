@@ -29,6 +29,6 @@ int loader_initialize(void);
 int loader_loadHomebrew(const char *str, int slot);
 int loader_startHomebrew(int slot);
 int loader_loadExec(const char *path, const char *argv[], void *opt);
-
+int loader_exitHomebrew(int errorCode);
 
 #endif
