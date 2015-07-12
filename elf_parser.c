@@ -21,7 +21,6 @@
 #include "elf_parser.h"
 
 static allocData allocatedBlocks[MAX_SLOTS];
-static SceKernelThreadInfo mainThreadInfo;
 
 int block_manager_free_old_data(int curSlot)
 {
@@ -62,8 +61,6 @@ int block_manager_initialize()
                 allocatedBlocks[curSlot].elf_mem_size = 0;
                 allocatedBlocks[curSlot].path[0] = NULL;
         }
-        mainThreadInfo.size = sizeof(SceKernelThreadInfo);
-        sceKernelGetThreadInfo(sceKernelGetThreadId(), &mainThreadInfo);
         pss_code_mem_lock();
 }
 
@@ -603,7 +600,13 @@ int homebrew_thread_entry(int argc, int *argv)
 
 int elf_parser_start(int curSlot, int wait)
 {
-        SceUID tid = sceKernelCreateThread("homebrew_thread", homebrew_thread_entry, mainThreadInfo.currentPriority, 0x10000, mainThreadInfo.attr, 0, NULL);
+        SceKernelThreadInfo mainThreadInfo;
+        SceUID tid;
+
+        mainThreadInfo.size = sizeof(SceKernelThreadInfo);
+        sceKernelGetThreadInfo(sceKernelGetThreadId(), &mainThreadInfo);
+
+        tid = sceKernelCreateThread("homebrew_thread", homebrew_thread_entry, mainThreadInfo.currentPriority, 0x10000, mainThreadInfo.attr, 0, NULL);
         sceKernelStartThread(tid, sizeof(curSlot), &curSlot);
 
         pss_code_mem_unlock();
