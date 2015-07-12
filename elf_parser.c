@@ -599,7 +599,7 @@ int homebrew_thread_entry(SceSize args, void *argp)
         return retVal;
 }
 
-int elf_parser_start(int curSlot, SceUInt wait)
+int elf_parser_start(int curSlot, int wait)
 {
         SceKernelThreadInfo mainThreadInfo;
         SceUID tid;
@@ -615,8 +615,7 @@ int elf_parser_start(int curSlot, SceUInt wait)
         pss_code_mem_lock();
 
         int exitStatus = 0;
-        SceUInt *delay = &wait;
-        if(wait < 0) delay = NULL;
+        SceUInt *delay = wait < 0 ? NULL : (SceUInt *)&wait;
 
         sceKernelWaitThreadEnd(tid, &exitStatus, delay);
 
