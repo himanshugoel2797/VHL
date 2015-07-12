@@ -16,5 +16,6 @@
 
 *.o
 *.bin
+*.vds
 
 VHL
