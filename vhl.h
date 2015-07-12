@@ -28,6 +28,13 @@ Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301  USA
 
 #include "module_headers.h"
 #include "common.h"
+#include "config.h"
+#include "elf_parser.h"
+
+typedef struct {
+        int intOptions[INT_VARIABLE_OPTION_COUNT];
+        allocData allocatedBlocks[MAX_SLOTS];
+} globals_t;
 
 typedef struct {
         void* (*psvCodeAllocMem)(unsigned int *p_len); ///< Allocate code block
@@ -46,5 +53,6 @@ typedef union {
 } UVL_Context;
 
 int __attribute__ ((section (".text.start"))) _start(UVL_Context *ctx);
+globals_t *getGlobals();
 
 #endif

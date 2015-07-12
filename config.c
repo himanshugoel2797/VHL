@@ -22,10 +22,10 @@
 #include "nid_table.h"
 #include "nids.h"
 
-static int intOptions[INT_VARIABLE_OPTION_COUNT];
-
 int config_initialize()
 {
+        int *intOptions = getGlobals()->intOptions;
+
         pss_code_mem_unlock();
         for(int j = 0; j < INT_VARIABLE_OPTION_COUNT; j++) {
                 intOptions[j] = 0;
@@ -37,14 +37,12 @@ int config_initialize()
 
 int vhlGetIntValue(INT_VARIABLE_OPTIONS option)
 {
-        return intOptions[option - 1];
+        return getGlobals()->intOptions[option - 1];
 }
 
 int vhlSetIntValue(INT_VARIABLE_OPTIONS option, int val)
 {
-        pss_code_mem_unlock();
-        intOptions[option - 1] = val;
-        pss_code_mem_lock();
+        getGlobals()->intOptions[option - 1] = val;
         DEBUG_LOG("Option %08x Set to %08x ", option, val);
         return val;
 }
