@@ -168,7 +168,7 @@ int nid_table_isValidModuleInfo(SceModuleInfo *m_info)
 }
 
 __attribute__((hot))
-int nid_table_resolveFromModule(Psp2LoadedModuleInfo *target)
+int nid_table_addStubsInModule(Psp2LoadedModuleInfo *target)
 {
         nidTable_entry entry;
         DEBUG_LOG_("Searching for module info");
@@ -257,7 +257,7 @@ int nid_table_resolveFromModule(Psp2LoadedModuleInfo *target)
         return 0;
 }
 
-int nid_table_resolveAll()
+int nid_table_addAllStubs()
 {
         SceUID uids[NID_TABLE_MAX_MODULES];
         int numEntries = NID_TABLE_MAX_MODULES;
@@ -276,7 +276,7 @@ int nid_table_resolveAll()
                         DEBUG_LOG_("Failed to get module info... Skipping...");
                 }else{
                         DEBUG_LOG_("Mod info obtained");
-                        nid_table_resolveFromModule(&loadedModuleInfo);
+                        nid_table_addStubsInModule(&loadedModuleInfo);
                 }
         }
         DEBUG_LOG_("All modules resolved");
@@ -438,8 +438,8 @@ int nid_table_resolveVHLImports(const UVL_Context *ctx)
 
                 pss_code_mem_flush_icache(vhlStubCtxBtm, vhlStubPrimarySize);
 
-                DEBUG_LOG_("Resolving and Caching NIDs...");
-                nid_table_resolveAll();
+                DEBUG_LOG_("Searching and Caching NIDs...");
+                nid_table_addAllStubs();
 
                 while (p != vhlStubSecondaryBtm) {
                         resolveVhlImport(p, moduleInfo);
