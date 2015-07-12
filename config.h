@@ -19,6 +19,8 @@ Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301  USA
 #ifndef _VHL_CONFIG_H_
 #define _VHL_CONFIG_H_
 
+#include "vhl.h"
+
 typedef enum{
   VARIABLE_EXIT_MASK = 1
 } INT_VARIABLE_OPTIONS;
@@ -48,7 +50,7 @@ typedef enum{
 #define NID_STORAGE_MAX_BUCKET_ENTRIES 64
 #define MAX_SLOTS 64
 
-int config_initialize(void *i);
+int config_initialize();
 int config_getIntValue(INT_VARIABLE_OPTIONS option);
 int config_setIntValue(INT_VARIABLE_OPTIONS option, int value);
 

@@ -42,11 +42,11 @@ int nid_table_initialize();
 int nid_table_analyzeStub(void *stub, SceNID nid, nidTable_entry *entry);
 SceModuleInfo* nid_table_findModuleInfo(void* location, SceUInt size, char* libname);
 int nid_table_isValidModuleInfo(SceModuleInfo *m_info);
-int nid_table_resolveFromModule(VHLCalls *calls, Psp2LoadedModuleInfo *target);
-int nid_table_resolveVHLImports(UVL_Context *ctx, VHLCalls *calls);
-int nid_table_resolveAll(VHLCalls *calls);
-int nid_table_exportFunc(VHLCalls *calls, void *target, SceNID nid);
-int nid_table_resolveStub(VHLCalls *calls, int priority, void *stub, SceNID nid);
-int nid_table_registerHook(VHLCalls *calls, void *func, SceNID nid);
+int nid_table_resolveFromModule(Psp2LoadedModuleInfo *target);
+int nid_table_resolveVHLImports(const UVL_Context *ctx);
+int nid_table_resolveAll();
+int nid_table_exportFunc(void *target, SceNID nid);
+int nid_table_resolveStub(int priority, void *stub, SceNID nid);
+int nid_table_registerHook(void *func, SceNID nid);
 
 #endif

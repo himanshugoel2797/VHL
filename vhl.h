@@ -30,27 +30,21 @@ Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301  USA
 #include "common.h"
 
 typedef struct {
-        SceUInt loadAddress;
-
-        //UVL context calls
-        void* (*AllocCodeMem)(SceUInt*);
-        void (*UnlockMem)();
-        void (*LockMem)();
-        void (*FlushICache)(void*, SceUInt);
-        int (*LogLine)(const char*);
-} VHLCalls;
-
-typedef struct {
         void* (*psvCodeAllocMem)(unsigned int *p_len); ///< Allocate code block
         void (*psvUnlockMem)(void);                ///< Unlock code block
         void (*psvLockMem)(void);                  ///< Relock code block
         void (*psvFlushIcache)(void *, unsigned int); ///< Flush Icache
         int (*logline)(const char *);              ///< Debug logging (optional)
-        void *libkernel_anchor;                    ///< Any imported SceLibKernel function
+} UVL_Funcs;
+
+typedef union {
+        UVL_Funcs funcs;
+        struct {
+                const void *funcs[sizeof(UVL_Funcs) / sizeof(void *)];
+                const void *libkernel_anchor;                    ///< Any imported SceLibKernel function
+        } ptrs;
 } UVL_Context;
 
 int __attribute__ ((section (".text.start"))) _start(UVL_Context *ctx);
-void logLine(const char *str);
-
 
 #endif

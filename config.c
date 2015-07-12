@@ -16,25 +16,24 @@
    along with this program; if not, write to the Free Software Foundation,
    Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301  USA
  */
+#include <psp2/pss.h>
 #include "config.h"
 #include "vhl.h"
 #include "nid_table.h"
 #include "nids.h"
 
-static VHLCalls *calls;
 static int intOptions[INT_VARIABLE_OPTION_COUNT];
 
-int config_initialize(void *i)
+int config_initialize()
 {
-        ((VHLCalls*)i)->UnlockMem();
-        calls = ((VHLCalls*)i);
+        pss_code_mem_unlock();
         for(int j = 0; j < INT_VARIABLE_OPTION_COUNT; j++) {
                 intOptions[j] = 0;
         }
-        ((VHLCalls*)i)->LockMem();
+        pss_code_mem_lock();
 
-        nid_table_exportFunc(calls, config_getIntValue, NID_vhlGetIntValue);
-        nid_table_exportFunc(calls, config_setIntValue, NID_vhlSetIntValue);
+        nid_table_exportFunc(config_getIntValue, NID_vhlGetIntValue);
+        nid_table_exportFunc(config_setIntValue, NID_vhlSetIntValue);
 
         return 0;
 }
@@ -46,9 +45,9 @@ int config_getIntValue(INT_VARIABLE_OPTIONS option)
 
 int config_setIntValue(INT_VARIABLE_OPTIONS option, int val)
 {
-        calls->UnlockMem();
+        pss_code_mem_unlock();
         intOptions[option - 1] = val;
-        calls->LockMem();
+        pss_code_mem_lock();
         DEBUG_LOG("Option %08x Set to %08x ", option, val);
         return val;
 }

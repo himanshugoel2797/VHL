@@ -18,7 +18,10 @@
  */
 #include "arm_tools.h"
 
-int Disassemble(void *instruction, ARM_INSTRUCTION *instData)
+/* They shouldn't call any external function because 
+ they will be executed before resolving VHL stubs. */
+
+int Disassemble(const void *instruction, ARM_INSTRUCTION *instData)
 {
         //TODO implement ARM instruction disassembling
 

@@ -16,25 +16,26 @@
    along with this program; if not, write to the Free Software Foundation,
    Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301  USA
  */
+#include <psp2/pss.h>
 #include "nid_storage.h"
 
 static nidTable_entry nid_storage_table[NID_STORAGE_BUCKET_COUNT * NID_STORAGE_MAX_BUCKET_ENTRIES];
 static nidTable_entry nid_storage_table_hooks[NID_STORAGE_BUCKET_COUNT * NID_STORAGE_MAX_BUCKET_ENTRIES * NID_STORAGE_HOOK_MULTIPLIER];
 
-int nid_storage_initialize(VHLCalls *calls)
+int nid_storage_initialize()
 {
-        calls->UnlockMem();
+        pss_code_mem_unlock();
         for(int i = 0; i < NID_STORAGE_BUCKET_COUNT; i++)
         {
                 nid_storage_table[i * NID_STORAGE_MAX_BUCKET_ENTRIES].nid = 0;
                 nid_storage_table_hooks[i * NID_STORAGE_HOOK_MULTIPLIER * NID_STORAGE_MAX_BUCKET_ENTRIES].nid = 0;
         }
-        calls->LockMem();
+        pss_code_mem_lock();
         return 0;
 }
 
 __attribute__((hot))
-int nid_storage_addEntry(VHLCalls *calls, nidTable_entry *entry)
+int nid_storage_addEntry(nidTable_entry *entry)
 {
         int key = (char)(entry->nid >> 24);
         for(int i = (key * NID_STORAGE_MAX_BUCKET_ENTRIES); i < NID_STORAGE_BUCKET_COUNT * NID_STORAGE_MAX_BUCKET_ENTRIES; i++)
@@ -42,14 +43,14 @@ int nid_storage_addEntry(VHLCalls *calls, nidTable_entry *entry)
                 if(nid_storage_table[i].nid == 0 || nid_storage_table[i].nid == entry->nid) { //Search for empty spot to add entry or update duplicate
 
                         //DEBUG_LOG("Entry %d", i);
-                        calls->UnlockMem();
+                        pss_code_mem_unlock();
                         //Make sure that the next entry is only cleared if we aren't overwriting an existing entry
                         if(nid_storage_table[i].nid != entry->nid && i + 1 < (key + 1) * NID_STORAGE_MAX_BUCKET_ENTRIES) nid_storage_table[i + 1].nid = 0;
 
                         nid_storage_table[i].nid = entry->nid;
                         nid_storage_table[i].type = entry->type;
                         nid_storage_table[i].value.i = entry->value.i;
-                        calls->LockMem();
+                        pss_code_mem_lock();
                         return 0;
                 }
         }
@@ -74,19 +75,19 @@ int nid_storage_getEntry(SceNID nid, nidTable_entry *entry)
 }
 
 __attribute__((hot))
-int nid_storage_addHookEntry(VHLCalls *calls, nidTable_entry *entry)
+int nid_storage_addHookEntry(nidTable_entry *entry)
 {
 
         int key = (char)(entry->nid >> 24);
         for(int i = (key * NID_STORAGE_MAX_BUCKET_ENTRIES * NID_STORAGE_HOOK_MULTIPLIER); i < (key + 1) * NID_STORAGE_MAX_BUCKET_ENTRIES * NID_STORAGE_HOOK_MULTIPLIER; i++)
         {
                 if(nid_storage_table_hooks[i].nid == 0) {   //Search for empty spot to add entry
-                        calls->UnlockMem();
+                        pss_code_mem_unlock();
                         nid_storage_table_hooks[i].nid = entry->nid;
                         nid_storage_table_hooks[i].type = entry->type;
                         nid_storage_table_hooks[i].value.i = entry->value.i;
                         if(i + 1 < (key + 1) * NID_STORAGE_MAX_BUCKET_ENTRIES * NID_STORAGE_HOOK_MULTIPLIER) nid_storage_table_hooks[i + 1].nid = 0;
-                        calls->LockMem();
+                        pss_code_mem_lock();
                         return 0;
                 }
         }

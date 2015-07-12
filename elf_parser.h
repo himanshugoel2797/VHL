@@ -45,11 +45,11 @@ typedef struct {
 } allocData;
 
 
-int block_manager_initialize(VHLCalls *calls);
-int block_manager_free_old_data(VHLCalls *calls, int curSlot);
+int block_manager_initialize(void);
+int block_manager_free_old_data(int curSlot);
 
-int elf_parser_start(VHLCalls *calls, int curSlot, int wait);
-int elf_parser_load(VHLCalls *calls, int priority, int curSlot, const char* file, void** entryPoint);
+int elf_parser_start(int curSlot, int wait);
+int elf_parser_load(int priority, int curSlot, const char* file, void** entryPoint);
 
 
 #endif

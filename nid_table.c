@@ -17,10 +17,12 @@ along with this program; if not, write to the Free Software Foundation,
 Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301  USA
 */
 #include <psp2/kernel/modulemgr.h>
+#include <psp2/pss.h>
+#include <stdio.h>
 #include "nid_table.h"
 #include "stub.h"
 
-static void resolveStubWithBranch(const VHLCalls *calls, void *stub, const void *loc)
+static void resolveStubWithBranch(void *stub, const void *loc)
 {
         ARM_INSTRUCTION movt;
         ARM_INSTRUCTION movw;
@@ -46,15 +48,12 @@ static void resolveStubWithBranch(const VHLCalls *calls, void *stub, const void 
         jmp.argCount = 1;
         jmp.value[0] = ARM_R12;
 
-        calls->UnlockMem();
         Assemble(&movw, &((SceUInt*)stub)[0]);
         Assemble(&movt, &((SceUInt*)stub)[1]);
         Assemble(&jmp, &((SceUInt*)stub)[2]);
-
-        calls->LockMem();
 }
 
-static void resolveStubWithSvc(const VHLCalls *calls, void *stub, SceUInt n)
+static void resolveStubWithSvc(void *stub, SceUInt n)
 {
         ARM_INSTRUCTION movw;
         ARM_INSTRUCTION svc;
@@ -79,29 +78,30 @@ static void resolveStubWithSvc(const VHLCalls *calls, void *stub, SceUInt n)
         jmp.argCount = 1;
         jmp.value[0] = ARM_R14;
 
-        calls->UnlockMem();
         Assemble(&movw, &((SceUInt*)stub)[0]);
         Assemble(&svc, &((SceUInt*)stub)[1]);
         Assemble(&jmp, &((SceUInt*)stub)[2]);
-
-        calls->LockMem();
 }
 
-static int resolveStubWithEntry(const VHLCalls *calls, void *stub, const nidTable_entry *entry)
+static int resolveStubWithEntry(void *stub, const nidTable_entry *entry)
 {
        switch (entry->type) {
                 case ENTRY_TYPES_FUNCTION:
-                        resolveStubWithBranch(calls, stub, entry->value.p);
+                        pss_code_mem_unlock();
+                        resolveStubWithBranch(stub, entry->value.p);
+                        pss_code_mem_lock();
                         break;
 
                 case ENTRY_TYPES_SYSCALL:
-                        resolveStubWithSvc(calls, stub, entry->value.i);
+                        pss_code_mem_unlock();
+                        resolveStubWithSvc(stub, entry->value.i);
+                        pss_code_mem_lock();
                         break;
 
                 case ENTRY_TYPES_VARIABLE:
-                        calls->UnlockMem();
+                        pss_code_mem_unlock();
                         *(SceUInt*)stub = entry->value.i;
-                        calls->LockMem();
+                        pss_code_mem_lock();
                         break;
 
                 default:
@@ -118,7 +118,7 @@ enum {
 };
 
 __attribute__((hot))
-static int analyzeStub(void *stub, SceNID nid, nidTable_entry *entry)
+static int analyzeStub(const void *stub, SceNID nid, nidTable_entry *entry)
 {
         entry->nid = nid;
         entry->value.i = 0;
@@ -168,7 +168,7 @@ int nid_table_isValidModuleInfo(SceModuleInfo *m_info)
 }
 
 __attribute__((hot))
-int nid_table_resolveFromModule(VHLCalls *calls, Psp2LoadedModuleInfo *target)
+int nid_table_resolveFromModule(Psp2LoadedModuleInfo *target)
 {
         nidTable_entry entry;
         DEBUG_LOG_("Searching for module info");
@@ -187,7 +187,7 @@ int nid_table_resolveFromModule(VHLCalls *calls, Psp2LoadedModuleInfo *target)
                                 entry.nid = exportTable_orig->nid_table[i];
                                 entry.type = ENTRY_TYPES_FUNCTION;
                                 entry.value.p = exportTable_orig->entry_table[i];
-                                nid_storage_addEntry(calls, &entry);
+                                nid_storage_addEntry(&entry);
                         }
                 }
                 DEBUG_LOG_("Exports resolved");
@@ -231,7 +231,7 @@ int nid_table_resolveFromModule(VHLCalls *calls, Psp2LoadedModuleInfo *target)
                                 {
                                         int err = analyzeStub(entryTable[i], nidTable[i], &entry);
                                         if(err == ANALYZE_STUB_OK)
-                                               nid_storage_addEntry(calls, &entry);
+                                               nid_storage_addEntry(&entry);
                                         else if(err == ANALYZE_STUB_INVAL)
                                                break;
                                 }
@@ -244,7 +244,7 @@ int nid_table_resolveFromModule(VHLCalls *calls, Psp2LoadedModuleInfo *target)
                                         entry.type = ENTRY_TYPES_VARIABLE;
                                         entry.nid = nidTable[i];
                                         entry.value.i = *(SceUInt*)entryTable[i];
-                                        nid_storage_addEntry(calls, &entry);
+                                        nid_storage_addEntry(&entry);
                                 }
 
                                 importTable_l = GET_NEXT_IMPORT(importTable_l);
@@ -257,7 +257,7 @@ int nid_table_resolveFromModule(VHLCalls *calls, Psp2LoadedModuleInfo *target)
         return 0;
 }
 
-int nid_table_resolveAll(VHLCalls *calls)
+int nid_table_resolveAll()
 {
         SceUID uids[NID_TABLE_MAX_MODULES];
         int numEntries = NID_TABLE_MAX_MODULES;
@@ -276,7 +276,7 @@ int nid_table_resolveAll(VHLCalls *calls)
                         DEBUG_LOG_("Failed to get module info... Skipping...");
                 }else{
                         DEBUG_LOG_("Mod info obtained");
-                        nid_table_resolveFromModule(calls, &loadedModuleInfo);
+                        nid_table_resolveFromModule(&loadedModuleInfo);
                 }
         }
         DEBUG_LOG_("All modules resolved");
@@ -313,7 +313,7 @@ SceModuleInfo* nid_table_findModuleInfo(void* location, SceUInt size, char* libn
 }
 
 __attribute__((hot))
-int nid_table_addNIDCacheToTable(VHLCalls *calls, SceModuleInfo *moduleInfo)
+int nid_table_addNIDCacheToTable(SceModuleInfo *moduleInfo)
 {
         SceUInt base = (SceUInt)moduleInfo - moduleInfo->ent_top + sizeof(SceModuleInfo);
         nidTable_entry entry;
@@ -328,7 +328,7 @@ int nid_table_addNIDCacheToTable(VHLCalls *calls, SceModuleInfo *moduleInfo)
                         for(int i = 0; i < libkernel_nid_cache_header[index].count; i++)
                         {
                                 if(analyzeStub(GET_FUNCTIONS_ENTRYTABLE(importTable)[i], libkernel_nid_cache[offset + i], &entry) == ANALYZE_STUB_OK)
-                                        nid_storage_addEntry(calls, &entry);
+                                        nid_storage_addEntry(&entry);
                         }
                 }
         }
@@ -336,16 +336,16 @@ int nid_table_addNIDCacheToTable(VHLCalls *calls, SceModuleInfo *moduleInfo)
 }
 
 
-static int resolveVhlImport(VHLCalls *calls, SceUInt *stub, const SceModuleInfo *moduleInfo)
+static int resolveVhlImport(SceUInt *stub, const SceModuleInfo *moduleInfo)
 {
-        if (calls == NULL || stub == NULL || moduleInfo == NULL)
+        if (stub == NULL || moduleInfo == NULL)
                 return -1;
 
         //Check the cache if it's ready
         DEBUG_LOG_("Searching NID database...");
         nidTable_entry entry;
         if(nid_storage_getEntry(stub[3], &entry) >= 0) {
-                resolveStubWithEntry(calls, stub, &entry);
+                resolveStubWithEntry(stub, &entry);
                 return 0;
         }
 
@@ -360,7 +360,9 @@ static int resolveVhlImport(VHLCalls *calls, SceUInt *stub, const SceModuleInfo 
                         if(exportTable->nid_table[i] == stub[3]) {
                                 //Found the nid
                                 DEBUG_LOG_("Match found!");
-                                resolveStubWithBranch(calls, stub, exportTable->entry_table[i]);
+                                pss_code_mem_unlock();
+                                resolveStubWithBranch(stub, exportTable->entry_table[i]);
+                                pss_code_mem_lock();
                                 return 0;
                         }
                 }
@@ -378,9 +380,9 @@ static int resolveVhlImport(VHLCalls *calls, SceUInt *stub, const SceModuleInfo 
                 {
                         if(nids[i] == stub[3]) {
                                 DEBUG_LOG_("Match found!");
-                                calls->UnlockMem();
+                                pss_code_mem_unlock();
                                 memcpy(stub, entryTable[i], 16);
-                                calls->LockMem();
+                                pss_code_mem_lock();
                                 return 0;
                         }
                 }
@@ -390,19 +392,37 @@ static int resolveVhlImport(VHLCalls *calls, SceUInt *stub, const SceModuleInfo 
         return -1;
 }
 
-int nid_table_resolveVHLImports(UVL_Context *ctx, VHLCalls *calls)
+int nid_table_resolveVHLImports(const UVL_Context *ctx)
 {
         SceUInt * const vhlStubTop = getVhlStubTop();
-        SceUInt * const vhlStubPrimaryBtm = (void *)((uintptr_t)vhlStubTop + vhlStubPrimarySize);
+        SceUInt * const vhlStubCtxBtm = (void *)((uintptr_t)vhlStubTop + vhlStubCtxSize);
+        SceUInt * const vhlStubPrimaryBtm = (void *)((uintptr_t)vhlStubCtxBtm + vhlStubPrimarySize);
         SceUInt * const vhlStubSecondaryBtm = (void *)((uintptr_t)vhlStubPrimaryBtm + vhlStubSecondarySize);
         nidTable_entry libKernelBase, entry;
         SceUInt *p;
+        const void * const *q;
 
-        DEBUG_LOG_("Resolving VHL Imports");
-        if(analyzeStub(ctx->libkernel_anchor, 0, &libKernelBase) == ANALYZE_STUB_OK) {
+        ctx->funcs.logline("Resolving VHL Imports");
+
+        ctx->funcs.psvUnlockMem();
+
+        q = ctx->ptrs.funcs;
+        for (p = vhlStubTop; p != vhlStubCtxBtm - 4; p += 4) {
+                memcpy(p, *q, 16);
+                q++;
+        }
+
+        // puts
+        resolveStubWithBranch(p, *q);
+
+        ctx->funcs.psvLockMem();
+        ctx->funcs.psvFlushIcache(vhlStubTop, vhlStubCtxSize);
+        // pss_* and puts are avaliable now.
+
+        if(analyzeStub(ctx->ptrs.libkernel_anchor, 0, &libKernelBase) == ANALYZE_STUB_OK) {
 
                 DEBUG_LOG_("Initializing cache");
-                nid_storage_initialize(calls);
+                nid_storage_initialize();
 
                 libKernelBase.value.i = B_UNSET(libKernelBase.value.i, 0);
 
@@ -411,41 +431,41 @@ int nid_table_resolveVHLImports(UVL_Context *ctx, VHLCalls *calls)
 
                 SceUInt base = (SceUInt)moduleInfo - moduleInfo->ent_top + sizeof(SceModuleInfo);
 
-                if(nid_table_addNIDCacheToTable(calls, moduleInfo) < 0) return -1;
+                if(nid_table_addNIDCacheToTable(moduleInfo) < 0) return -1;
 
-                for (p = vhlStubTop; p != vhlStubPrimaryBtm; p += 4)
-                        resolveVhlImport(calls, p, moduleInfo);
+                for (p = vhlStubCtxBtm; p != vhlStubPrimaryBtm; p += 4)
+                        resolveVhlImport(p, moduleInfo);
 
-                calls->FlushICache(vhlStubTop, vhlStubPrimarySize);
+                pss_code_mem_flush_icache(vhlStubCtxBtm, vhlStubPrimarySize);
 
                 DEBUG_LOG_("Resolving and Caching NIDs...");
-                nid_table_resolveAll(calls);
+                nid_table_resolveAll();
 
                 while (p != vhlStubSecondaryBtm) {
-                        resolveVhlImport(calls, p, moduleInfo);
+                        resolveVhlImport(p, moduleInfo);
                         p += 4;
                 }
 
-                calls->FlushICache(vhlStubPrimaryBtm, vhlStubSecondarySize);
+                pss_code_mem_flush_icache(vhlStubPrimaryBtm, vhlStubSecondarySize);
         }
 
         return 0;
 }
 
-int nid_table_exportFunc(VHLCalls *calls, void *target, SceNID nid)
+int nid_table_exportFunc(void *target, SceNID nid)
 {
         nidTable_entry entry;
         entry.nid = nid;
         entry.type = ENTRY_TYPES_FUNCTION;
         entry.value.p = target;
 
-        nid_storage_addEntry(calls, &entry);
+        nid_storage_addEntry(&entry);
 
         return 0;
 }
 
 __attribute__((hot))
-int nid_table_resolveStub(VHLCalls *calls, int priority, void *stub, SceNID nid)
+int nid_table_resolveStub(int priority, void *stub, SceNID nid)
 {
         nidTable_entry entry;
 
@@ -456,9 +476,9 @@ int nid_table_resolveStub(VHLCalls *calls, int priority, void *stub, SceNID nid)
         if(result >= 0) {
                 stub = (void*)((SceUInt)stub & ~1);
 
-                resolveStubWithEntry(calls, stub, &entry);
+                resolveStubWithEntry(stub, &entry);
                 if (entry.type != ENTRY_TYPES_VARIABLE)
-                        calls->FlushICache(stub, 0x10);
+                        pss_code_mem_flush_icache(stub, 0x10);
 
                 return 0;
         }
@@ -466,7 +486,7 @@ int nid_table_resolveStub(VHLCalls *calls, int priority, void *stub, SceNID nid)
         return -1;
 }
 
-int nid_table_registerHook(VHLCalls *calls, void *func, SceNID nid)
+int nid_table_registerHook(void *func, SceNID nid)
 {
         nidTable_entry entry;
         if(nid_storage_getEntry(nid, &entry) >= 0)
@@ -474,7 +494,7 @@ int nid_table_registerHook(VHLCalls *calls, void *func, SceNID nid)
                 entry.nid = nid;
                 entry.type = ENTRY_TYPES_FUNCTION;
                 entry.value.p = func;
-                nid_storage_addHookEntry(calls, &entry);
+                nid_storage_addHookEntry(&entry);
                 return 0;
         }
         return -1;

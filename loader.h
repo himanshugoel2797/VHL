@@ -25,7 +25,7 @@ Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301  USA
 #include "nids.h"
 
 //Contains functions to parse and load elfs
-int loader_initialize(VHLCalls *calls);
+int loader_initialize(void);
 int loader_loadHomebrew(const char *str, int slot);
 int loader_startHomebrew(int slot);
 int loader_loadExec(const char *path, const char *argv[], void *opt);

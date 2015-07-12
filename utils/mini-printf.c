@@ -41,6 +41,7 @@
  *
  */
 
+#include <stdio.h>
 #include <string.h>
 #include <stdarg.h>
 #include "mini-printf.h"
@@ -221,7 +222,7 @@ int internal_printf(const char* fmt, ...)
 	#endif
 								va_end(va);
 	#ifdef DEBUG
-								logLine(buffer);
+								puts(buffer);
 	#endif
 								return 0;
 }
