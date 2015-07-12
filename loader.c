@@ -21,26 +21,15 @@
 #include "fs_hooks.h"
 #include "state_machine.h"
 
-static int currentHomebrew;
+static int currentHomebrew = 0;
 
-int loader_initialize()
-{
-        pss_code_mem_unlock();
-        currentHomebrew = 0;
-        pss_code_mem_lock();
-
-        nid_table_exportFunc(loader_loadExec, NID_LOAD_EXEC);
-
-        return 0;
-}
-
-int loader_loadExec(const char *path, const char *argv[], void *opt)
+int hook_sceAppMgrLoadExec(const char *path, const char *argv[], void *opt)
 {
         //Trigger a cleanup here
 
         char tmp[MAX_PATH_LENGTH];
         char *p = TranslateVFS(tmp, path);
-        int retVal = elf_parser_load(1, 0, p, NULL);
+        int retVal = elf_parser_load(0, p, NULL);
         retVal = elf_parser_start(0, -1);
 
         //If we do end up returning, trigger the exitHomebrew procedures
@@ -56,7 +45,7 @@ int loader_exitHomebrew(int errorCode)
 
         //Load the menu
         char tmp[MAX_PATH_LENGTH];
-        int retVal = elf_parser_load(1, 0, TranslateVFS(tmp, MENU_PATH), NULL);
+        int retVal = elf_parser_load(0, TranslateVFS(tmp, MENU_PATH), NULL);
         retVal = elf_parser_start(0, -1);
 
         return errorCode;

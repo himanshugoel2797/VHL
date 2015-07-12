@@ -16,8 +16,8 @@ You should have received a copy of the GNU General Public License
 along with this program; if not, write to the Free Software Foundation,
 Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301  USA
 */
-#ifndef _VHL_EXPORT_NIDS_H_
-#define _VHL_EXPORT_NIDS_H_
+#ifndef VHL_EXPORT_NIDS_H
+#define VHL_EXPORT_NIDS_H
 
 // SceLibKernel
 #define NID_sceKernelExitProcess 0x7595D9AA
@@ -36,6 +36,9 @@ Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301  USA
 #define NID_sceKernelGetThreadInfo 0x8d9c5461
 #define NID_sceKernelWaitThreadEnd 0xddb395a9
 #define NID_sceKernelGetThreadExitStatus 0xd5dc26c4
+
+// SceAppMgrUser
+#define NID_sceAppMgrLoadExec 0xe6774abc
 
 // SceCtrl
 #define NID_sceCtrlPeekBufferPositive 0xa9c3ced6
@@ -70,13 +73,6 @@ Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301  USA
 // SceLibc
 #define NID_printf 0x9A004680
 #define NID_puts 0x59C3E171
-
-#define NID_ALLOC_CODE_MEM 0xBCEAB831
-#define NID_UNLOCK 0x98D1C91D
-#define NID_LOCK 0xEEC99826
-#define NID_FLUSH 0xC85B400C
-#define NID_LOG 0xD4F59028
-#define NID_LOAD_EXEC 3866577596
 
 // SceLibMonoBridge
 #define NID_pss_code_mem_alloc 0xf466abec

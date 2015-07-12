@@ -16,8 +16,8 @@ You should have received a copy of the GNU General Public License
 along with this program; if not, write to the Free Software Foundation,
 Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301  USA
 */
-#ifndef  _VHL_VHL_H_
-#define  _VHL_VHL_H_
+#ifndef  VHL_VHL_H
+#define  VHL_VHL_H
 
 #include <psp2/types.h>
 #include <psp2/io/fcntl.h>

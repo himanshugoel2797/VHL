@@ -16,8 +16,8 @@ You should have received a copy of the GNU General Public License
 along with this program; if not, write to the Free Software Foundation,
 Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301  USA
 */
-#ifndef _VHL_STATE_MACHINE_H_
-#define _VHL_STATE_MACHINE_H_
+#ifndef VHL_STATE_MACHINE_H
+#define VHL_STATE_MACHINE_H
 
 #include "vhl.h"
 #include "config.h"
@@ -25,9 +25,9 @@ Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301  USA
 #define MAX_THREAD_COUNT 128
 #define MAX_OTHER_OBJECT_COUNT 2048 //Max number of Mutex, Semaphore, Event flags, Condition variables, ReadWrite locks, lightweight mutex, lightweight condition variable, events, message pipes, timers, memory blocks
 
-int state_machine_initialize(void);
 int state_machine_pollControls();
 int state_machine_checkState();
+int hook_sceDisplayWaitVblankStart(void);
 
 typedef enum{
   WAITING = 0,

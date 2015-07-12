@@ -16,8 +16,8 @@ You should have received a copy of the GNU General Public License
 along with this program; if not, write to the Free Software Foundation,
 Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301  USA
 */
-#ifndef _VHL_ELF_LOADER_H_
-#define _VHL_ELF_LOADER_H_
+#ifndef VHL_ELF_LOADER_H
+#define VHL_ELF_LOADER_H
 
 #include "vhl.h"
 #include "nid_table.h"
@@ -25,10 +25,10 @@ Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301  USA
 #include "nids.h"
 
 //Contains functions to parse and load elfs
-int loader_initialize(void);
 int loader_loadHomebrew(const char *str, int slot);
 int loader_startHomebrew(int slot);
-int loader_loadExec(const char *path, const char *argv[], void *opt);
+int loader_exitHomebrew(int errorCode);
 
+int hook_sceAppMgrLoadExec(const char *path, const char *argv[], void *opt);
 
 #endif

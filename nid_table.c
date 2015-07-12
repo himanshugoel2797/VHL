@@ -19,6 +19,7 @@ Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301  USA
 #include <psp2/kernel/modulemgr.h>
 #include <psp2/pss.h>
 #include <stdio.h>
+#include "hooks.c"
 #include "nid_table.h"
 #include "stub.h"
 
@@ -168,7 +169,7 @@ int nid_table_isValidModuleInfo(SceModuleInfo *m_info)
 }
 
 __attribute__((hot))
-int nid_table_resolveFromModule(Psp2LoadedModuleInfo *target)
+int nid_table_addStubsInModule(Psp2LoadedModuleInfo *target)
 {
         nidTable_entry entry;
         DEBUG_LOG_("Searching for module info");
@@ -257,7 +258,25 @@ int nid_table_resolveFromModule(Psp2LoadedModuleInfo *target)
         return 0;
 }
 
-int nid_table_resolveAll()
+void nid_table_addAllHooks()
+{
+        nidTable_entry entry;
+        uintptr_t top;
+        unsigned int i;
+
+        __asm__ ("addAllHooksPc: mov %0, pc;"
+                 "ldr %1, =addAllHooksPc + 4;"
+                 "sub %0, %0, %1;"
+                 : "=r"(top), "=r"(i));
+        for (i = 0; i < sizeof(forcedHooks) / sizeof(hook_t); i++) {
+                entry.nid = forcedHooks[i].nid;
+                entry.type = ENTRY_TYPES_FUNCTION;
+                entry.value.i = top + (uintptr_t)forcedHooks[i].p;
+                nid_storage_addEntry(&entry);
+        }
+}
+
+int nid_table_addAllStubs()
 {
         SceUID uids[NID_TABLE_MAX_MODULES];
         int numEntries = NID_TABLE_MAX_MODULES;
@@ -276,7 +295,7 @@ int nid_table_resolveAll()
                         DEBUG_LOG_("Failed to get module info... Skipping...");
                 }else{
                         DEBUG_LOG_("Mod info obtained");
-                        nid_table_resolveFromModule(&loadedModuleInfo);
+                        nid_table_addStubsInModule(&loadedModuleInfo);
                 }
         }
         DEBUG_LOG_("All modules resolved");
@@ -438,8 +457,8 @@ int nid_table_resolveVHLImports(const UVL_Context *ctx)
 
                 pss_code_mem_flush_icache(vhlStubCtxBtm, vhlStubPrimarySize);
 
-                DEBUG_LOG_("Resolving and Caching NIDs...");
-                nid_table_resolveAll();
+                DEBUG_LOG_("Searching and Caching NIDs...");
+                nid_table_addAllStubs();
 
                 while (p != vhlStubSecondaryBtm) {
                         resolveVhlImport(p, moduleInfo);
@@ -447,32 +466,20 @@ int nid_table_resolveVHLImports(const UVL_Context *ctx)
                 }
 
                 pss_code_mem_flush_icache(vhlStubPrimaryBtm, vhlStubSecondarySize);
+
+                nid_table_addAllHooks();
         }
 
         return 0;
 }
 
-int nid_table_exportFunc(void *target, SceNID nid)
-{
-        nidTable_entry entry;
-        entry.nid = nid;
-        entry.type = ENTRY_TYPES_FUNCTION;
-        entry.value.p = target;
-
-        nid_storage_addEntry(&entry);
-
-        return 0;
-}
-
 __attribute__((hot))
-int nid_table_resolveStub(int priority, void *stub, SceNID nid)
+int nid_table_resolveStub(void *stub, SceNID nid)
 {
         nidTable_entry entry;
+        int result;
 
-        int result = 0;
-        if(priority > 0) result = nid_storage_getHookEntry(nid, &entry);
-        if(priority <= 0 || result < 0) result = nid_storage_getEntry(nid, &entry);
-
+        result = nid_storage_getEntry(nid, &entry);
         if(result >= 0) {
                 stub = (void*)((SceUInt)stub & ~1);
 
@@ -483,19 +490,5 @@ int nid_table_resolveStub(int priority, void *stub, SceNID nid)
                 return 0;
         }
         DEBUG_LOG("Failed to find NID 0x%08x", nid);
-        return -1;
-}
-
-int nid_table_registerHook(void *func, SceNID nid)
-{
-        nidTable_entry entry;
-        if(nid_storage_getEntry(nid, &entry) >= 0)
-        {
-                entry.nid = nid;
-                entry.type = ENTRY_TYPES_FUNCTION;
-                entry.value.p = func;
-                nid_storage_addHookEntry(&entry);
-                return 0;
-        }
         return -1;
 }

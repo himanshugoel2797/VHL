@@ -16,8 +16,8 @@ You should have received a copy of the GNU General Public License
 along with this program; if not, write to the Free Software Foundation,
 Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301  USA
 */
-#ifndef _VHL_CONFIG_H_
-#define _VHL_CONFIG_H_
+#ifndef VHL_CONFIG_H
+#define VHL_CONFIG_H
 
 #include "vhl.h"
 
@@ -51,7 +51,7 @@ typedef enum{
 #define MAX_SLOTS 64
 
 int config_initialize();
-int config_getIntValue(INT_VARIABLE_OPTIONS option);
-int config_setIntValue(INT_VARIABLE_OPTIONS option, int value);
+int vhlGetIntValue(INT_VARIABLE_OPTIONS option);
+int vhlSetIntValue(INT_VARIABLE_OPTIONS option, int val);
 
 #endif

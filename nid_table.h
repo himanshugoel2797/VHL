@@ -17,8 +17,8 @@ along with this program; if not, write to the Free Software Foundation,
 Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301  USA
 */
 
-#ifndef _VHL_NID_TABLE_H_
-#define _VHL_NID_TABLE_H_
+#ifndef VHL_NID_TABLE_H
+#define VHL_NID_TABLE_H
 
 #include <psp2/kernel/modulemgr.h>
 #include "utils/bithacks.h"
@@ -42,11 +42,9 @@ int nid_table_initialize();
 int nid_table_analyzeStub(void *stub, SceNID nid, nidTable_entry *entry);
 SceModuleInfo* nid_table_findModuleInfo(void* location, SceUInt size, char* libname);
 int nid_table_isValidModuleInfo(SceModuleInfo *m_info);
-int nid_table_resolveFromModule(Psp2LoadedModuleInfo *target);
+int nid_table_addStubsInModule(Psp2LoadedModuleInfo *target);
 int nid_table_resolveVHLImports(const UVL_Context *ctx);
-int nid_table_resolveAll();
-int nid_table_exportFunc(void *target, SceNID nid);
-int nid_table_resolveStub(int priority, void *stub, SceNID nid);
-int nid_table_registerHook(void *func, SceNID nid);
+int nid_table_addAllStubs(void);
+int nid_table_resolveStub(void *stub, SceNID nid);
 
 #endif

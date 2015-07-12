@@ -23,8 +23,8 @@ Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301  USA
 #include "../vhl.h"
 #include "../config.h"
 
-#define NID_STORAGE_BUCKET_COUNT 256
-#define NID_STORAGE_HOOK_MULTIPLIER 1
+#define NID_STORAGE_KEY_BIT 8
+#define NID_STORAGE_BUCKET_COUNT (1 << NID_STORAGE_KEY_BIT)
 #define NID_STORAGE_CACHE_FILE VHL_DATA_PATH"/nidCache.bin"
 
 
@@ -47,7 +47,5 @@ typedef struct {
 int nid_storage_initialize();
 int nid_storage_addEntry(nidTable_entry *entry);
 int nid_storage_getEntry(SceNID nid, nidTable_entry *entry);
-int nid_storage_addHookEntry(nidTable_entry *entry);
-int nid_storage_getHookEntry(SceNID nid, nidTable_entry *entry);
 
 #endif

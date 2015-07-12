@@ -32,18 +32,15 @@ int config_initialize()
         }
         pss_code_mem_lock();
 
-        nid_table_exportFunc(config_getIntValue, NID_vhlGetIntValue);
-        nid_table_exportFunc(config_setIntValue, NID_vhlSetIntValue);
-
         return 0;
 }
 
-int config_getIntValue(INT_VARIABLE_OPTIONS option)
+int vhlGetIntValue(INT_VARIABLE_OPTIONS option)
 {
         return intOptions[option - 1];
 }
 
-int config_setIntValue(INT_VARIABLE_OPTIONS option, int val)
+int vhlSetIntValue(INT_VARIABLE_OPTIONS option, int val)
 {
         pss_code_mem_unlock();
         intOptions[option - 1] = val;

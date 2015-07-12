@@ -21,7 +21,6 @@
 #include "elf_parser.h"
 
 static allocData allocatedBlocks[MAX_SLOTS];
-static SceKernelThreadInfo mainThreadInfo;
 
 int block_manager_free_old_data(int curSlot)
 {
@@ -41,7 +40,7 @@ int block_manager_free_old_data(int curSlot)
         allocatedBlocks[curSlot].elf_mem_uid = 0;
         allocatedBlocks[curSlot].elf_mem_size = 0;
         allocatedBlocks[curSlot].entryPoint = NULL;
-        allocatedBlocks[curSlot].path[0] = NULL;
+        allocatedBlocks[curSlot].path[0] = 0;
         pss_code_mem_lock();
 
         return 0;
@@ -60,10 +59,8 @@ int block_manager_initialize()
                 allocatedBlocks[curSlot].elf_mem_loc = 0;
                 allocatedBlocks[curSlot].elf_mem_uid = 0;
                 allocatedBlocks[curSlot].elf_mem_size = 0;
-                allocatedBlocks[curSlot].path[0] = NULL;
+                allocatedBlocks[curSlot].path[0] = 0;
         }
-        mainThreadInfo.size = sizeof(SceKernelThreadInfo);
-        sceKernelGetThreadInfo(sceKernelGetThreadId(), &mainThreadInfo);
         pss_code_mem_lock();
 }
 
@@ -298,7 +295,7 @@ int elf_parser_find_SceModuleInfo(Elf32_Ehdr *elf_hdr, Elf32_Phdr *elf_phdrs, Sc
         SceUInt index = ((SceUInt)elf_hdr->e_entry & 0xC0000000) >> 30;
         SceUInt offset = (SceUInt)elf_hdr->e_entry & 0x3FFFFFFF;
 
-        if ((SceUInt)elf_phdrs[index].p_vaddr == NULL)
+        if ((SceUInt)elf_phdrs[index].p_vaddr == 0)
         {
                 DEBUG_LOG ("Invalid segment index %d\n", index);
                 return -1;
@@ -346,17 +343,17 @@ int elf_parser_check_hdr(Elf32_Ehdr *hdr)
 }
 
 
-int elf_parser_load_exec(int priority, int curSlot, SceUID fd, unsigned int len, Elf32_Ehdr *hdr, void **entryPoint)
+int elf_parser_load_exec(int curSlot, SceUID fd, unsigned int len, Elf32_Ehdr *hdr, void **entryPoint)
 {
         return -1;
 }
 
-int elf_parser_load_sce_exec(int priority, int curSlot, SceUID fd, unsigned int len, Elf32_Ehdr *hdr, void **entryPoint)
+int elf_parser_load_sce_exec(int curSlot, SceUID fd, unsigned int len, Elf32_Ehdr *hdr, void **entryPoint)
 {
         return -1;
 }
 
-int elf_parser_load_sce_relexec(int priority, int curSlot, SceUID fd, unsigned int len, Elf32_Ehdr *hdr, void **entryPoint)
+int elf_parser_load_sce_relexec(int curSlot, SceUID fd, unsigned int len, Elf32_Ehdr *hdr, void **entryPoint)
 {
         if(allocatedBlocks[curSlot].data_mem_uid != 0) block_manager_free_old_data(curSlot); //Make sure the block is empty to prevent memory leaks
         char tmpDS_name[18];
@@ -417,20 +414,21 @@ int elf_parser_load_sce_relexec(int priority, int curSlot, SceUID fd, unsigned i
         exec_mem_size = MB_ALIGN(FOUR_KB_ALIGN(exec_mem_size));
         data_mem_size = FOUR_KB_ALIGN(data_mem_size);
 
-        exec_mem_uid = AllocCodeMemBlock(exec_mem_size);
-        if(exec_mem_uid < 0) {
+        exec_mem_loc = pss_code_mem_alloc(&exec_mem_size);
+        if(exec_mem_loc == NULL) {
                 DEBUG_LOG_("Failed to allocate executable memory!");
+                goto freeAllAndError;
+        }
+
+        exec_mem_uid = sceKernelFindMemBlockByAddr(exec_mem_loc, 0);
+        if (exec_mem_uid < 0) {
+                DEBUG_LOG_("Failed to retrieve allocated executable memory!");
                 goto freeAllAndError;
         }
 
         data_mem_uid = sceKernelAllocMemBlock(data_store_name, SCE_KERNEL_MEMBLOCK_TYPE_USER_RW, data_mem_size, NULL);
         if(data_mem_uid < 0) {
                 DEBUG_LOG_("Failed to allocate data memory!");
-                goto freeAllAndError;
-        }
-
-        if(sceKernelGetMemBlockBase(exec_mem_uid, &exec_mem_loc) < 0) {
-                DEBUG_LOG_("Failed to retrieve allocated executable memory!");
                 goto freeAllAndError;
         }
 
@@ -513,7 +511,7 @@ int elf_parser_load_sce_relexec(int priority, int curSlot, SceUID fd, unsigned i
 
                 for(int i = 0; i < GET_FUNCTION_COUNT(imports); i++)
                 {
-                        int err = nid_table_resolveStub(priority, entryTable[i], nidTable[i]);
+                        int err = nid_table_resolveStub(entryTable[i], nidTable[i]);
                         if(err < 0) DEBUG_LOG("Failed to resolve import NID 0x%08x", nidTable[i]);
                 }
 
@@ -522,15 +520,15 @@ int elf_parser_load_sce_relexec(int priority, int curSlot, SceUID fd, unsigned i
 
                 for(int i = 0; i < GET_VARIABLE_COUNT(imports); i++)
                 {
-                        int err = nid_table_resolveStub(priority, entryTable[i], nidTable[i]);
+                        int err = nid_table_resolveStub(entryTable[i], nidTable[i]);
                         if(err < 0) DEBUG_LOG("Failed to resolve variable NID 0x%08x", nidTable[i]);
                 }
         }
 
         DEBUG_LOG_("Retrieving entry point");
-        if(entryPoint != NULL) *entryPoint = prgmHDR[index].p_vaddr + mod_info->mod_start;
+        if(entryPoint != NULL) *entryPoint = (void *)(prgmHDR[index].p_vaddr + mod_info->mod_start);
         pss_code_mem_unlock();
-        allocatedBlocks[curSlot].entryPoint = prgmHDR[index].p_vaddr + mod_info->mod_start;
+        allocatedBlocks[curSlot].entryPoint = (void *)(prgmHDR[index].p_vaddr + mod_info->mod_start);
         pss_code_mem_lock();
         DEBUG_LOG_("Entry point retrieved");
 
@@ -543,7 +541,7 @@ freeTmpDataAndError:
         return -1;
 }
 
-int elf_parser_load(int priority, int curSlot, const char *file, void **entryPoint)
+int elf_parser_load(int curSlot, const char *file, void **entryPoint)
 {
         DEBUG_LOG_("elf_parser_Load");
         SceUID fd = sceIoOpen(file, PSP2_O_RDONLY, 0777);
@@ -566,15 +564,15 @@ int elf_parser_load(int priority, int curSlot, const char *file, void **entryPoi
         switch(hdr.e_type)
         {
         case ET_SCE_RELEXEC:
-                return elf_parser_load_sce_relexec(priority, curSlot, fd, len, &hdr, entryPoint);
+                return elf_parser_load_sce_relexec(curSlot, fd, len, &hdr, entryPoint);
                 break;
         case ET_SCE_EXEC:
                 internal_printf("ET_SCE_EXEC format not supported at the moment");
-                return elf_parser_load_sce_exec(priority, curSlot, fd, len, &hdr, entryPoint);
+                return elf_parser_load_sce_exec(curSlot, fd, len, &hdr, entryPoint);
                 break;
         case ET_EXEC:
                 internal_printf("ET_EXEC format not supported at the moment");
-                return elf_parser_load_sce_exec(priority,curSlot, fd, len, &hdr, entryPoint);
+                return elf_parser_load_sce_exec(curSlot, fd, len, &hdr, entryPoint);
                 break;
         default:
                 return -1;
@@ -586,10 +584,10 @@ int elf_parser_load(int priority, int curSlot, const char *file, void **entryPoi
         return 0;
 }
 
-int homebrew_thread_entry(int argc, int *argv)
+int homebrew_thread_entry(SceSize args, void *argp)
 {
 
-        int curSlot = *argv;
+        int curSlot = *(int *)argp;
         char tmp[512];
         strcpy(tmp, allocatedBlocks[curSlot].path);
 
@@ -603,7 +601,13 @@ int homebrew_thread_entry(int argc, int *argv)
 
 int elf_parser_start(int curSlot, int wait)
 {
-        SceUID tid = sceKernelCreateThread("homebrew_thread", homebrew_thread_entry, mainThreadInfo.currentPriority, 0x10000, mainThreadInfo.attr, 0, NULL);
+        SceKernelThreadInfo mainThreadInfo;
+        SceUID tid;
+
+        mainThreadInfo.size = sizeof(SceKernelThreadInfo);
+        sceKernelGetThreadInfo(sceKernelGetThreadId(), &mainThreadInfo);
+
+        tid = sceKernelCreateThread("homebrew_thread", homebrew_thread_entry, mainThreadInfo.currentPriority, 0x10000, mainThreadInfo.attr, 0, NULL);
         sceKernelStartThread(tid, sizeof(curSlot), &curSlot);
 
         pss_code_mem_unlock();
@@ -611,8 +615,7 @@ int elf_parser_start(int curSlot, int wait)
         pss_code_mem_lock();
 
         int exitStatus = 0;
-        int *delay = &wait;
-        if(wait < 0) delay = NULL;
+        SceUInt *delay = wait < 0 ? NULL : (SceUInt *)&wait;
 
         sceKernelWaitThreadEnd(tid, &exitStatus, delay);
 
