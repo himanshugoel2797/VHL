@@ -50,7 +50,7 @@ typedef enum{
 #define NID_STORAGE_MAX_BUCKET_ENTRIES 64
 #define MAX_SLOTS 64
 
-int config_initialize(const UVL_Context *_ctx);
+int config_initialize();
 int config_getIntValue(INT_VARIABLE_OPTIONS option);
 int config_setIntValue(INT_VARIABLE_OPTIONS option, int value);
 

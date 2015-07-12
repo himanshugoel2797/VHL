@@ -78,6 +78,12 @@ Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301  USA
 #define NID_LOG 0xD4F59028
 #define NID_LOAD_EXEC 3866577596
 
+// SceLibMonoBridge
+#define NID_pss_code_mem_alloc 0xf466abec
+#define NID_pss_code_mem_flush_icache 0x110f567b
+#define NID_pss_code_mem_lock 0x53d03181
+#define NID_pss_code_mem_unlock 0x50e8f8ff
+
 // VHL
 #define NID_vhlGetIntValue 3
 #define NID_vhlSetIntValue 4

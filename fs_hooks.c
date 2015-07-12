@@ -1,7 +1,6 @@
 #include "fs_hooks.h"
 #include "nid_table.h"
 
-static UVL_Context *ctx;
 SceUID sceIoOpen_hook(const char* path, int flags, SceMode m)
 {
         char tmpPath[MAX_PATH_LENGTH];
@@ -69,20 +68,16 @@ int sceIoChstat_hook(const char *file, SceIoStat *stat, int bits)
         return sceIoChstat(tmp, stat, bits);
 }
 
-int fs_hooks_initialize(UVL_Context *_ctx)
+int fs_hooks_initialize()
 {
-        _ctx->psvUnlockMem();
-        ctx = _ctx;
-        ctx->psvLockMem();
-
-        nid_table_registerHook(ctx, sceIoOpen_hook, NID_sceIoOpen);
-        nid_table_registerHook(ctx, sceIoRemove_hook, NID_sceIoRemove);
-        nid_table_registerHook(ctx, sceIoRename_hook, NID_sceIoRename);
-        nid_table_registerHook(ctx, sceIoDopen_hook, NID_sceIoDopen);
-        nid_table_registerHook(ctx, sceIoMkdir_hook, NID_sceIoMkdir);
-        nid_table_registerHook(ctx, sceIoRmdir_hook, NID_sceIoRmdir);
-        //nid_table_registerHook(ctx, sceIoChdir_hook, NID_sceIoChdir);
-        nid_table_registerHook(ctx, sceIoGetstat_hook, NID_sceIoGetstat);
-        nid_table_registerHook(ctx, sceIoChstat_hook, NID_sceIoChstat);
+        nid_table_registerHook(sceIoOpen_hook, NID_sceIoOpen);
+        nid_table_registerHook(sceIoRemove_hook, NID_sceIoRemove);
+        nid_table_registerHook(sceIoRename_hook, NID_sceIoRename);
+        nid_table_registerHook(sceIoDopen_hook, NID_sceIoDopen);
+        nid_table_registerHook(sceIoMkdir_hook, NID_sceIoMkdir);
+        nid_table_registerHook(sceIoRmdir_hook, NID_sceIoRmdir);
+        //nid_table_registerHook(sceIoChdir_hook, NID_sceIoChdir);
+        nid_table_registerHook(sceIoGetstat_hook, NID_sceIoGetstat);
+        nid_table_registerHook(sceIoChstat_hook, NID_sceIoChstat);
         return 0;
 }

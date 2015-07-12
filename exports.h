@@ -24,7 +24,7 @@ Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301  USA
 #include "elf_parser.h"
 #include "nids.h"
 
-int exports_initialize(const UVL_Context *ctx);
+int exports_initialize(void);
 
 SceUID AllocCodeMemBlock(int size);
 

@@ -5,7 +5,7 @@
 #include "config.h"
 #include "nids.h"
 
-int fs_hooks_initialize(UVL_Context *_ctx);
+int fs_hooks_initialize();
 
 static inline char* TranslateVFS(char *dest, char *path)
 {

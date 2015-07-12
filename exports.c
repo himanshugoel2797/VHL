@@ -18,9 +18,9 @@
  */
 
 #include <psp2/kernel/sysmem.h>
+#include <psp2/pss.h>
+#include <stdio.h>
 #include "exports.h"
-
-static const UVL_Context *ctx;
 
 static int export_printf(const char* fmt, ...)
 {
@@ -30,7 +30,7 @@ static int export_printf(const char* fmt, ...)
         va_start(va, fmt);
         mini_vsnprintf(buffer, INTERNAL_PRINTF_MAX_LENGTH * 5, fmt, va);
         va_end(va);
-        ctx->logline(buffer);
+        puts(buffer);
   #else
         va_list va;
         va_start(va, fmt);
@@ -39,31 +39,22 @@ static int export_printf(const char* fmt, ...)
         return 0;
 }
 
-static SceUID allocCodeMem(int size)
+int exports_initialize()
 {
-        return AllocCodeMemBlock(size);
-}
-
-int exports_initialize(const UVL_Context *_ctx)
-{
-        _ctx->psvUnlockMem();
-        ctx = _ctx;
-        _ctx->psvLockMem();
-
-        nid_table_exportFunc(ctx, &allocCodeMem, NID_ALLOC_CODE_MEM);
-        nid_table_exportFunc(ctx, &export_printf, NID_printf);
-        nid_table_exportFunc(ctx, ctx->logline, NID_puts);
-        nid_table_exportFunc(ctx, ctx->logline, NID_LOG);
-        nid_table_exportFunc(ctx, ctx->psvUnlockMem, NID_UNLOCK);
-        nid_table_exportFunc(ctx, ctx->psvLockMem, NID_LOCK);
-        nid_table_exportFunc(ctx, ctx->psvFlushIcache, NID_FLUSH);
+        nid_table_exportFunc(pss_code_mem_alloc, NID_ALLOC_CODE_MEM);
+        nid_table_exportFunc(export_printf, NID_printf);
+        nid_table_exportFunc(puts, NID_puts);
+        nid_table_exportFunc(puts, NID_LOG);
+        nid_table_exportFunc(pss_code_mem_unlock, NID_UNLOCK);
+        nid_table_exportFunc(pss_code_mem_lock, NID_LOCK);
+        nid_table_exportFunc(pss_code_mem_flush_icache, NID_FLUSH);
 
         return 0;
 }
 
 SceUID AllocCodeMemBlock(int size)
 {
-        return sceKernelFindMemBlockByAddr(ctx->psvCodeAllocMem(&size), 0);
+        return sceKernelFindMemBlockByAddr(pss_code_mem_alloc(&size), 0);
 }
 
 //TODO export module functions so they can be called from other threads

@@ -39,7 +39,17 @@ getVhlStubTop:
         bx  lr
         .size   getVhlStubTop, .-getVhlStubTop
 
+        @ The order corresponds to UVL_Context.
 vhlStubTop:
+        STUB(pss_code_mem_alloc)
+        STUB(pss_code_mem_unlock)
+        STUB(pss_code_mem_lock)
+        STUB(pss_code_mem_flush_icache)
+        STUB(puts)
+
+        .global vhlStubCtxSizeSym
+vhlStubCtxSizeSym = . - vhlStubTop
+
         STUB(sceKernelGetModuleList)
         STUB(sceKernelGetModuleInfo)
         STUB(sceKernelLoadModule)
@@ -47,7 +57,7 @@ vhlStubTop:
         STUB(sceKernelStopUnloadModule)
 
         .global vhlStubPrimarySizeSym
-vhlStubPrimarySizeSym = . - vhlStubTop
+vhlStubPrimarySizeSym = . - (vhlStubTop + vhlStubCtxSizeSym)
 
         STUB(sceKernelLoadStartModule)
         STUB(sceIoMkdir)
@@ -80,4 +90,4 @@ vhlStubPrimarySizeSym = . - vhlStubTop
         STUB(sceIoChstat)
 
         .global vhlStubSecondarySizeSym
-vhlStubSecondarySizeSym = . - (vhlStubTop + vhlStubPrimarySizeSym)
+vhlStubSecondarySizeSym = . - (vhlStubTop + vhlStubCtxSizeSym + vhlStubPrimarySizeSym)

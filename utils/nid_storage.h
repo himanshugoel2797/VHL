@@ -44,10 +44,10 @@ typedef struct {
         } value;
 } nidTable_entry;
 
-int nid_storage_initialize(const UVL_Context *ctx);
-int nid_storage_addEntry(const UVL_Context *ctx, nidTable_entry *entry);
+int nid_storage_initialize();
+int nid_storage_addEntry(nidTable_entry *entry);
 int nid_storage_getEntry(SceNID nid, nidTable_entry *entry);
-int nid_storage_addHookEntry(const UVL_Context *ctx, nidTable_entry *entry);
+int nid_storage_addHookEntry(nidTable_entry *entry);
 int nid_storage_getHookEntry(SceNID nid, nidTable_entry *entry);
 
 #endif

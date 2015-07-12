@@ -18,6 +18,7 @@
  */
 #include <psp2/types.h>
 #include <psp2/kernel/threadmgr.h>
+#include <stdio.h>
 #include "vhl.h"
 #include "nid_table.h"
 #include "nidcache.h"
@@ -26,49 +27,40 @@
 #include "state_machine.h"
 #include "fs_hooks.h"
 
-static UVL_Context ctx;
-
 int __attribute__ ((section (".text.start")))
-_start(UVL_Context *_ctx)
+_start(UVL_Context *ctx)
 {
-        _ctx->logline("Starting VHL...");
+        ctx->funcs.logline("Starting VHL...");
 
-        //Initialize VHLCalls
-        _ctx->psvUnlockMem();
-        memcpy(&ctx, _ctx, sizeof(UVL_Context));
-        _ctx->psvLockMem();
-
-        DEBUG_LOG_("Initializing VHL...");
-        DEBUG_LOG_("Bootstrapping...");
-
-        int err = nid_table_resolveVHLImports(&ctx);
+        // pss_* and puts won't work before this.
+        int err = nid_table_resolveVHLImports(ctx);
         if(err < 0) {
-                ctx.logline("Failed to resolve some functions... VHL will not work...");
+                ctx->funcs.logline("Failed to resolve some functions... VHL will not work...");
                 return -1;
         }
 
         //TODO find a way to free unused memory
 
-        block_manager_initialize(&ctx);  //Initialize the elf block slots
+        block_manager_initialize();  //Initialize the elf block slots
 
         //TODO decide how to handle plugins
 
-        exports_initialize(&ctx);
-        config_initialize(&ctx);
-        loader_initialize(&ctx);
-        state_machine_initialize(&ctx);
-        fs_hooks_initialize(&ctx);
+        exports_initialize();
+        config_initialize();
+        loader_initialize();
+        state_machine_initialize();
+        fs_hooks_initialize();
 
         DEBUG_LOG("Delete All: 0x%08x", sceKernelDeleteThread(0xfffffff0));
         DEBUG_LOG_("Loading menu...");
 
-        if(elf_parser_load(&ctx, 1, 0, "pss0:/top/Documents/homebrew.self", NULL) < 0) {
+        if(elf_parser_load(1, 0, "pss0:/top/Documents/homebrew.self", NULL) < 0) {
                 internal_printf("Load failed!");
                 return -1;
         }
-        ctx.logline("Load succeeded! Launching!");
+        puts("Load succeeded! Launching!");
 
-        elf_parser_start(&ctx, 0, 0);
+        elf_parser_start(0, 0);
 
         while(1) {
                 //Delay thread and check for flags and things to update every once in a while, check for exit combination
@@ -77,9 +69,4 @@ _start(UVL_Context *_ctx)
         }
 
         return 0;
-}
-
-void logLine(const char *str)
-{
-        ctx.logline(str);
 }

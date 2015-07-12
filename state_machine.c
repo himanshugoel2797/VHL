@@ -26,9 +26,9 @@ static HomebrewState state;
 
 int sceDisplayWaitVblankStart_hook ();
 
-int state_machine_initialize(const UVL_Context *ctx)
+int state_machine_initialize()
 {
-        return nid_table_registerHook(ctx, sceDisplayWaitVblankStart_hook, NID_sceDisplayWaitVblankStart);
+        return nid_table_registerHook(sceDisplayWaitVblankStart_hook, NID_sceDisplayWaitVblankStart);
 }
 
 int state_machine_checkState()
