@@ -1,5 +1,5 @@
-#ifndef _VHL_FS_HOOKS_H_
-#define _VHL_FS_HOOKS_H_
+#ifndef VHL_FS_HOOKS_H
+#define VHL_FS_HOOKS_H
 #include "vhl.h"
 #include "utils/utils.h"
 #include "config.h"

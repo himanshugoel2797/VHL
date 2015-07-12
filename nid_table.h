@@ -17,8 +17,8 @@ along with this program; if not, write to the Free Software Foundation,
 Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301  USA
 */
 
-#ifndef _VHL_NID_TABLE_H_
-#define _VHL_NID_TABLE_H_
+#ifndef VHL_NID_TABLE_H
+#define VHL_NID_TABLE_H
 
 #include <psp2/kernel/modulemgr.h>
 #include "utils/bithacks.h"

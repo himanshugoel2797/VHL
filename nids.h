@@ -16,8 +16,8 @@ You should have received a copy of the GNU General Public License
 along with this program; if not, write to the Free Software Foundation,
 Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301  USA
 */
-#ifndef _VHL_EXPORT_NIDS_H_
-#define _VHL_EXPORT_NIDS_H_
+#ifndef VHL_EXPORT_NIDS_H
+#define VHL_EXPORT_NIDS_H
 
 // SceLibKernel
 #define NID_sceKernelExitProcess 0x7595D9AA
