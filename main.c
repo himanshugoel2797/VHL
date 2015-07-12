@@ -51,7 +51,6 @@ _start(UVL_Context *ctx)
         state_machine_initialize();
         fs_hooks_initialize();
 
-        DEBUG_LOG("Delete All: 0x%08x", sceKernelDeleteThread(0xfffffff0));
         DEBUG_LOG_("Loading menu...");
 
         if(elf_parser_load(1, 0, "pss0:/top/Documents/homebrew.self", NULL) < 0) {

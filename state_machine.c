@@ -44,6 +44,8 @@ int state_machine_checkState()
                 sceKernelExitDeleteThread(0);
                 return 0;
         }
+
+        return 0;
 }
 
 //TODO hook all object creation functions for garbage management

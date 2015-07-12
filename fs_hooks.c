@@ -1,8 +1,11 @@
 #include "fs_hooks.h"
 #include "nid_table.h"
+#include "state_machine.h"
 
 SceUID sceIoOpen_hook(const char* path, int flags, SceMode m)
 {
+        state_machine_checkState();
+
         char tmpPath[MAX_PATH_LENGTH];
         char *tmp = TranslateVFS(tmpPath, path);
         return sceIoOpen(tmp, flags, m);
@@ -10,6 +13,8 @@ SceUID sceIoOpen_hook(const char* path, int flags, SceMode m)
 
 int sceIoRemove_hook(const char *file)
 {
+        state_machine_checkState();
+
         char tmpPath[MAX_PATH_LENGTH];
         char *tmp=TranslateVFS(tmpPath, file);
         return sceIoRemove(tmp);
@@ -17,6 +22,7 @@ int sceIoRemove_hook(const char *file)
 
 int sceIoRename_hook (const char *oldname, const char *newname)
 {
+        state_machine_checkState();
 
         char o_tmpPath[MAX_PATH_LENGTH];
         char n_tmpPath[MAX_PATH_LENGTH];
@@ -28,6 +34,8 @@ int sceIoRename_hook (const char *oldname, const char *newname)
 
 SceUID sceIoDopen_hook(const char *dirname)
 {
+        state_machine_checkState();
+
         char tmpPath[MAX_PATH_LENGTH];
         char *tmp=TranslateVFS(tmpPath, dirname);
         return sceIoDopen(tmp);
@@ -35,6 +43,8 @@ SceUID sceIoDopen_hook(const char *dirname)
 
 int sceIoMkdir_hook(const char *dir, SceMode mode)
 {
+        state_machine_checkState();
+
         char tmpPath[MAX_PATH_LENGTH];
         char *tmp=TranslateVFS(tmpPath, dir);
         return sceIoMkdir(tmp, mode);
@@ -42,20 +52,24 @@ int sceIoMkdir_hook(const char *dir, SceMode mode)
 
 int sceIoRmdir_hook(const char *path)
 {
+        state_machine_checkState();
+
         char tmpPath[MAX_PATH_LENGTH];
         char *tmp=TranslateVFS(tmpPath, path);
         return sceIoRmdir(tmp);
 }
 
 /*int sceIoChdir_hook(const char *path)
-{
+   {
         char tmpPath[MAX_PATH_LENGTH];
         char *tmp=TranslateVFS(tmpPath, path);
         return sceIoChdir(tmp);
-}*/
+   }*/
 
 int sceIoGetstat_hook(const char *file, SceIoStat *stat)
 {
+        state_machine_checkState();
+
         char tmpPath[MAX_PATH_LENGTH];
         char *tmp=TranslateVFS(tmpPath, file);
         return sceIoGetstat(tmp, stat);
@@ -63,6 +77,8 @@ int sceIoGetstat_hook(const char *file, SceIoStat *stat)
 
 int sceIoChstat_hook(const char *file, SceIoStat *stat, int bits)
 {
+        state_machine_checkState();
+
         char tmpPath[MAX_PATH_LENGTH];
         char *tmp=TranslateVFS(tmpPath, file);
         return sceIoChstat(tmp, stat, bits);
