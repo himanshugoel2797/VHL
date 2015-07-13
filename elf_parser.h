@@ -19,10 +19,8 @@ Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301  USA
 #ifndef VHL_ELF_PARSER_H
 #define VHL_ELF_PARSER_H
 
-#include "vhl.h"
-
+#include "config.h"
 #include "elf_headers.h"
-#include "nid_table.h"
 #include "utils/bithacks.h"
 
 typedef struct {
@@ -45,10 +43,10 @@ typedef struct {
 
 
 int block_manager_initialize(void);
-int block_manager_free_old_data(int curSlot);
+int block_manager_free_old_data(allocData *data);
 
-int elf_parser_start(int curSlot, int wait);
-int elf_parser_load(int curSlot, const char* file, void** entryPoint);
+int elf_parser_start(allocData *data, int wait);
+int elf_parser_load(allocData *data, const char* file, void** entryPoint);
 
 
 #endif

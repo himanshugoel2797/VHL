@@ -17,8 +17,11 @@
    Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301  USA
  */
 #include <psp2/types.h>
+#include <psp2/kernel/sysmem.h>
 #include <psp2/kernel/threadmgr.h>
+#include <psp2/pss.h>
 #include <stdio.h>
+#include "utils/bithacks.h"
 #include "vhl.h"
 #include "nid_table.h"
 #include "nidcache.h"
@@ -27,9 +30,14 @@
 #include "fs_hooks.h"
 #include "loader.h"
 
+static globals_t *globals;
+
 int __attribute__ ((section (".text.start")))
 _start(UVL_Context *ctx)
 {
+        SceUID uid;
+        void *p;
+
         ctx->funcs.logline("Starting VHL...");
 
         // pss_* and puts won't work before this.
@@ -41,6 +49,24 @@ _start(UVL_Context *ctx)
 
         //TODO find a way to free unused memory
 
+        uid = sceKernelAllocMemBlock("vhlGlobals", SCE_KERNEL_MEMBLOCK_TYPE_USER_RW,
+                                     FOUR_KB_ALIGN(sizeof(globals_t)), NULL);
+        if (uid < 0) {
+                DEBUG_LOG("Failed to allocate memory block 0x%08X", uid);
+                return uid;
+        }
+
+        err = sceKernelGetMemBlockBase(uid, &p);
+
+        if (err < 0) {
+                DEBUG_LOG("Failed to retrive memory block 0x%08X", err);
+                return uid;
+        }
+
+        pss_code_mem_unlock();
+        globals = p;
+        pss_code_mem_lock();
+
         block_manager_initialize();  //Initialize the elf block slots
 
         //TODO decide how to handle plugins
@@ -49,13 +75,13 @@ _start(UVL_Context *ctx)
 
         DEBUG_LOG_("Loading menu...");
 
-        if(elf_parser_load(0, "pss0:/top/Documents/homebrew.self", NULL) < 0) {
+        if(elf_parser_load(globals->allocatedBlocks, "pss0:/top/Documents/homebrew.self", NULL) < 0) {
                 internal_printf("Load failed!");
                 return -1;
         }
         puts("Load succeeded! Launching!");
 
-        elf_parser_start(0, 0);
+        elf_parser_start(globals->allocatedBlocks, 0);
 
         while(1) {
                 //Delay thread and check for flags and things to update every once in a while, check for exit combination
@@ -64,4 +90,9 @@ _start(UVL_Context *ctx)
         }
 
         return 0;
+}
+
+globals_t *getGlobals()
+{
+        return globals;
 }

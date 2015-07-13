@@ -25,12 +25,13 @@ static int currentHomebrew = 0;
 
 int hook_sceAppMgrLoadExec(const char *path, const char *argv[], void *opt)
 {
+        allocData *data = getGlobals()->allocatedBlocks;
         //Trigger a cleanup here
 
         char tmp[MAX_PATH_LENGTH];
         char *p = TranslateVFS(tmp, path);
-        int retVal = elf_parser_load(0, p, NULL);
-        retVal = elf_parser_start(0, -1);
+        int retVal = elf_parser_load(data, p, NULL);
+        retVal = elf_parser_start(data, -1);
 
         //If we do end up returning, trigger the exitHomebrew procedures
         loader_exitHomebrew(retVal);
@@ -41,12 +42,13 @@ int hook_sceAppMgrLoadExec(const char *path, const char *argv[], void *opt)
 
 int loader_exitHomebrew(int errorCode)
 {
+        allocData *data = getGlobals()->allocatedBlocks;
         //Trigger a cleanup here
 
         //Load the menu
         char tmp[MAX_PATH_LENGTH];
-        int retVal = elf_parser_load(0, TranslateVFS(tmp, MENU_PATH), NULL);
-        retVal = elf_parser_start(0, -1);
+        int retVal = elf_parser_load(data, TranslateVFS(tmp, MENU_PATH), NULL);
+        retVal = elf_parser_start(data, -1);
 
         return errorCode;
 

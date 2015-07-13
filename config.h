@@ -19,8 +19,6 @@ Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301  USA
 #ifndef VHL_CONFIG_H
 #define VHL_CONFIG_H
 
-#include "vhl.h"
-
 typedef enum{
   VARIABLE_EXIT_MASK = 1
 } INT_VARIABLE_OPTIONS;
