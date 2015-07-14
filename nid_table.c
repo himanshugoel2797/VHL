@@ -332,40 +332,68 @@ SceModuleInfo* nid_table_findModuleInfo(void* location, SceUInt size, char* libn
 }
 
 __attribute__((hot))
-int nid_table_addNIDCacheToTable(SceModuleInfo *moduleInfo)
+int nid_table_addNIDCacheToTable(SceModuleInfo *moduleInfo,
+        const SceModuleImports * const cachedImports[CACHED_IMPORTED_MODULE_NUM])
 {
-        SceUInt base = (SceUInt)moduleInfo - moduleInfo->ent_top + sizeof(SceModuleInfo);
         nidTable_entry entry;
+        NID_CACHE *importsInfo;
+        SceNID *cachedNid;
+        unsigned int index, offset, i;
 
-        FOREACH_IMPORT(base, moduleInfo, importTable){
-                int offset = 0;
-                int index = nidCacheContainsModuleNID(GET_NID(importTable), &offset);
-                if(index >= 0) {
-                        NID_CACHE *libkernel_nid_cache_header = nidCache_getHeader();
-                        SceNID *libkernel_nid_cache = nidCache_getCache();
-
-                        for(int i = 0; i < libkernel_nid_cache_header[index].count; i++)
-                        {
-                                if(analyzeStub(GET_FUNCTIONS_ENTRYTABLE(importTable)[i], libkernel_nid_cache[offset + i], &entry) == ANALYZE_STUB_OK)
-                                        nid_storage_addEntry(&entry);
-                        }
+        offset = 0;
+        importsInfo = nidCache_getHeader();
+        cachedNid = nidCache_getCache();
+        for (index = 0; index < CACHED_IMPORTED_MODULE_NUM; index++) {
+                for(i = 0; i < importsInfo[index].count; i++) {
+                        if(analyzeStub(GET_FUNCTIONS_ENTRYTABLE(cachedImports[index])[i], cachedNid[offset], &entry) == ANALYZE_STUB_OK)
+                                nid_storage_addEntry(&entry);
+                        offset++;
                 }
         }
         return 0;
 }
 
-
-static int resolveVhlImport(SceUInt *stub, const SceModuleInfo *moduleInfo)
+static void copyStub(void *dst, const void *src)
 {
+        pss_code_mem_unlock();
+        memcpy(dst, src, 16);
+        pss_code_mem_lock();
+}
+
+static int resolveVhlImport(SceUInt *stub, const SceModuleInfo *moduleInfo,
+        const SceModuleImports * const cachedImports[CACHED_IMPORTED_MODULE_NUM])
+{
+        NID_CACHE *importsInfo;
+        SceNID nid, *cachedNid;
+        unsigned int index, offset, i;
+
         if (stub == NULL || moduleInfo == NULL)
                 return -1;
+
+        nid = stub[3];
 
         //Check the cache if it's ready
         DEBUG_LOG_("Searching NID database...");
         nidTable_entry entry;
-        if(nid_storage_getEntry(stub[3], &entry) >= 0) {
+        if(nid_storage_getEntry(nid, &entry) >= 0) {
                 resolveStubWithEntry(stub, &entry);
                 return 0;
+        }
+
+        offset = 0;
+        importsInfo = nidCache_getHeader();
+        cachedNid = nidCache_getCache();
+        for (index = 0; index < CACHED_IMPORTED_MODULE_NUM; index++) {
+                for(i = 0; i < importsInfo[index].count; i++) {
+                        if (cachedNid[offset] == nid) {
+                                DEBUG_LOG_("Match found!");
+                                copyStub(stub, GET_FUNCTIONS_ENTRYTABLE(cachedImports[index])[i]);
+
+                                return 0;
+                        }
+
+                        offset++;
+                }
         }
 
         SceUInt base = (SceUInt)moduleInfo - moduleInfo->ent_top + sizeof(SceModuleInfo);
@@ -374,9 +402,9 @@ static int resolveVhlImport(SceUInt *stub, const SceModuleInfo *moduleInfo)
         //If so assign the respective pointer to functionPtrLocation
         FOREACH_EXPORT(base, moduleInfo, exportTable) {
                 DEBUG_LOG_("Searching exports...");
-                for(int i = 0; i < exportTable->num_functions; i++)
+                for(i = 0; i < exportTable->num_functions; i++)
                 {
-                        if(exportTable->nid_table[i] == stub[3]) {
+                        if(exportTable->nid_table[i] == nid) {
                                 //Found the nid
                                 DEBUG_LOG_("Match found!");
                                 pss_code_mem_unlock();
@@ -395,18 +423,17 @@ static int resolveVhlImport(SceUInt *stub, const SceModuleInfo *moduleInfo)
                 SceUInt *nids = GET_FUNCTIONS_NIDTABLE(importTable);
                 void **entryTable = GET_FUNCTIONS_ENTRYTABLE(importTable);
 
-                for(int i = 0; i < GET_FUNCTION_COUNT(importTable); i++)
+                for(i = 0; i < GET_FUNCTION_COUNT(importTable); i++)
                 {
-                        if(nids[i] == stub[3]) {
+                        if(nids[i] == nid) {
                                 DEBUG_LOG_("Match found!");
-                                pss_code_mem_unlock();
-                                memcpy(stub, entryTable[i], 16);
-                                pss_code_mem_lock();
+                                copyStub(stub, entryTable[i]);
+
                                 return 0;
                         }
                 }
         }
-        DEBUG_LOG("Failed to find import NID 0x%08x", stub[3]);
+        DEBUG_LOG("Failed to find import NID 0x%08x", nid);
 
         return -1;
 }
@@ -418,6 +445,7 @@ int nid_table_resolveVHLImports(const UVL_Context *ctx)
         SceUInt * const vhlStubPrimaryBtm = (void *)((uintptr_t)vhlStubCtxBtm + vhlStubPrimarySize);
         SceUInt * const vhlStubSecondaryBtm = (void *)((uintptr_t)vhlStubPrimaryBtm + vhlStubSecondarySize);
         nidTable_entry libKernelBase, entry;
+        const SceModuleImports * cachedImports[CACHED_IMPORTED_MODULE_NUM];
         SceUInt *p;
         const void * const *q;
 
@@ -439,10 +467,6 @@ int nid_table_resolveVHLImports(const UVL_Context *ctx)
         // pss_* and puts are avaliable now.
 
         if(analyzeStub(ctx->ptrs.libkernel_anchor, 0, &libKernelBase) == ANALYZE_STUB_OK) {
-
-                DEBUG_LOG_("Initializing cache");
-                nid_storage_initialize();
-
                 libKernelBase.value.i = B_UNSET(libKernelBase.value.i, 0);
 
                 SceModuleInfo *moduleInfo = nid_table_findModuleInfo(libKernelBase.value.p, KERNEL_MODULE_SIZE, "SceLibKernel");
@@ -450,22 +474,28 @@ int nid_table_resolveVHLImports(const UVL_Context *ctx)
 
                 SceUInt base = (SceUInt)moduleInfo - moduleInfo->ent_top + sizeof(SceModuleInfo);
 
-                if(nid_table_addNIDCacheToTable(moduleInfo) < 0) return -1;
+                nidCacheFindCachedImports(moduleInfo, cachedImports);
 
                 for (p = vhlStubCtxBtm; p != vhlStubPrimaryBtm; p += 4)
-                        resolveVhlImport(p, moduleInfo);
+                        resolveVhlImport(p, moduleInfo, cachedImports);
 
                 pss_code_mem_flush_icache(vhlStubCtxBtm, vhlStubPrimarySize);
+
+                DEBUG_LOG_("Initializing cache");
+                nid_storage_initialize();
 
                 DEBUG_LOG_("Searching and Caching NIDs...");
                 nid_table_addAllStubs();
 
                 while (p != vhlStubSecondaryBtm) {
-                        resolveVhlImport(p, moduleInfo);
+                        resolveVhlImport(p, moduleInfo, cachedImports);
                         p += 4;
                 }
 
                 pss_code_mem_flush_icache(vhlStubPrimaryBtm, vhlStubSecondarySize);
+
+                if (nid_table_addNIDCacheToTable(moduleInfo, cachedImports) < 0)
+                        return -1;
 
                 nid_table_addAllHooks();
         }

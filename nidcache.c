@@ -17,23 +17,29 @@ along with this program; if not, write to the Free Software Foundation,
 Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301  USA
 */
 
+#include <stdint.h>
 #if defined(PSV_3XX)
 #include "nidcache3xx.c"
 #endif
 #include "nidcache.h"
+#include "common.h"
 
-int nidCacheContainsModuleNID(SceNID nid, int *offset)
+void nidCacheFindCachedImports(const SceModuleInfo *libkernel,
+                               const SceModuleImports *imports[CACHED_IMPORTED_MODULE_NUM])
 {
-        int off = 0;
-        NID_CACHE *header = (NID_CACHE*)libkernel_nid_cache_header;
-        for(int i = 0; header[i].module_nid != 0; i++) {
-                if(header[i].module_nid == nid) {
-                        *offset = off;
-                        return i;
-                }
-                off += header[i].count;
+        uintptr_t base = (intptr_t)libkernel - libkernel->ent_top + sizeof(SceModuleInfo);
+        SceNID nid;
+        unsigned int i;
+
+        FOREACH_IMPORT(base, libkernel, importTable) {
+                nid = GET_NID(importTable);
+
+                for (i = 0; i < CACHED_IMPORTED_MODULE_NUM; i++)
+                        if (libkernel_nid_cache_header[i].module_nid == nid) {
+                                imports[i] = importTable;
+                                break;
+                        }
         }
-        return -1;
 }
 
 NID_CACHE* nidCache_getHeader(){
