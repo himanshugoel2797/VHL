@@ -75,6 +75,24 @@ _start(UVL_Context *ctx)
         nid_table_resolveVhlPrimaryImports((void *)vhlStubCtxBtm, vhlStubPrimarySize,
                                           libkernelInfo, cachedImports);
 
+        DEBUG_LOG_("Allocating memory for VHL");
+        uid = sceKernelAllocMemBlock("vhlGlobals", SCE_KERNEL_MEMBLOCK_TYPE_USER_RW,
+                                     FOUR_KB_ALIGN(sizeof(globals_t)), NULL);
+        if (uid < 0) {
+                DEBUG_LOG("Failed to allocate memory block 0x%08X", uid);
+                return uid;
+        }
+
+        err = sceKernelGetMemBlockBase(uid, &p);
+        if (err < 0) {
+                DEBUG_LOG("Failed to retrive memory block 0x%08X", err);
+                return uid;
+        }
+
+        pss_code_mem_unlock();
+        globals = p;
+        pss_code_mem_lock();
+
         DEBUG_LOG_("Initializing table");
         nid_storage_initialize();
 
@@ -93,24 +111,6 @@ _start(UVL_Context *ctx)
         nid_table_addAllHooks();
 
         //TODO find a way to free unused memory
-
-        uid = sceKernelAllocMemBlock("vhlGlobals", SCE_KERNEL_MEMBLOCK_TYPE_USER_RW,
-                                     FOUR_KB_ALIGN(sizeof(globals_t)), NULL);
-        if (uid < 0) {
-                DEBUG_LOG("Failed to allocate memory block 0x%08X", uid);
-                return uid;
-        }
-
-        err = sceKernelGetMemBlockBase(uid, &p);
-
-        if (err < 0) {
-                DEBUG_LOG("Failed to retrive memory block 0x%08X", err);
-                return uid;
-        }
-
-        pss_code_mem_unlock();
-        globals = p;
-        pss_code_mem_lock();
 
         block_manager_initialize();  //Initialize the elf block slots
 

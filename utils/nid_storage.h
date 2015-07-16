@@ -20,7 +20,7 @@ Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301  USA
 #define _VHL_NID_STORAGE_H_
 
 #include <psp2/types.h>
-#include "../vhl.h"
+#include "../common.h"
 #include "../config.h"
 
 #define NID_STORAGE_KEY_BIT 8
