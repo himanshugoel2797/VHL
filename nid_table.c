@@ -452,7 +452,6 @@ void nid_table_resolveVhlCtxImports(void *p, size_t size, const UVL_Context *ctx
         resolveStubWithBranch(p, *q);
 
         ctx->funcs.psvLockMem();
-        ctx->funcs.psvFlushIcache(top, size);
         // pss_* and puts are avaliable now.
 }
 
@@ -473,8 +472,6 @@ void nid_table_resolveVhlPrimaryImports(void *p, size_t size, const SceModuleInf
 
                 DEBUG_LOG("Failed to find import NID 0x%08x", ((SceNID *)cur)[3]);
         }
-
-        pss_code_mem_flush_icache(p, size);
 }
 
 void nid_table_resolveVhlSecondaryImports(void *p, size_t size, const SceModuleInfo *libkernel,
@@ -498,8 +495,6 @@ void nid_table_resolveVhlSecondaryImports(void *p, size_t size, const SceModuleI
 
                 DEBUG_LOG("Failed to find import NID 0x%08x", ((SceNID *)cur)[3]);
         }
-
-        pss_code_mem_flush_icache(p, size);
 }
 
 __attribute__((hot))
@@ -510,12 +505,7 @@ int nid_table_resolveStub(void *stub, SceNID nid)
 
         result = nid_storage_getEntry(nid, &entry);
         if(result >= 0) {
-                stub = (void*)((SceUInt)stub & ~1);
-
-                resolveStubWithEntry(stub, &entry);
-                if (entry.type != ENTRY_TYPES_VARIABLE)
-                        pss_code_mem_flush_icache(stub, 0x10);
-
+                resolveStubWithEntry((void*)((SceUInt)stub & ~1), &entry);
                 return 0;
         }
         DEBUG_LOG("Failed to find NID 0x%08x", nid);

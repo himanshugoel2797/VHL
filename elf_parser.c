@@ -525,7 +525,10 @@ int elf_parser_load_sce_relexec(allocData *data, SceUID fd, unsigned int len, El
         DEBUG_LOG_("Retrieving entry point");
         if(entryPoint != NULL) *entryPoint = (void *)(prgmHDR[index].p_vaddr + mod_info->mod_start);
         data->entryPoint = (void *)(prgmHDR[index].p_vaddr + mod_info->mod_start);
-        DEBUG_LOG_("Entry point retrieved");
+
+        DEBUG_LOG_("Flushing Icache");
+        pss_code_mem_flush_icache(data->exec_mem_loc, data->exec_mem_size);
+        DEBUG_LOG_("Flushed");
 
         return 0;
 

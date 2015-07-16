@@ -53,6 +53,7 @@ _start(UVL_Context *ctx)
            See stub.S to know what imports will be resolved with those functions. */
         ctx->funcs.logline("Resolving VHL context imports");
         nid_table_resolveVhlCtxImports((void *)vhlStubTop, vhlStubCtxSize, ctx);
+        ctx->funcs.psvFlushIcache((void *)vhlStubTop, vhlStubCtxSize);
 
         DEBUG_LOG_("Searching for SceLibKernel");
         if (nid_table_analyzeStub(ctx->ptrs.libkernel_anchor, 0, &libkernelBase) != ANALYZE_STUB_OK) {
@@ -74,6 +75,7 @@ _start(UVL_Context *ctx)
         DEBUG_LOG_("Resolving VHL primary imports");
         nid_table_resolveVhlPrimaryImports((void *)vhlStubCtxBtm, vhlStubPrimarySize,
                                           libkernelInfo, cachedImports);
+        pss_code_mem_flush_icache((void *)vhlStubCtxBtm, vhlStubPrimarySize);
 
         DEBUG_LOG_("Allocating memory for VHL");
         uid = sceKernelAllocMemBlock("vhlGlobals", SCE_KERNEL_MEMBLOCK_TYPE_USER_RW,
@@ -102,6 +104,7 @@ _start(UVL_Context *ctx)
         DEBUG_LOG_("Resolving VHL secondary imports");
         nid_table_resolveVhlSecondaryImports((void *)vhlStubPrimaryBtm, vhlStubSecondarySize,
                                           libkernelInfo, cachedImports);
+        pss_code_mem_flush_icache((void *)vhlStubPrimaryBtm, vhlStubSecondarySize);
 
         DEBUG_LOG_("Adding stubs to table with cache");
         if (nid_table_addNIDCacheToTable(libkernelInfo, cachedImports) < 0)
@@ -109,6 +112,22 @@ _start(UVL_Context *ctx)
 
         DEBUG_LOG_("Adding hooks to table");
         nid_table_addAllHooks();
+
+        DEBUG_LOG_("Searching for sceKernelAllocMemBlockForVM");
+        if (!nid_storage_getEntry(0xE2D7E137, &libkernelBase))
+                DEBUG_LOG_("Found");
+
+        DEBUG_LOG_("Searching for sceKernelSyncVMDomain");
+        if (!nid_storage_getEntry(0x19D2A81A, &libkernelBase))
+                DEBUG_LOG_("Found");
+
+        DEBUG_LOG_("Searching for sceKernelOpenVMDomain");
+        if (!nid_storage_getEntry(0x9CA3EB2B, &libkernelBase))
+                DEBUG_LOG_("Found");
+
+        DEBUG_LOG_("Searching for sceKernelCloseVMDomain");
+        if (!nid_storage_getEntry(0xD6CA56CA, &libkernelBase))
+                DEBUG_LOG_("Found");
 
         //TODO find a way to free unused memory
 
