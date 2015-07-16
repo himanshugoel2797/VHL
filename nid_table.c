@@ -359,7 +359,6 @@ static int resolveVhlImportWithTable(SceUInt *stub)
         int res;
 
         //Check the cache if it's ready
-        DEBUG_LOG_("Searching NID database...");
         res = nid_storage_getEntry(stub[3], &entry);
         if (res == 0)
                 resolveStubWithEntry(stub, &entry);
@@ -380,7 +379,6 @@ static int resolveVhlImportWithCache(SceUInt *stub,
         for (index = 0; index < CACHED_IMPORTED_MODULE_NUM; index++) {
                 for(i = 0; i < importsInfo[index].count; i++) {
                         if (cachedNid[offset] == stub[3]) {
-                                DEBUG_LOG_("Match found!");
                                 copyStub(stub, GET_FUNCTIONS_ENTRYTABLE(cachedImports[index])[i]);
 
                                 return 0;
@@ -405,12 +403,10 @@ static int resolveVhlImportWithLibkernel(SceUInt *stub, const SceModuleInfo *mod
         //Check the export tables to see if the NID is present
         //If so assign the respective pointer to functionPtrLocation
         FOREACH_EXPORT(base, moduleInfo, exportTable) {
-                DEBUG_LOG_("Searching exports...");
                 for(i = 0; i < exportTable->num_functions; i++)
                 {
                         if(exportTable->nid_table[i] == nid) {
                                 //Found the nid
-                                DEBUG_LOG_("Match found!");
                                 pss_code_mem_unlock();
                                 resolveStubWithBranch(stub, exportTable->entry_table[i]);
                                 pss_code_mem_lock();
@@ -422,22 +418,18 @@ static int resolveVhlImportWithLibkernel(SceUInt *stub, const SceModuleInfo *mod
 
         FOREACH_IMPORT(base, moduleInfo, importTable)
         {
-                DEBUG_LOG_("Searching imports...");
-
                 SceUInt *nids = GET_FUNCTIONS_NIDTABLE(importTable);
                 void **entryTable = GET_FUNCTIONS_ENTRYTABLE(importTable);
 
                 for(i = 0; i < GET_FUNCTION_COUNT(importTable); i++)
                 {
                         if(nids[i] == nid) {
-                                DEBUG_LOG_("Match found!");
                                 copyStub(stub, entryTable[i]);
 
                                 return 0;
                         }
                 }
         }
-        DEBUG_LOG("Failed to find import NID 0x%08x", nid);
 
         return -1;
 }
@@ -471,10 +463,15 @@ void nid_table_resolveVhlPrimaryImports(void *p, size_t size, const SceModuleInf
         uintptr_t btm = (uintptr_t)p + size;
 
         for (cur = (uintptr_t)p; cur < btm; cur += 16) {
+                DEBUG_LOG_("Searching cache");
                 if (!resolveVhlImportWithCache((void *)cur, cachedImports))
                         continue;
 
-                resolveVhlImportWithLibkernel((void *)cur, libkernel);
+                DEBUG_LOG_("Searching sceLibKernel");
+                if (!resolveVhlImportWithLibkernel((void *)cur, libkernel))
+                        continue;
+
+                DEBUG_LOG("Failed to find import NID 0x%08x", ((SceNID *)cur)[3]);
         }
 
         pss_code_mem_flush_icache(p, size);
@@ -487,13 +484,19 @@ void nid_table_resolveVhlSecondaryImports(void *p, size_t size, const SceModuleI
         uintptr_t btm = (uintptr_t)p + size;
 
         for (cur = (uintptr_t)p; cur < btm; cur += 16) {
+                DEBUG_LOG_("Searching cache");
                 if (!resolveVhlImportWithCache((void *)cur, cachedImports))
                         continue;
 
+                DEBUG_LOG_("Searching sceLibKernel");
                 if (!resolveVhlImportWithLibkernel((void *)cur, libkernel))
                         continue;
 
-                resolveVhlImportWithTable((void *)cur);
+                DEBUG_LOG_("Searching NID database");
+                if (!resolveVhlImportWithTable((void *)cur))
+                        continue;
+
+                DEBUG_LOG("Failed to find import NID 0x%08x", ((SceNID *)cur)[3]);
         }
 
         pss_code_mem_flush_icache(p, size);

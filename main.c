@@ -49,8 +49,9 @@ _start(UVL_Context *ctx)
 
         ctx->funcs.logline("Starting VHL...");
 
-        // pss_* and puts won't work before this.
-        ctx->funcs.logline("Resolving VHL Context Imports");
+        /* It may get wrong if you change the order of nid_table_resolveVhl*
+           See stub.S to know what imports will be resolved with those functions. */
+        ctx->funcs.logline("Resolving VHL context imports");
         nid_table_resolveVhlCtxImports((void *)vhlStubTop, vhlStubCtxSize, ctx);
 
         DEBUG_LOG_("Searching for SceLibKernel");
@@ -70,7 +71,7 @@ _start(UVL_Context *ctx)
         DEBUG_LOG_("Searching for cached imports");
         nidCacheFindCachedImports(libkernelInfo, cachedImports);
 
-        DEBUG_LOG_("Resolving VHL Primary Imports");
+        DEBUG_LOG_("Resolving VHL primary imports");
         nid_table_resolveVhlPrimaryImports((void *)vhlStubCtxBtm, vhlStubPrimarySize,
                                           libkernelInfo, cachedImports);
 
@@ -80,7 +81,7 @@ _start(UVL_Context *ctx)
         DEBUG_LOG_("Searching and Adding stubs to table...");
         nid_table_addAllStubs();
 
-        DEBUG_LOG_("Resolving VHL Secondary Imports");
+        DEBUG_LOG_("Resolving VHL secondary imports");
         nid_table_resolveVhlSecondaryImports((void *)vhlStubPrimaryBtm, vhlStubSecondarySize,
                                           libkernelInfo, cachedImports);
 
