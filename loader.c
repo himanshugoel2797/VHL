@@ -16,7 +16,7 @@
    along with this program; if not, write to the Free Software Foundation,
    Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301  USA
  */
-#include <psp2/pss.h>
+
 #include "loader.h"
 #include "fs_hooks.h"
 #include "state_machine.h"

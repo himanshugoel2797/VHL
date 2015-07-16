@@ -24,12 +24,10 @@
 
 void *getVhlStubTop();
 
-extern int vhlStubCtxSizeSym[];
-extern int vhlStubPrimarySizeSym[];
-extern int vhlStubSecondarySizeSym[];
+extern int vhlPrimaryStubSizeSym[];
+extern int vhlSecondaryStubSizeSym[];
 
-#define vhlStubCtxSize ((size_t)vhlStubCtxSizeSym)
-#define vhlStubPrimarySize ((size_t)vhlStubPrimarySizeSym)
-#define vhlStubSecondarySize ((size_t)vhlStubSecondarySizeSym)
+#define vhlPrimaryStubSize ((size_t)vhlPrimaryStubSizeSym)
+#define vhlSecondaryStubSize ((size_t)vhlSecondaryStubSizeSym)
 
 #endif

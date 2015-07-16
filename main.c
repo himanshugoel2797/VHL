@@ -19,7 +19,6 @@
 #include <psp2/types.h>
 #include <psp2/kernel/sysmem.h>
 #include <psp2/kernel/threadmgr.h>
-#include <psp2/pss.h>
 #include <stdio.h>
 #include "utils/bithacks.h"
 #include "vhl.h"
@@ -36,9 +35,9 @@ static globals_t *globals;
 int __attribute__ ((section (".text.start")))
 _start(UVL_Context *ctx)
 {
-        const uintptr_t vhlStubTop = (uintptr_t)getVhlStubTop();
-        const uintptr_t vhlStubCtxBtm = vhlStubTop + vhlStubCtxSize;
-        const uintptr_t vhlStubPrimaryBtm = vhlStubCtxBtm + vhlStubPrimarySize;
+        void * const vhlStubTop = getVhlStubTop();
+        void * const vhlPrimaryStubTop = (void *)((uintptr_t)vhlStubTop + 16);
+        void * const vhlPrimaryStubBtm = (void *)((uintptr_t)vhlPrimaryStubTop + vhlPrimaryStubSize);
 
         const SceModuleImports * cachedImports[CACHED_IMPORTED_MODULE_NUM];
         nidTable_entry libkernelBase;
@@ -47,16 +46,16 @@ _start(UVL_Context *ctx)
         void *p;
         int err;
 
-        ctx->funcs.logline("Starting VHL...");
+        ctx->logline("Starting VHL...");
 
         /* It may get wrong if you change the order of nid_table_resolveVhl*
            See stub.S to know what imports will be resolved with those functions. */
-        ctx->funcs.logline("Resolving VHL context imports");
-        nid_table_resolveVhlCtxImports((void *)vhlStubTop, vhlStubCtxSize, ctx);
-        ctx->funcs.psvFlushIcache((void *)vhlStubTop, vhlStubCtxSize);
+        ctx->logline("Resolving VHL puts");
+        nid_table_resolveVhlPuts(vhlStubTop, ctx);
+        ctx->psvFlushIcache(vhlStubTop, 16);
 
         DEBUG_LOG_("Searching for SceLibKernel");
-        if (nid_table_analyzeStub(ctx->ptrs.libkernel_anchor, 0, &libkernelBase) != ANALYZE_STUB_OK) {
+        if (nid_table_analyzeStub(ctx->libkernel_anchor, 0, &libkernelBase) != ANALYZE_STUB_OK) {
                 DEBUG_LOG_("Failed to find the base of SceLibKernel");
                 return -1;
         }
@@ -73,9 +72,9 @@ _start(UVL_Context *ctx)
         nidCacheFindCachedImports(libkernelInfo, cachedImports);
 
         DEBUG_LOG_("Resolving VHL primary imports");
-        nid_table_resolveVhlPrimaryImports((void *)vhlStubCtxBtm, vhlStubPrimarySize,
-                                          libkernelInfo, cachedImports);
-        pss_code_mem_flush_icache((void *)vhlStubCtxBtm, vhlStubPrimarySize);
+        nid_table_resolveVhlPrimaryImports(vhlPrimaryStubTop, vhlPrimaryStubSize,
+                                          libkernelInfo, cachedImports, ctx);
+        ctx->psvFlushIcache(vhlPrimaryStubTop, vhlPrimaryStubSize);
 
         DEBUG_LOG_("Allocating memory for VHL");
         uid = sceKernelAllocMemBlock("vhlGlobals", SCE_KERNEL_MEMBLOCK_TYPE_USER_RW,
@@ -91,9 +90,9 @@ _start(UVL_Context *ctx)
                 return uid;
         }
 
-        pss_code_mem_unlock();
+        ctx->psvUnlockMem();
         globals = p;
-        pss_code_mem_lock();
+        ctx->psvLockMem();
 
         DEBUG_LOG_("Initializing table");
         nid_storage_initialize();
@@ -102,9 +101,9 @@ _start(UVL_Context *ctx)
         nid_table_addAllStubs();
 
         DEBUG_LOG_("Resolving VHL secondary imports");
-        nid_table_resolveVhlSecondaryImports((void *)vhlStubPrimaryBtm, vhlStubSecondarySize,
-                                          libkernelInfo, cachedImports);
-        pss_code_mem_flush_icache((void *)vhlStubPrimaryBtm, vhlStubSecondarySize);
+        nid_table_resolveVhlSecondaryImports(vhlPrimaryStubBtm, vhlSecondaryStubSize,
+                                          libkernelInfo, cachedImports, ctx);
+        ctx->psvFlushIcache(vhlPrimaryStubBtm, vhlSecondaryStubSize);
 
         DEBUG_LOG_("Adding stubs to table with cache");
         if (nid_table_addNIDCacheToTable(libkernelInfo, cachedImports) < 0)
@@ -112,22 +111,6 @@ _start(UVL_Context *ctx)
 
         DEBUG_LOG_("Adding hooks to table");
         nid_table_addAllHooks();
-
-        DEBUG_LOG_("Searching for sceKernelAllocMemBlockForVM");
-        if (!nid_storage_getEntry(0xE2D7E137, &libkernelBase))
-                DEBUG_LOG_("Found");
-
-        DEBUG_LOG_("Searching for sceKernelSyncVMDomain");
-        if (!nid_storage_getEntry(0x19D2A81A, &libkernelBase))
-                DEBUG_LOG_("Found");
-
-        DEBUG_LOG_("Searching for sceKernelOpenVMDomain");
-        if (!nid_storage_getEntry(0x9CA3EB2B, &libkernelBase))
-                DEBUG_LOG_("Found");
-
-        DEBUG_LOG_("Searching for sceKernelCloseVMDomain");
-        if (!nid_storage_getEntry(0xD6CA56CA, &libkernelBase))
-                DEBUG_LOG_("Found");
 
         //TODO find a way to free unused memory
 

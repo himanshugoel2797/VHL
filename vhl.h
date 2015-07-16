@@ -44,14 +44,7 @@ typedef struct {
         void (*psvLockMem)(void);                  ///< Relock code block
         void (*psvFlushIcache)(void *, unsigned int); ///< Flush Icache
         int (*logline)(const char *);              ///< Debug logging (optional)
-} UVL_Funcs;
-
-typedef union {
-        UVL_Funcs funcs;
-        struct {
-                const void *funcs[sizeof(UVL_Funcs) / sizeof(void *)];
-                const void *libkernel_anchor;                    ///< Any imported SceLibKernel function
-        } ptrs;
+        const void *libkernel_anchor;                    ///< Any imported SceLibKernel function
 } UVL_Context;
 
 int __attribute__ ((section (".text.start"))) _start(UVL_Context *ctx);

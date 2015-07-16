@@ -39,16 +39,8 @@ getVhlStubTop:
         bx  lr
         .size   getVhlStubTop, .-getVhlStubTop
 
-        @ The order corresponds to UVL_Context.
 vhlStubTop:
-        STUB(pss_code_mem_alloc)
-        STUB(pss_code_mem_unlock)
-        STUB(pss_code_mem_lock)
-        STUB(pss_code_mem_flush_icache)
         STUB(puts)
-
-        .global vhlStubCtxSizeSym
-vhlStubCtxSizeSym = . - vhlStubTop
 
         STUB(sceKernelGetModuleList)
         STUB(sceKernelGetModuleInfo)
@@ -65,13 +57,17 @@ vhlStubCtxSizeSym = . - vhlStubTop
         STUB(sceKernelDeleteThread)
         STUB(sceKernelExitDeleteThread)
 
-        .global vhlStubPrimarySizeSym
-vhlStubPrimarySizeSym = . - (vhlStubTop + vhlStubCtxSizeSym)
+        .global vhlPrimaryStubSizeSym
+vhlPrimaryStubSizeSym = . - (vhlStubTop + 16)
 
         STUB(sceKernelLoadStartModule)
         STUB(sceIoMkdir)
         STUB(sceIoLseek)
         STUB(sceIoOpen)
+        STUB(sceKernelAllocMemBlockForVM)
+        STUB(sceKernelSyncVMDomain)
+        STUB(sceKernelOpenVMDomain)
+        STUB(sceKernelCloseVMDomain)
         STUB(sceKernelCreateThread)
         STUB(sceKernelStartThread)
         STUB(sceKernelGetThreadId)
@@ -89,5 +85,5 @@ vhlStubPrimarySizeSym = . - (vhlStubTop + vhlStubCtxSizeSym)
         STUB(sceIoGetstat)
         STUB(sceIoChstat)
 
-        .global vhlStubSecondarySizeSym
-vhlStubSecondarySizeSym = . - (vhlStubTop + vhlStubCtxSizeSym + vhlStubPrimarySizeSym)
+        .global vhlSecondaryStubSizeSym
+vhlSecondaryStubSizeSym = . - (vhlStubTop + 16 + vhlPrimaryStubSizeSym)
