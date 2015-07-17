@@ -25,9 +25,6 @@
 #include <nid_table.h>
 #include <nidcache.h>
 #include <elf_parser.h>
-#include <state_machine.h>
-#include <fs_hooks.h>
-#include <loader.h>
 #include <stub.h>
 
 static globals_t *globals;

@@ -1,5 +1,5 @@
 /*
-hooks.c : Hooks table
+table.c : Hooks table
 Copyright (C) 2015  hgoel0974
 
 This program is free software; you can redistribute it and/or modify
@@ -22,9 +22,9 @@ Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301  USA
 
 #include <stdio.h>
 #include <config.h>
-#include <fs_hooks.h>
-#include <loader.h>
-#include <state_machine.h>
+#include <hook/iofilemgr.h>
+#include <hook/appmgr.h>
+#include <hook/state_machine.h>
 
 #define EXPORT(name) { NID_ ## name, name }
 #define HOOK(name) { NID_ ## name, hook_ ## name }

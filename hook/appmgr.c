@@ -1,5 +1,5 @@
 /*
-   loader.c : Wraps calls to load and launch elfs
+   appmgr.c : Wraps calls to load and launch elfs
    Copyright (C) 2015  hgoel0974
 
    This program is free software; you can redistribute it and/or modify
@@ -17,9 +17,9 @@
    Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301  USA
  */
 
-#include <loader.h>
-#include <fs_hooks.h>
-#include <state_machine.h>
+#include <hook/appmgr.h>
+#include <hook/iofilemgr.h>
+#include <hook/state_machine.h>
 
 int hook_sceAppMgrLoadExec(const char *path)
 {
