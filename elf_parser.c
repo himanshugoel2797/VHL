@@ -344,12 +344,6 @@ int elf_parser_check_hdr(Elf32_Ehdr *hdr)
         return 0;
 }
 
-
-int elf_parser_load_exec()
-{
-        return -1;
-}
-
 int elf_parser_load_sce_exec()
 {
         return -1;
