@@ -54,9 +54,9 @@ _start(UVL_Context *ctx)
         nid_table_resolveVhlPuts(vhlStubTop, ctx);
         ctx->psvFlushIcache(vhlStubTop, 16);
 
-        DEBUG_LOG_("Searching for SceLibKernel");
+        DEBUG_PUTS("Searching for SceLibKernel");
         if (nid_table_analyzeStub(ctx->libkernel_anchor, 0, &libkernelBase) != ANALYZE_STUB_OK) {
-                DEBUG_LOG_("Failed to find the base of SceLibKernel");
+                DEBUG_PUTS("Failed to find the base of SceLibKernel");
                 return -1;
         }
 
@@ -64,29 +64,29 @@ _start(UVL_Context *ctx)
 
         libkernelInfo = nid_table_findModuleInfo(libkernelBase.value.p, KERNEL_MODULE_SIZE, "SceLibKernel");
         if (libkernelInfo == NULL) {
-                DEBUG_LOG_("Failed to find the module information of SceLibKernel");
+                DEBUG_PUTS("Failed to find the module information of SceLibKernel");
                 return -1;
         }
 
-        DEBUG_LOG_("Searching for cached imports");
+        DEBUG_PUTS("Searching for cached imports");
         nidCacheFindCachedImports(libkernelInfo, cachedImports);
 
-        DEBUG_LOG_("Resolving VHL primary imports");
+        DEBUG_PUTS("Resolving VHL primary imports");
         nid_table_resolveVhlPrimaryImports(vhlPrimaryStubTop, vhlPrimaryStubSize,
                                           libkernelInfo, cachedImports, ctx);
         ctx->psvFlushIcache(vhlPrimaryStubTop, vhlPrimaryStubSize);
 
-        DEBUG_LOG_("Allocating memory for VHL");
+        DEBUG_PUTS("Allocating memory for VHL");
         uid = sceKernelAllocMemBlock("vhlGlobals", SCE_KERNEL_MEMBLOCK_TYPE_USER_RW,
                                      FOUR_KB_ALIGN(sizeof(globals_t)), NULL);
         if (uid < 0) {
-                DEBUG_LOG("Failed to allocate memory block 0x%08X", uid);
+                DEBUG_PRINTF("Failed to allocate memory block 0x%08X", uid);
                 return uid;
         }
 
         err = sceKernelGetMemBlockBase(uid, &p);
         if (err < 0) {
-                DEBUG_LOG("Failed to retrive memory block 0x%08X", err);
+                DEBUG_PRINTF("Failed to retrive memory block 0x%08X", err);
                 return uid;
         }
 
@@ -94,22 +94,22 @@ _start(UVL_Context *ctx)
         globals = p;
         ctx->psvLockMem();
 
-        DEBUG_LOG_("Initializing table");
+        DEBUG_PUTS("Initializing table");
         nid_storage_initialize();
 
-        DEBUG_LOG_("Searching and Adding stubs to table...");
+        DEBUG_PUTS("Searching and Adding stubs to table...");
         nid_table_addAllStubs();
 
-        DEBUG_LOG_("Resolving VHL secondary imports");
+        DEBUG_PUTS("Resolving VHL secondary imports");
         nid_table_resolveVhlSecondaryImports(vhlPrimaryStubBtm, vhlSecondaryStubSize,
                                           libkernelInfo, cachedImports, ctx);
         ctx->psvFlushIcache(vhlPrimaryStubBtm, vhlSecondaryStubSize);
 
-        DEBUG_LOG_("Adding stubs to table with cache");
+        DEBUG_PUTS("Adding stubs to table with cache");
         if (nid_table_addNIDCacheToTable(cachedImports) < 0)
                 return -1;
 
-        DEBUG_LOG_("Adding hooks to table");
+        DEBUG_PUTS("Adding hooks to table");
         nid_table_addAllHooks();
 
         //TODO find a way to free unused memory
@@ -120,7 +120,7 @@ _start(UVL_Context *ctx)
 
         config_initialize();
 
-        DEBUG_LOG_("Loading menu...");
+        DEBUG_PUTS("Loading menu...");
 
         if(elf_parser_load(globals->allocatedBlocks, "pss0:/top/Documents/homebrew.self", NULL) < 0) {
                 internal_printf("Load failed!");

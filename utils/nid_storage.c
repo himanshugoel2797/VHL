@@ -41,7 +41,7 @@ int nid_storage_addEntry(nidTable_entry *entry)
         {
                 if(nid_storage_table[i].nid == 0 || nid_storage_table[i].nid == entry->nid) { //Search for empty spot to add entry or update duplicate
 
-                        //DEBUG_LOG("Entry %d", i);
+                        //DEBUG_PRINTF("Entry %d", i);
                         //Make sure that the next entry is only cleared if we aren't overwriting an existing entry
                         if(nid_storage_table[i].nid != entry->nid && i + 1 < (key + 1) * NID_STORAGE_MAX_BUCKET_ENTRIES) nid_storage_table[i + 1].nid = 0;
 
@@ -52,7 +52,7 @@ int nid_storage_addEntry(nidTable_entry *entry)
                         return 0;
                 }
         }
-        DEBUG_LOG_("Failed to add NID");
+        DEBUG_PUTS("Failed to add NID");
         return -1;
 }
 

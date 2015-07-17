@@ -140,7 +140,7 @@ int nid_table_analyzeStub(const void *stub, SceNID nid, nidTable_entry *entry)
                                 return ANALYZE_STUB_UNRESOLVED;
 
                         default:
-                                DEBUG_LOG_("ERROR");
+                                DEBUG_PUTS("ERROR");
                                 return ANALYZE_STUB_INVAL;
                 }
                 stub = (char*)stub + sizeof(SceUInt);
@@ -159,9 +159,9 @@ __attribute__((hot))
 int nid_table_addStubsInModule(Psp2LoadedModuleInfo *target)
 {
         nidTable_entry entry;
-        DEBUG_LOG_("Searching for module info");
+        DEBUG_PUTS("Searching for module info");
         SceModuleInfo *orig_mod_info = nid_table_findModuleInfo(target->segments[0].vaddr, target->segments[0].memsz, target->module_name);
-        DEBUG_LOG_("Found");
+        DEBUG_PUTS("Found");
         if(orig_mod_info != NULL) {
 
                 //Build entries from export table
@@ -178,7 +178,7 @@ int nid_table_addStubsInModule(Psp2LoadedModuleInfo *target)
                                 nid_storage_addEntry(&entry);
                         }
                 }
-                DEBUG_LOG_("Exports resolved");
+                DEBUG_PUTS("Exports resolved");
                 //NOTE: The problem is somewhere here
 
                 //Build entries from import table
@@ -188,13 +188,13 @@ int nid_table_addStubsInModule(Psp2LoadedModuleInfo *target)
                 int loadResult = sizeof(int);
                 SceUID l_mod_uid = sceKernelLoadModule(target->path,0,&loadResult);
                 if(l_mod_uid < 0) {
-                        DEBUG_LOG_("Reload failed...");
+                        DEBUG_PUTS("Reload failed...");
                         return -1;
                 }
 
                 l_mod_info.size = sizeof(Psp2LoadedModuleInfo);
                 if(sceKernelGetModuleInfo(l_mod_uid, &l_mod_info) < 0) {
-                        DEBUG_LOG_("Failed to get module info...");
+                        DEBUG_PUTS("Failed to get module info...");
                         return -1;
                 }
 
@@ -237,7 +237,7 @@ int nid_table_addStubsInModule(Psp2LoadedModuleInfo *target)
 
                                 importTable_l = GET_NEXT_IMPORT(importTable_l);
                         }
-                        DEBUG_LOG_("NID cache updated");
+                        DEBUG_PUTS("NID cache updated");
                 }
 
                 sceKernelUnloadModule(l_mod_uid);
@@ -270,7 +270,7 @@ int nid_table_addAllStubs()
 
         int err = sceKernelGetModuleList(0xFF, uids, &numEntries);
         if(err < 0) {
-                DEBUG_LOG_("Failed to get module list... Exiting...");
+                DEBUG_PUTS("Failed to get module list... Exiting...");
                 return -1;
         }
         Psp2LoadedModuleInfo loadedModuleInfo;
@@ -279,13 +279,13 @@ int nid_table_addAllStubs()
         for(unsigned int i = 0; i < numEntries; i++)
         {
                 if(sceKernelGetModuleInfo(uids[i], &loadedModuleInfo) < 0) {
-                        DEBUG_LOG_("Failed to get module info... Skipping...");
+                        DEBUG_PUTS("Failed to get module info... Skipping...");
                 }else{
-                        DEBUG_LOG_("Mod info obtained");
+                        DEBUG_PUTS("Mod info obtained");
                         nid_table_addStubsInModule(&loadedModuleInfo);
                 }
         }
-        DEBUG_LOG_("All modules resolved");
+        DEBUG_PUTS("All modules resolved");
         return 0;
 }
 
@@ -296,11 +296,11 @@ SceModuleInfo* nid_table_findModuleInfo(void* location, SceUInt size, char* libn
         //Find the module info string in this memory region
         while(size > 0)
         {
-                DEBUG_LOG_("test");
+                DEBUG_PUTS("test");
                 location = memstr(location, size, libname, strlen(libname));
                 if(location == NULL)
                 {
-                        DEBUG_LOG_("Failed to find module info");
+                        DEBUG_PUTS("Failed to find module info");
                         break;
                 }
 
@@ -308,7 +308,7 @@ SceModuleInfo* nid_table_findModuleInfo(void* location, SceUInt size, char* libn
                 moduleInfo = (SceModuleInfo*)((SceUInt)location - 4);
                 if(nid_table_isValidModuleInfo(moduleInfo)) break;
                 else {
-                        DEBUG_LOG_("False alarm...Continuing...");
+                        DEBUG_PUTS("False alarm...Continuing...");
                         moduleInfo = NULL; //If check fails, this was a false positive and move on
                         size -= ((SceUInt)location - (SceUInt)origLocation) + strlen(libname);
                         location = (void*)(((SceUInt)location) + strlen(libname));
@@ -449,15 +449,15 @@ void nid_table_resolveVhlPrimaryImports(void *p, size_t size, const SceModuleInf
         uintptr_t btm = (uintptr_t)p + size;
 
         for (cur = (uintptr_t)p; cur < btm; cur += 16) {
-                DEBUG_LOG_("Searching cache");
+                DEBUG_PUTS("Searching cache");
                 if (!resolveVhlImportWithCache((void *)cur, cachedImports, ctx))
                         continue;
 
-                DEBUG_LOG_("Searching sceLibKernel");
+                DEBUG_PUTS("Searching sceLibKernel");
                 if (!resolveVhlImportWithLibkernel((void *)cur, libkernel, ctx))
                         continue;
 
-                DEBUG_LOG("Failed to find import NID 0x%08x", ((SceNID *)cur)[3]);
+                DEBUG_PRINTF("Failed to find import NID 0x%08x", ((SceNID *)cur)[3]);
         }
 }
 
@@ -469,19 +469,19 @@ void nid_table_resolveVhlSecondaryImports(void *p, size_t size, const SceModuleI
         uintptr_t btm = (uintptr_t)p + size;
 
         for (cur = (uintptr_t)p; cur < btm; cur += 16) {
-                DEBUG_LOG_("Searching cache");
+                DEBUG_PUTS("Searching cache");
                 if (!resolveVhlImportWithCache((void *)cur, cachedImports, ctx))
                         continue;
 
-                DEBUG_LOG_("Searching sceLibKernel");
+                DEBUG_PUTS("Searching sceLibKernel");
                 if (!resolveVhlImportWithLibkernel((void *)cur, libkernel, ctx))
                         continue;
 
-                DEBUG_LOG_("Searching NID database");
+                DEBUG_PUTS("Searching NID database");
                 if (!resolveVhlImportWithTable((void *)cur, ctx))
                         continue;
 
-                DEBUG_LOG("Failed to find import NID 0x%08x", ((SceNID *)cur)[3]);
+                DEBUG_PRINTF("Failed to find import NID 0x%08x", ((SceNID *)cur)[3]);
         }
 }
 
@@ -499,6 +499,6 @@ int nid_table_resolveStub(void *stub, SceNID nid)
 
                 return 0;
         }
-        DEBUG_LOG("Failed to find NID 0x%08x", nid);
+        DEBUG_PRINTF("Failed to find NID 0x%08x", nid);
         return -1;
 }

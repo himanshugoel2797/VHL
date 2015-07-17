@@ -40,6 +40,6 @@ int vhlGetIntValue(INT_VARIABLE_OPTIONS option)
 int vhlSetIntValue(INT_VARIABLE_OPTIONS option, int val)
 {
         getGlobals()->intOptions[option - 1] = val;
-        DEBUG_LOG("Option %08x Set to %08x ", option, val);
+        DEBUG_PRINTF("Option %08x Set to %08x ", option, val);
         return val;
 }

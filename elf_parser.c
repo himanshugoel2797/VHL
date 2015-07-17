@@ -83,7 +83,7 @@ void block_manager_initialize()
 int elf_parser_write_segment(Elf32_Phdr *phdr, SceUInt offset, void *data, SceUInt len)
 {
         if(offset + len > phdr->p_filesz) {
-                DEBUG_LOG_("Relocation overflow detected!");
+                DEBUG_PUTS("Relocation overflow detected!");
                 return -1;
         }
         if(phdr->p_flags & PF_X) {
@@ -129,7 +129,7 @@ int elf_parser_relocate(void *reloc, SceUInt size, Elf32_Phdr *segs)
                         r_addend = SCE_RELOC_LONG_ADDEND (entry->r_long);
                         if (SCE_RELOC_LONG_CODE2 (entry->r_long))
                         {
-                                DEBUG_LOG ("Code2 ignored for relocation at %X.", pos);
+                                DEBUG_PRINTF ("Code2 ignored for relocation at %X.", pos);
                         }
                         pos += 12;
                 }
@@ -191,7 +191,7 @@ int elf_parser_relocate(void *reloc, SceUInt size, Elf32_Phdr *segs)
 
                         if (offset <= (SceInt)0xff000000 ||
                             offset >= (SceInt)0x01000000) {
-                                DEBUG_LOG ("reloc %x out of range: 0x%08X", pos, symval);
+                                DEBUG_PRINTF ("reloc %x out of range: 0x%08X", pos, symval);
                                 break;
                         }
 
@@ -213,7 +213,7 @@ int elf_parser_relocate(void *reloc, SceUInt size, Elf32_Phdr *segs)
                         offset = r_addend + symval - loc;
                         if (offset <= (SceInt)0xfe000000 ||
                             offset >= (SceInt)0x02000000) {
-                                DEBUG_LOG ("reloc %x out of range: 0x%08X", pos, symval);
+                                DEBUG_PRINTF ("reloc %x out of range: 0x%08X", pos, symval);
                                 break;
                         }
 
@@ -275,7 +275,7 @@ int elf_parser_relocate(void *reloc, SceUInt size, Elf32_Phdr *segs)
                 break;
                 default:
                 {
-                        DEBUG_LOG ("Unknown relocation code %u at %x", r_code, pos);
+                        DEBUG_PRINTF ("Unknown relocation code %u at %x", r_code, pos);
                 }
                 case R_ARM_NONE:
                         continue;
@@ -296,7 +296,7 @@ int elf_parser_find_SceModuleInfo(Elf32_Ehdr *elf_hdr, Elf32_Phdr *elf_phdrs, Sc
 
         if ((SceUInt)elf_phdrs[index].p_vaddr == 0)
         {
-                DEBUG_LOG ("Invalid segment index %d\n", index);
+                DEBUG_PRINTF ("Invalid segment index %d\n", index);
                 return -1;
         }
 
@@ -320,22 +320,22 @@ int elf_parser_check_hdr(Elf32_Ehdr *hdr)
                 return -1;
         }
         if(hdr->e_ident[EI_CLASS] != ELFCLASS32) {
-                DEBUG_LOG_("Unsupported elf file class");
+                DEBUG_PUTS("Unsupported elf file class");
                 return -1;
         }
         if(hdr->e_ident[EI_DATA] != ELFDATA2LSB) {
-                DEBUG_LOG_("Unsupported elf target");
+                DEBUG_PUTS("Unsupported elf target");
                 return -1;
         }
         if(hdr->e_machine != EM_ARM) {
-                DEBUG_LOG_("Unsupported elf target");
+                DEBUG_PUTS("Unsupported elf target");
                 return -1;
         }
         if(hdr->e_ident[EI_VERSION] != EV_CURRENT) {
                 return -1;
         }
         if(hdr->e_type != ET_SCE_EXEC && hdr->e_type != ET_EXEC && hdr->e_type != ET_SCE_RELEXEC) {
-                DEBUG_LOG_("Unsupported elf type");
+                DEBUG_PUTS("Unsupported elf type");
                 return -1;
         }
         return 0;
@@ -363,23 +363,23 @@ int elf_parser_load_sce_relexec(allocData *data, SceUID fd, unsigned int len, El
         void *tmpDataStore_loc = NULL;
 
         if(tmpDataStore_uid < 0) {
-                DEBUG_LOG_("Failed to allocate memory for homebrew");
+                DEBUG_PUTS("Failed to allocate memory for homebrew");
                 return -1;
         }
         if(sceKernelGetMemBlockBase(tmpDataStore_uid, &tmpDataStore_loc) < 0) {
-                DEBUG_LOG_("Failed to retrieve allocated memory for homebrew");
+                DEBUG_PUTS("Failed to retrieve allocated memory for homebrew");
                 goto freeTmpDataAndError;
         }
 
         sceIoLseek(fd, 0, PSP2_SEEK_SET);
         if(sceIoRead(fd, tmpDataStore_loc, len) <= 0) {
-                DEBUG_LOG_("Read failed");
+                DEBUG_PUTS("Read failed");
                 goto freeTmpDataAndError;
         }
 
         //retrieve program sections
         if(hdr->e_phnum < 1) {
-                DEBUG_LOG_("No program sections!");
+                DEBUG_PUTS("No program sections!");
                 goto freeTmpDataAndError;
         }
 
@@ -414,24 +414,24 @@ int elf_parser_load_sce_relexec(allocData *data, SceUID fd, unsigned int len, El
         snprintf(name, 17, "codeSlot%08X", data);
         exec_mem_uid = sceKernelAllocMemBlockForVM(name, exec_mem_size);
         if(exec_mem_uid < 0) {
-                DEBUG_LOG_("Failed to allocate executable memory!");
+                DEBUG_PUTS("Failed to allocate executable memory!");
                 goto freeAllAndError;
         }
 
         if(sceKernelGetMemBlockBase(exec_mem_uid, &exec_mem_loc) < 0) {
-                DEBUG_LOG_("Failed to retrieve allocated data memory!");
+                DEBUG_PUTS("Failed to retrieve allocated data memory!");
                 goto freeAllAndError;
         }
 
         snprintf(name, 17, "dataSlot%08X", data);
         data_mem_uid = sceKernelAllocMemBlock(name, SCE_KERNEL_MEMBLOCK_TYPE_USER_RW, data_mem_size, NULL);
         if(data_mem_uid < 0) {
-                DEBUG_LOG_("Failed to allocate data memory!");
+                DEBUG_PUTS("Failed to allocate data memory!");
                 goto freeAllAndError;
         }
 
         if(sceKernelGetMemBlockBase(data_mem_uid, &data_mem_loc) < 0) {
-                DEBUG_LOG_("Failed to retrieve allocated data memory!");
+                DEBUG_PUTS("Failed to retrieve allocated data memory!");
                 goto freeAllAndError;
         }
 
@@ -453,7 +453,7 @@ int elf_parser_load_sce_relexec(allocData *data, SceUID fd, unsigned int len, El
                 switch(prgmHDR[i].p_type)
                 {
                 case PH_LOAD:
-                        DEBUG_LOG_("LOAD header");
+                        DEBUG_PUTS("LOAD header");
                         //Count how much memory to allocate for the Load headers
                         if(prgmHDR[i].p_flags & PF_X)
                         {
@@ -469,23 +469,23 @@ int elf_parser_load_sce_relexec(allocData *data, SceUID fd, unsigned int len, El
                         }
                         prgmHDR[i].p_vaddr = (SceUInt)block_loc;
 
-                        DEBUG_LOG_("Writing Segment...");
+                        DEBUG_PUTS("Writing Segment...");
                         elf_parser_write_segment(&prgmHDR[i], 0, (void*)((SceUInt)tmpDataStore_loc + prgmHDR[i].p_offset), prgmHDR[i].p_filesz);
 
                         sceKernelOpenVMDomain();
-                        DEBUG_LOG_("Clearing memory...");
+                        DEBUG_PUTS("Clearing memory...");
                         memset ((void*)((SceUInt)block_loc + (SceUInt)prgmHDR[i].p_filesz), 0, prgmHDR[i].p_memsz - prgmHDR[i].p_filesz);  //TODO this is failing for some reason
                         sceKernelCloseVMDomain();
 
-                        DEBUG_LOG_("Loaded LOAD section");
+                        DEBUG_PUTS("Loaded LOAD section");
 
                         break;
                 case PH_SCE_RELOCATE:
-                        DEBUG_LOG_("RELOCATE header");
+                        DEBUG_PUTS("RELOCATE header");
                         elf_parser_relocate ((void*)((SceUInt)tmpDataStore_loc + prgmHDR[i].p_offset), prgmHDR[i].p_filesz, prgmHDR);
                         break;
                 default:
-                        DEBUG_LOG("Program Segment %d can not be loaded", i);
+                        DEBUG_PRINTF("Program Segment %d can not be loaded", i);
                         break;
                 }
         }
@@ -495,10 +495,10 @@ int elf_parser_load_sce_relexec(allocData *data, SceUID fd, unsigned int len, El
         int index = elf_parser_find_SceModuleInfo(hdr, prgmHDR, &mod_info);
         if(index < 0)
         {
-                DEBUG_LOG_("Failed to find SceModuleInfo section...");
+                DEBUG_PUTS("Failed to find SceModuleInfo section...");
                 goto freeAllAndError;
         }
-        DEBUG_LOG_("ModuleInfo found");
+        DEBUG_PUTS("ModuleInfo found");
 
         FOREACH_IMPORT(prgmHDR[index].p_vaddr, mod_info, imports)
         {
@@ -508,7 +508,7 @@ int elf_parser_load_sce_relexec(allocData *data, SceUID fd, unsigned int len, El
                 for(unsigned int i = 0; i < GET_FUNCTION_COUNT(imports); i++)
                 {
                         int err = nid_table_resolveStub(entryTable[i], nidTable[i]);
-                        if(err < 0) DEBUG_LOG("Failed to resolve import NID 0x%08x", nidTable[i]);
+                        if(err < 0) DEBUG_PRINTF("Failed to resolve import NID 0x%08x", nidTable[i]);
                 }
 
                 entryTable = GET_VARIABLE_ENTRYTABLE(imports);
@@ -517,17 +517,17 @@ int elf_parser_load_sce_relexec(allocData *data, SceUID fd, unsigned int len, El
                 for(int i = 0; i < GET_VARIABLE_COUNT(imports); i++)
                 {
                         int err = nid_table_resolveStub(entryTable[i], nidTable[i]);
-                        if(err < 0) DEBUG_LOG("Failed to resolve variable NID 0x%08x", nidTable[i]);
+                        if(err < 0) DEBUG_PRINTF("Failed to resolve variable NID 0x%08x", nidTable[i]);
                 }
         }
 
-        DEBUG_LOG_("Retrieving entry point");
+        DEBUG_PUTS("Retrieving entry point");
         if(entryPoint != NULL) *entryPoint = (void *)(prgmHDR[index].p_vaddr + mod_info->mod_start);
         data->entryPoint = (void *)(prgmHDR[index].p_vaddr + mod_info->mod_start);
 
-        DEBUG_LOG_("Flushing Icache");
+        DEBUG_PUTS("Flushing Icache");
         sceKernelSyncVMDomain(data->exec_mem_uid, data->exec_mem_loc, data->exec_mem_size);
-        DEBUG_LOG_("Flushed");
+        DEBUG_PUTS("Flushed");
 
         return 0;
 
@@ -540,20 +540,20 @@ freeTmpDataAndError:
 
 int elf_parser_load(allocData *data, const char *file, void **entryPoint)
 {
-        DEBUG_LOG_("elf_parser_Load");
+        DEBUG_PUTS("elf_parser_Load");
         SceUID fd = sceIoOpen(file, PSP2_O_RDONLY, 0777);
-        DEBUG_LOG("Opened %s as %d", file, fd);
+        DEBUG_PRINTF("Opened %s as %d", file, fd);
 
         unsigned int len = sceIoLseek(fd, 0LL, PSP2_SEEK_END);
         sceIoLseek(fd, 0LL, PSP2_SEEK_SET);
-        DEBUG_LOG("File length : %d", len);
+        DEBUG_PRINTF("File length : %d", len);
 
         strcpy(data->path, file);
 
         Elf32_Ehdr hdr;
         sceIoRead(fd, &hdr, sizeof(Elf32_Ehdr));
         if(elf_parser_check_hdr(&hdr) < 0) {
-                DEBUG_LOG_("Invalid header!");
+                DEBUG_PUTS("Invalid header!");
                 return -1;
         }
         switch(hdr.e_type)

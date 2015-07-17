@@ -33,7 +33,7 @@ int state_machine_checkState()
         unsigned int exitMask = vhlGetIntValue(VARIABLE_EXIT_MASK);
         if(exitMask != 0 && pad.buttons == exitMask) {
                 //Kill the homebrew
-                DEBUG_LOG_("Exit Triggered");
+                DEBUG_PUTS("Exit Triggered");
                 sceKernelExitDeleteThread(0);
                 return 0;
         }
