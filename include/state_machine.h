@@ -19,8 +19,8 @@ Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301  USA
 #ifndef VHL_STATE_MACHINE_H
 #define VHL_STATE_MACHINE_H
 
-#include "vhl.h"
-#include "config.h"
+#include <vhl.h>
+#include <config.h>
 
 #define MAX_THREAD_COUNT 128
 #define MAX_OTHER_OBJECT_COUNT 2048 //Max number of Mutex, Semaphore, Event flags, Condition variables, ReadWrite locks, lightweight mutex, lightweight condition variable, events, message pipes, timers, memory blocks

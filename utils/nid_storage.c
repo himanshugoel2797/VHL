@@ -16,8 +16,8 @@
    along with this program; if not, write to the Free Software Foundation,
    Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301  USA
  */
-#include "nid_storage.h"
-#include "../vhl.h"
+#include <utils/nid_storage.h>
+#include <vhl.h>
 
 int nid_storage_initialize()
 {

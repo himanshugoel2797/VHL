@@ -17,9 +17,9 @@
    Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301  USA
  */
 
-#include "loader.h"
-#include "fs_hooks.h"
-#include "state_machine.h"
+#include <loader.h>
+#include <fs_hooks.h>
+#include <state_machine.h>
 
 int hook_sceAppMgrLoadExec(const char *path)
 {

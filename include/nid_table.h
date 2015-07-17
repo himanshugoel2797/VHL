@@ -21,15 +21,15 @@ Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301  USA
 #define VHL_NID_TABLE_H
 
 #include <psp2/kernel/modulemgr.h>
-#include "utils/bithacks.h"
-#include "utils/utils.h"
-#include "utils/nid_storage.h"
+#include <utils/bithacks.h>
+#include <utils/utils.h>
+#include <utils/nid_storage.h>
 
-#include "vhl.h"
-#include "arm_tools.h"
-#include "config.h"
-#include "module_headers.h"
-#include "nidcache.h"
+#include <vhl.h>
+#include <arm_tools.h>
+#include <config.h>
+#include <module_headers.h>
+#include <nidcache.h>
 
 
 #define NID_TABLE_MAX_MODULES 256

@@ -1,6 +1,6 @@
-#include "fs_hooks.h"
-#include "nid_table.h"
-#include "state_machine.h"
+#include <fs_hooks.h>
+#include <nid_table.h>
+#include <state_machine.h>
 
 SceUID hook_sceIoOpen(const char* path, int flags, SceMode m)
 {

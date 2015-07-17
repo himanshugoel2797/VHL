@@ -20,10 +20,10 @@
 #include <psp2/kernel/clib.h>
 #include <psp2/kernel/sysmem.h>
 #include <string.h>
-#include "utils/utils.h"
-#include "elf_parser.h"
-#include "nid_table.h"
-#include "vhl.h"
+#include <utils/utils.h>
+#include <elf_parser.h>
+#include <nid_table.h>
+#include <vhl.h>
 
 static int block_manager_free_old_data(allocData *p)
 {

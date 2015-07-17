@@ -16,9 +16,9 @@
    along with this program; if not, write to the Free Software Foundation,
    Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301  USA
  */
-#include "state_machine.h"
-#include "nid_table.h"
-#include "nids.h"
+#include <state_machine.h>
+#include <nid_table.h>
+#include <nids.h>
 #include <psp2/ctrl.h>
 #include <psp2/display.h>
 

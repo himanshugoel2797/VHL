@@ -22,7 +22,7 @@ Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301  USA
 #include <stdint.h>
 #include <stdio.h>
 #include "hooks.c"
-#include "nid_table.h"
+#include <nid_table.h>
 
 static void resolveStubWithBranch(void *stub, const void *loc)
 {

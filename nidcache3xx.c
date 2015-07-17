@@ -1,4 +1,4 @@
-#include "nidcache.h"
+#include <nidcache.h>
 
 static const NID_CACHE libkernel_nid_cache_header[] = {
     [CACHED_IMPORTED_MODULE_SceSysmem] = {0x37FE725A, 4},

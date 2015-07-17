@@ -1,7 +1,7 @@
 #ifndef VHL_MODULE_HEADERS_H
 #define VHL_MODULE_HEADERS_H
 
-#include "common.h"
+#include <common.h>
 
 #define MOD_INFO_VALID_ATTR     0x0000
 #define MOD_INFO_VALID_VER      0x0101

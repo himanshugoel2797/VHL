@@ -16,19 +16,36 @@ You should have received a copy of the GNU General Public License
 along with this program; if not, write to the Free Software Foundation,
 Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301  USA
 */
-#ifndef VHL_ELF_LOADER_H
-#define VHL_ELF_LOADER_H
+#ifndef VHL_ELF_PARSER_H
+#define VHL_ELF_PARSER_H
 
-#include "vhl.h"
-#include "nid_table.h"
-#include "elf_parser.h"
-#include "nids.h"
+#include <config.h>
+#include <elf_headers.h>
+#include <utils/bithacks.h>
 
-//Contains functions to parse and load elfs
-int loader_loadHomebrew(const char *str, int slot);
-int loader_startHomebrew(int slot);
-int loader_exitHomebrew(int errorCode);
+typedef struct {
+        void *data_mem_loc;
+        SceUID data_mem_uid;
+        int data_mem_size;
 
-int hook_sceAppMgrLoadExec(const char *path);
+        void *exec_mem_loc;
+        SceUID exec_mem_uid;
+        int exec_mem_size;
+
+        void *elf_mem_loc;
+        SceUID elf_mem_uid;
+        int elf_mem_size;
+
+        char path[MAX_PATH_LENGTH];
+        int (*entryPoint)(int, char**);
+        SceUID thid;
+} allocData;
+
+
+void block_manager_initialize(void);
+
+int elf_parser_start(allocData *data, int wait);
+int elf_parser_load(allocData *data, const char* file, void** entryPoint);
+
 
 #endif

@@ -20,15 +20,15 @@
 #include <psp2/kernel/sysmem.h>
 #include <psp2/kernel/threadmgr.h>
 #include <stdio.h>
-#include "utils/bithacks.h"
-#include "vhl.h"
-#include "nid_table.h"
-#include "nidcache.h"
-#include "elf_parser.h"
-#include "state_machine.h"
-#include "fs_hooks.h"
-#include "loader.h"
-#include "stub.h"
+#include <utils/bithacks.h>
+#include <vhl.h>
+#include <nid_table.h>
+#include <nidcache.h>
+#include <elf_parser.h>
+#include <state_machine.h>
+#include <fs_hooks.h>
+#include <loader.h>
+#include <stub.h>
 
 static globals_t *globals;
 

@@ -21,8 +21,8 @@ Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301  USA
 #if defined(PSV_3XX)
 #include "nidcache3xx.c"
 #endif
-#include "nidcache.h"
-#include "common.h"
+#include <nidcache.h>
+#include <common.h>
 
 void nidCacheFindCachedImports(const SceModuleInfo *libkernel,
                                const SceModuleImports *imports[CACHED_IMPORTED_MODULE_NUM])

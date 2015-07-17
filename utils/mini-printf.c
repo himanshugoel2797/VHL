@@ -20,7 +20,7 @@
 #include <psp2/kernel/clib.h>
 #include <stdio.h>
 #include <stdarg.h>
-#include "mini-printf.h"
+#include <utils/mini-printf.h>
 
 int internal_printf(const char *fmt, ...)
 {

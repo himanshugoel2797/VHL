@@ -17,14 +17,14 @@ along with this program; if not, write to the Free Software Foundation,
 Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301  USA
 */
 
-#include "common.h"
-#include "nids.h"
+#include <common.h>
+#include <nids.h>
 
 #include <stdio.h>
-#include "config.h"
-#include "fs_hooks.h"
-#include "loader.h"
-#include "state_machine.h"
+#include <config.h>
+#include <fs_hooks.h>
+#include <loader.h>
+#include <state_machine.h>
 
 #define EXPORT(name) { NID_ ## name, name }
 #define HOOK(name) { NID_ ## name, hook_ ## name }

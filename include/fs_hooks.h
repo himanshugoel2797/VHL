@@ -2,10 +2,10 @@
 #define VHL_FS_HOOKS_H
 #include <psp2/kernel/clib.h>
 #include <string.h>
-#include "vhl.h"
-#include "utils/utils.h"
-#include "config.h"
-#include "nids.h"
+#include <vhl.h>
+#include <utils/utils.h>
+#include <config.h>
+#include <nids.h>
 
 SceUID hook_sceIoOpen(const char* path, int flags, SceMode m);
 int hook_sceIoRemove(const char *file);

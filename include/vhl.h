@@ -26,11 +26,11 @@ Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301  USA
 #include <psp2/io/stat.h>
 #include <psp2/kernel/threadmgr.h>
 
-#include "utils/nid_storage.h"
-#include "module_headers.h"
-#include "common.h"
-#include "config.h"
-#include "elf_parser.h"
+#include <utils/nid_storage.h>
+#include <module_headers.h>
+#include <common.h>
+#include <config.h>
+#include <elf_parser.h>
 
 typedef struct {
         int intOptions[INT_VARIABLE_OPTION_COUNT];

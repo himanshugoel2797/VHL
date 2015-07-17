@@ -16,36 +16,19 @@ You should have received a copy of the GNU General Public License
 along with this program; if not, write to the Free Software Foundation,
 Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301  USA
 */
-#ifndef _VHL_NID_STORAGE_H_
-#define _VHL_NID_STORAGE_H_
+#ifndef VHL_ELF_LOADER_H
+#define VHL_ELF_LOADER_H
 
-#include <psp2/types.h>
-#include "../common.h"
-#include "../config.h"
+#include <vhl.h>
+#include <nid_table.h>
+#include <elf_parser.h>
+#include <nids.h>
 
-#define NID_STORAGE_KEY_BIT 8
-#define NID_STORAGE_BUCKET_COUNT (1 << NID_STORAGE_KEY_BIT)
-#define NID_STORAGE_CACHE_FILE VHL_DATA_PATH"/nidCache.bin"
+//Contains functions to parse and load elfs
+int loader_loadHomebrew(const char *str, int slot);
+int loader_startHomebrew(int slot);
+int loader_exitHomebrew(int errorCode);
 
-
-typedef enum  {
-        ENTRY_TYPES_FUNCTION,
-        ENTRY_TYPES_SYSCALL,
-        ENTRY_TYPES_VARIABLE
-}EntryTypes;
-
-//Represents an entry in the NID table
-typedef struct {
-        SceNID nid;
-        int type;
-        union {
-                void *p;
-                SceUInt i;
-        } value;
-} nidTable_entry;
-
-int nid_storage_initialize();
-int nid_storage_addEntry(nidTable_entry *entry);
-int nid_storage_getEntry(SceNID nid, nidTable_entry *entry);
+int hook_sceAppMgrLoadExec(const char *path);
 
 #endif

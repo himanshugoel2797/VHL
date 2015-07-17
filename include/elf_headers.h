@@ -19,7 +19,7 @@ Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301  USA
 #ifndef VHL_ELF_HEADERS_H
 #define VHL_ELF_HEADERS_H
 
-#include "common.h"
+#include <common.h>
 
 typedef uint16_t Elf32_Half;  // Unsigned half int
 typedef uint32_t Elf32_Off; // Unsigned offset

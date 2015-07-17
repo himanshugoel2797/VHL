@@ -16,7 +16,7 @@
    along with this program; if not, write to the Free Software Foundation,
    Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301  USA
  */
-#include "arm_tools.h"
+#include <arm_tools.h>
 
 /* They shouldn't call any external function because 
  they will be executed before resolving VHL stubs. */

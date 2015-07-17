@@ -16,36 +16,36 @@ You should have received a copy of the GNU General Public License
 along with this program; if not, write to the Free Software Foundation,
 Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301  USA
 */
-#ifndef VHL_ELF_PARSER_H
-#define VHL_ELF_PARSER_H
+#ifndef _VHL_NID_STORAGE_H_
+#define _VHL_NID_STORAGE_H_
 
-#include "config.h"
-#include "elf_headers.h"
-#include "utils/bithacks.h"
+#include <psp2/types.h>
+#include <common.h>
+#include <config.h>
 
+#define NID_STORAGE_KEY_BIT 8
+#define NID_STORAGE_BUCKET_COUNT (1 << NID_STORAGE_KEY_BIT)
+#define NID_STORAGE_CACHE_FILE VHL_DATA_PATH"/nidCache.bin"
+
+
+typedef enum  {
+        ENTRY_TYPES_FUNCTION,
+        ENTRY_TYPES_SYSCALL,
+        ENTRY_TYPES_VARIABLE
+}EntryTypes;
+
+//Represents an entry in the NID table
 typedef struct {
-        void *data_mem_loc;
-        SceUID data_mem_uid;
-        int data_mem_size;
+        SceNID nid;
+        int type;
+        union {
+                void *p;
+                SceUInt i;
+        } value;
+} nidTable_entry;
 
-        void *exec_mem_loc;
-        SceUID exec_mem_uid;
-        int exec_mem_size;
-
-        void *elf_mem_loc;
-        SceUID elf_mem_uid;
-        int elf_mem_size;
-
-        char path[MAX_PATH_LENGTH];
-        int (*entryPoint)(int, char**);
-        SceUID thid;
-} allocData;
-
-
-void block_manager_initialize(void);
-
-int elf_parser_start(allocData *data, int wait);
-int elf_parser_load(allocData *data, const char* file, void** entryPoint);
-
+int nid_storage_initialize();
+int nid_storage_addEntry(nidTable_entry *entry);
+int nid_storage_getEntry(SceNID nid, nidTable_entry *entry);
 
 #endif

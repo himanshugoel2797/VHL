@@ -19,8 +19,8 @@ Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301  USA
 #ifndef VHL_ARM_TOOLS_H
 #define VHL_ARM_TOOLS_H
 
-#include "utils/bithacks.h"
-#include "vhl.h"
+#include <utils/bithacks.h>
+#include <vhl.h>
 #include <psp2/types.h>
 
 #define ARM_MAX_ARGS 2

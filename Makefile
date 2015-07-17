@@ -2,7 +2,8 @@ CC	:= arm-none-eabi-gcc
 OBJCOPY	:= arm-none-eabi-objcopy
 SIZE	:= arm-none-eabi-size
 
-CFLAGS	:= -Wall -Wextra -specs=psp2.specs -fPIE -fno-zero-initialized-in-bss -std=c99 -DREJUVENATE_PSM -DDEBUG -D PSV_3XX -mthumb -mthumb-interwork
+CFLAGS	:= -Wall -Wextra -Iinclude -specs=psp2.specs -fPIE -fno-zero-initialized-in-bss -std=c99 -DREJUVENATE_PSM -DDEBUG -D PSV_3XX -mthumb -mthumb-interwork
+ASFLAGS	:= $(CFLAGS)
 LDFLAGS	:= -T linker.x -nodefaultlibs -nostdlib -pie
 
 TARGET	:= VHL

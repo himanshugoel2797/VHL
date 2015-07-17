@@ -16,23 +16,31 @@ You should have received a copy of the GNU General Public License
 along with this program; if not, write to the Free Software Foundation,
 Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301  USA
 */
-#ifndef VHL_COMMON_H
-#define VHL_COMMON_H
+#ifndef VHL_NIDCACHE_H
+#define VHL_NIDCACHE_H
 
-#include <psp2/types.h>
-#include <stdio.h>
+#include <module_headers.h>
+#include <vhl.h>
 
-#include "utils/mini-printf.h"
+enum {
+        CACHED_IMPORTED_MODULE_SceSysmem,
+        CACHED_IMPORTED_MODULE_SceThreadmgr,
+        CACHED_IMPORTED_MODULE_SceModulemgr,
+        CACHED_IMPORTED_MODULE_SceProcessmgr,
+        CACHED_IMPORTED_MODULE_SceIofilemgr,
 
-typedef SceUInt SceNID;
+        CACHED_IMPORTED_MODULE_NUM
+};
 
-#ifdef DEBUG
-        #define DEBUG_PRINTF(x, ...) internal_printf(x, __VA_ARGS__)
-        #define DEBUG_PUTS(x) puts(x)
-#else
-        #define DEBUG_PRINTF(x, ...)
-        #define DEBUG_PUTS(x)
-#endif
+typedef struct {
+        SceNID module_nid;
+        SceUInt count;
+} NID_CACHE;
 
+void nidCacheFindCachedImports(const SceModuleInfo *libkernel,
+                               const SceModuleImports *imports[CACHED_IMPORTED_MODULE_NUM]);
+
+NID_CACHE* nidCache_getHeader();
+SceNID* nidCache_getCache();
 
 #endif
