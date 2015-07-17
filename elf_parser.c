@@ -25,7 +25,7 @@
 #include "nid_table.h"
 #include "vhl.h"
 
-int block_manager_free_old_data(allocData *p)
+static int block_manager_free_old_data(allocData *p)
 {
 
         sceKernelFreeMemBlock(p->data_mem_uid);
@@ -83,7 +83,7 @@ void block_manager_initialize()
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-int elf_parser_write_segment(Elf32_Phdr *phdr, SceUInt offset, void *data, SceUInt len)
+static int elf_parser_write_segment(Elf32_Phdr *phdr, SceUInt offset, void *data, SceUInt len)
 {
         if(offset + len > phdr->p_filesz) {
                 DEBUG_PUTS("Relocation overflow detected!");
@@ -101,7 +101,7 @@ int elf_parser_write_segment(Elf32_Phdr *phdr, SceUInt offset, void *data, SceUI
         return 0;
 }
 
-int elf_parser_relocate(void *reloc, SceUInt size, Elf32_Phdr *segs)
+static int elf_parser_relocate(void *reloc, SceUInt size, Elf32_Phdr *segs)
 {
         SceReloc *entry;
         SceUInt pos;
@@ -291,7 +291,7 @@ int elf_parser_relocate(void *reloc, SceUInt size, Elf32_Phdr *segs)
         return 0;
 }
 
-int elf_parser_find_SceModuleInfo(Elf32_Ehdr *elf_hdr, Elf32_Phdr *elf_phdrs, SceModuleInfo **mod_info)
+static int elf_parser_find_SceModuleInfo(Elf32_Ehdr *elf_hdr, Elf32_Phdr *elf_phdrs, SceModuleInfo **mod_info)
 {
         //Src: https://github.com/yifanlu/UVLoader/blob/master/load.c
         SceUInt index = ((SceUInt)elf_hdr->e_entry & 0xC0000000) >> 30;
@@ -308,7 +308,7 @@ int elf_parser_find_SceModuleInfo(Elf32_Ehdr *elf_hdr, Elf32_Phdr *elf_phdrs, Sc
         return 0;
 }
 
-int elf_parser_check_hdr(Elf32_Ehdr *hdr)
+static int elf_parser_check_hdr(Elf32_Ehdr *hdr)
 {
         if(hdr->e_ident[EI_MAG0] != ELFMAG0) {
                 return -1;
@@ -344,12 +344,12 @@ int elf_parser_check_hdr(Elf32_Ehdr *hdr)
         return 0;
 }
 
-int elf_parser_load_sce_exec()
+static int elf_parser_load_sce_exec()
 {
         return -1;
 }
 
-int elf_parser_load_sce_relexec(allocData *data, SceUID fd, unsigned int len, Elf32_Ehdr *hdr, void **entryPoint)
+static int elf_parser_load_sce_relexec(allocData *data, SceUID fd, unsigned int len, Elf32_Ehdr *hdr, void **entryPoint)
 {
         char *dst, *dstBtm, *src, *srcBtm;
 
@@ -594,7 +594,7 @@ int elf_parser_load(allocData *data, const char *file, void **entryPoint)
         return 0;
 }
 
-int homebrew_thread_entry(SceSize args __attribute__((unused)), void *argp)
+static int homebrew_thread_entry(SceSize args __attribute__((unused)), void *argp)
 {
 
         allocData *data = *(allocData **)argp;

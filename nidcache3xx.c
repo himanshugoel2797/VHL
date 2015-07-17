@@ -1,6 +1,6 @@
 #include "nidcache.h"
 
-const NID_CACHE libkernel_nid_cache_header[] = {
+static const NID_CACHE libkernel_nid_cache_header[] = {
     [CACHED_IMPORTED_MODULE_SceSysmem] = {0x37FE725A, 4},
     [CACHED_IMPORTED_MODULE_SceThreadmgr] = {0x859A24B1, 98},
     [CACHED_IMPORTED_MODULE_SceModulemgr] = {0xEAED1616, 12},
@@ -8,7 +8,7 @@ const NID_CACHE libkernel_nid_cache_header[] = {
     [CACHED_IMPORTED_MODULE_SceIofilemgr] = {0xF2FF276E, 34}
 };
 
-const SceNID libkernel_nid_cache[] = {
+static const SceNID libkernel_nid_cache[] = {
 // SceSysmem
     0xA33B99D1,
     0xA91E15EE,

@@ -43,7 +43,6 @@ typedef struct {
 
 
 void block_manager_initialize(void);
-int block_manager_free_old_data(allocData *data);
 
 int elf_parser_start(allocData *data, int wait);
 int elf_parser_load(allocData *data, const char* file, void** entryPoint);

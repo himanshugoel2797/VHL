@@ -149,7 +149,7 @@ int nid_table_analyzeStub(const void *stub, SceNID nid, nidTable_entry *entry)
         }
 }
 
-int nid_table_isValidModuleInfo(SceModuleInfo *m_info)
+static int nid_table_isValidModuleInfo(SceModuleInfo *m_info)
 {
         if(m_info == NULL) return 0; //Invalid if NULL
         if(m_info->modattribute != SCE_MODULE_INFO_EXPECTED_ATTR) return 0;
@@ -158,7 +158,7 @@ int nid_table_isValidModuleInfo(SceModuleInfo *m_info)
 }
 
 __attribute__((hot))
-int nid_table_addStubsInModule(Psp2LoadedModuleInfo *target)
+static int nid_table_addStubsInModule(Psp2LoadedModuleInfo *target)
 {
         nidTable_entry entry;
         DEBUG_PUTS("Searching for module info");

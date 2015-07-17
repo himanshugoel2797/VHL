@@ -46,8 +46,6 @@ enum {
 int nid_table_initialize();
 int nid_table_analyzeStub(const void *stub, SceNID nid, nidTable_entry *entry);
 SceModuleInfo* nid_table_findModuleInfo(void* location, SceUInt size, char* libname);
-int nid_table_isValidModuleInfo(SceModuleInfo *m_info);
-int nid_table_addStubsInModule(Psp2LoadedModuleInfo *target);
 void nid_table_resolveVhlPuts(void *p, const UVL_Context *ctx);
 void nid_table_resolveVhlPrimaryImports(void *p, size_t size, const SceModuleInfo *libkernel,
         const SceModuleImports * const cachedImports[CACHED_IMPORTED_MODULE_NUM],
