@@ -29,23 +29,6 @@ Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301  USA
 #define EXPORT(name) { NID_ ## name, name }
 #define HOOK(name) { NID_ ## name, hook_ ## name }
 
-static int hook_printf(const char* fmt, ...)
-{
-  #ifndef NO_CONSOLE_OUT
-        char buffer[INTERNAL_PRINTF_MAX_LENGTH * 5];  //Larger buffer for exported stuff
-        va_list va;
-        va_start(va, fmt);
-        mini_vsnprintf(buffer, INTERNAL_PRINTF_MAX_LENGTH * 5, fmt, va);
-        va_end(va);
-        puts(buffer);
-  #else
-        va_list va;
-        va_start(va, fmt);
-        va_end(va);
-  #endif
-        return 0;
-}
-
 typedef struct {
         SceNID nid;
         void *p;
@@ -60,7 +43,7 @@ hook_t forcedHooks[] = {
         HOOK(sceIoRmdir),
         HOOK(sceIoGetstat),
         HOOK(sceIoChstat),
-        HOOK(printf),
+        { NID_printf, internal_printf },
         { NID_puts, puts },
         EXPORT(vhlGetIntValue),
         EXPORT(vhlSetIntValue)

@@ -16,8 +16,10 @@ You should have received a copy of the GNU General Public License
 along with this program; if not, write to the Free Software Foundation,
 Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301  USA
 */
+#include <psp2/kernel/clib.h>
 #include <psp2/kernel/modulemgr.h>
 #include <psp2/kernel/sysmem.h>
+#include <stdint.h>
 #include <stdio.h>
 #include "hooks.c"
 #include "nid_table.h"
@@ -293,11 +295,15 @@ SceModuleInfo* nid_table_findModuleInfo(void* location, SceUInt size, char* libn
 {
         SceModuleInfo *moduleInfo = NULL;
         void *origLocation = location;
+        size_t len;
+
         //Find the module info string in this memory region
         while(size > 0)
         {
                 DEBUG_PUTS("test");
-                location = memstr(location, size, libname, strlen(libname));
+
+                len = strlen(libname);
+                location = memstr(location, size, libname, len);
                 if(location == NULL)
                 {
                         DEBUG_PUTS("Failed to find module info");
@@ -310,8 +316,8 @@ SceModuleInfo* nid_table_findModuleInfo(void* location, SceUInt size, char* libn
                 else {
                         DEBUG_PUTS("False alarm...Continuing...");
                         moduleInfo = NULL; //If check fails, this was a false positive and move on
-                        size -= ((SceUInt)location - (SceUInt)origLocation) + strlen(libname);
-                        location = (void*)(((SceUInt)location) + strlen(libname));
+                        size -= ((SceUInt)location - (SceUInt)origLocation) + len;
+                        location = (void*)(((SceUInt)location) + len);
                 }
         }
 
@@ -341,7 +347,13 @@ int nid_table_addNIDCacheToTable(const SceModuleImports * const cachedImports[CA
 
 static void copyStub(void *dst, const void *src)
 {
-        memcpy(dst, src, 16);
+        uint32_t *dst32 = dst;
+        const uint32_t *src32 = src;
+
+        dst32[0] = src32[0];
+        dst32[1] = src32[1];
+        dst32[2] = src32[2];
+        dst32[3] = src32[3];
 }
 
 static int resolveVhlImportWithTable(SceUInt *stub, const UVL_Context *ctx)
@@ -448,6 +460,11 @@ void nid_table_resolveVhlPrimaryImports(void *p, size_t size, const SceModuleInf
         uintptr_t cur;
         uintptr_t btm = (uintptr_t)p + size;
 
+#ifdef DEBUG
+        resolveVhlImportWithLibkernel(p, libkernel, ctx);
+        ctx->psvFlushIcache(p, 16);
+#endif
+
         for (cur = (uintptr_t)p; cur < btm; cur += 16) {
                 DEBUG_PUTS("Searching cache");
                 if (!resolveVhlImportWithCache((void *)cur, cachedImports, ctx))
@@ -499,6 +516,6 @@ int nid_table_resolveStub(void *stub, SceNID nid)
 
                 return 0;
         }
-        DEBUG_PRINTF("Failed to find NID 0x%08x", nid);
+        DEBUG_PRINTF("Failed to find import NID 0x%08x", nid);
         return -1;
 }

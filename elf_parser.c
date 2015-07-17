@@ -16,7 +16,10 @@
    along with this program; if not, write to the Free Software Foundation,
    Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301  USA
  */
+
+#include <psp2/kernel/clib.h>
 #include <psp2/kernel/sysmem.h>
+#include <string.h>
 #include "utils/utils.h"
 #include "elf_parser.h"
 #include "nid_table.h"
@@ -354,9 +357,11 @@ int elf_parser_load_sce_exec()
 
 int elf_parser_load_sce_relexec(allocData *data, SceUID fd, unsigned int len, Elf32_Ehdr *hdr, void **entryPoint)
 {
+        char *dst, *dstBtm, *src, *srcBtm;
+
         if(data->data_mem_uid != 0) block_manager_free_old_data(data); //Make sure the block is empty to prevent memory leaks
         char tmpDS_name[18];
-        snprintf(tmpDS_name, 18, "elf_data_store%08X", data);
+        sceClibSnprintf(tmpDS_name, 18, "elf_data_store%08X", data);
 
 
         SceUID tmpDataStore_uid = sceKernelAllocMemBlock(tmpDS_name, SCE_KERNEL_MEMBLOCK_TYPE_USER_RW, FOUR_KB_ALIGN(len), NULL);
@@ -411,7 +416,7 @@ int elf_parser_load_sce_relexec(allocData *data, SceUID fd, unsigned int len, El
         exec_mem_size = MB_ALIGN(FOUR_KB_ALIGN(exec_mem_size));
         data_mem_size = FOUR_KB_ALIGN(data_mem_size);
 
-        snprintf(name, 17, "codeSlot%08X", data);
+        sceClibSnprintf(name, 17, "codeSlot%08X", data);
         exec_mem_uid = sceKernelAllocMemBlockForVM(name, exec_mem_size);
         if(exec_mem_uid < 0) {
                 DEBUG_PUTS("Failed to allocate executable memory!");
@@ -423,7 +428,7 @@ int elf_parser_load_sce_relexec(allocData *data, SceUID fd, unsigned int len, El
                 goto freeAllAndError;
         }
 
-        snprintf(name, 17, "dataSlot%08X", data);
+        sceClibSnprintf(name, 17, "dataSlot%08X", data);
         data_mem_uid = sceKernelAllocMemBlock(name, SCE_KERNEL_MEMBLOCK_TYPE_USER_RW, data_mem_size, NULL);
         if(data_mem_uid < 0) {
                 DEBUG_PUTS("Failed to allocate data memory!");
@@ -469,13 +474,29 @@ int elf_parser_load_sce_relexec(allocData *data, SceUID fd, unsigned int len, El
                         }
                         prgmHDR[i].p_vaddr = (SceUInt)block_loc;
 
-                        DEBUG_PUTS("Writing Segment...");
-                        elf_parser_write_segment(&prgmHDR[i], 0, (void*)((SceUInt)tmpDataStore_loc + prgmHDR[i].p_offset), prgmHDR[i].p_filesz);
+                        if (prgmHDR[i].p_flags & PF_X)
+                                sceKernelOpenVMDomain();
 
-                        sceKernelOpenVMDomain();
+                        DEBUG_PUTS("Writing Segment...");
+                        dst = (char *)prgmHDR[i].p_vaddr;
+                        dstBtm = dst + prgmHDR[i].p_memsz;
+                        src = (char *)((uintptr_t)tmpDataStore_loc + prgmHDR[i].p_offset);
+                        srcBtm = src + prgmHDR[i].p_filesz;
+
+                        while (src != srcBtm) {
+                                *dst = *src;
+                                dst++;
+                                src++;
+                        }
+
                         DEBUG_PUTS("Clearing memory...");
-                        memset ((void*)((SceUInt)block_loc + (SceUInt)prgmHDR[i].p_filesz), 0, prgmHDR[i].p_memsz - prgmHDR[i].p_filesz);  //TODO this is failing for some reason
-                        sceKernelCloseVMDomain();
+                        while (dst != dstBtm) {
+                                *dst = 0;
+                                dst++;
+                        }
+
+                        if(prgmHDR[i].p_flags & PF_X)
+                                sceKernelCloseVMDomain();
 
                         DEBUG_PUTS("Loaded LOAD section");
 
@@ -583,8 +604,6 @@ int homebrew_thread_entry(SceSize args __attribute__((unused)), void *argp)
 {
 
         allocData *data = *(allocData **)argp;
-        char tmp[512];
-        strcpy(tmp, data->path);
 
         //TODO start managing resources for this
         int retVal = data->entryPoint(0, NULL);

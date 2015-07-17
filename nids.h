@@ -20,6 +20,9 @@ Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301  USA
 #define VHL_EXPORT_NIDS_H
 
 // SceLibKernel
+#define NID_sceClibStrcmp 0xa2fb4d9d
+#define NID_sceClibSnprintf 0x8cba03d5
+#define NID_sceClibVsnprintf 0xfa6be467
 #define NID_sceKernelExitProcess 0x7595D9AA
 #define NID_sceIoMkdir 0x9670d39f
 #define NID_sceIoOpen 0x6c60ac61
@@ -77,6 +80,7 @@ Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301  USA
 // SceLibc
 #define NID_printf 0x9A004680
 #define NID_puts 0x59C3E171
+#define NID_strcpy 0x85b924b7
 
 // VHL
 #define NID_vhlGetIntValue 3

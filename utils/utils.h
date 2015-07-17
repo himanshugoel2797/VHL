@@ -21,13 +21,6 @@ Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301  USA
 
 #include <psp2/types.h>
 
-size_t strlen(const char *str);
 char* memstr(char *string, SceUInt len, char *pat, SceUInt patlen);
-void* memcpy(void * dst, const void * src, size_t len);
-void* memset(void * s, int c, size_t n);
-int strcpy(char *dst, const char *src);
-int substr(char *dst, const char *src, int start, size_t len);
-char* strcat(char *dest, const char *src);
-int strcmp(const char *a, const char *b);
 
 #endif

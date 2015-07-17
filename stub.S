@@ -40,8 +40,14 @@ getVhlStubTop:
         .size   getVhlStubTop, .-getVhlStubTop
 
 vhlStubTop:
+        @ puts will be resolved at first with UVL_Context
         STUB(puts)
 
+        @ sceClibVsnprintf will be resolved in the next to puts for DEBUG_PRINTF
+        STUB(sceClibVsnprintf)
+
+        STUB(sceClibStrcmp)
+        STUB(sceClibSnprintf)
         STUB(sceKernelGetModuleList)
         STUB(sceKernelGetModuleInfo)
         STUB(sceKernelLoadModule)
@@ -84,6 +90,7 @@ vhlPrimaryStubSizeSym = . - (vhlStubTop + 16)
         //STUB(sceIoChdir)
         STUB(sceIoGetstat)
         STUB(sceIoChstat)
+        STUB(strcpy)
 
         .global vhlSecondaryStubSizeSym
 vhlSecondaryStubSizeSym = . - (vhlStubTop + 16 + vhlPrimaryStubSizeSym)

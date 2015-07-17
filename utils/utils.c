@@ -23,9 +23,12 @@
 #define MAX_MEMSTR_PATH_LENGTH 30 * sizeof(int)
 #define max(a, b) ((a < b) ? b : a)
 
-size_t strlen (const char *str)
+size_t strlen(const char *s)
 {
-        return (*str) ? strlen(++str) + 1 : 0;
+        size_t n;
+
+        for (n = 0; s[n] != 0; n++);
+        return n;
 }
 
 void * memcpy(void * dst, const void * src, size_t len)
@@ -39,58 +42,6 @@ void * memcpy(void * dst, const void * src, size_t len)
         }
 
         return dst;
-}
-
-void * memset(void * s, int c, size_t n)
-{
-        int* p=s;
-
-        for(size_t i = 0; i < n; i+=sizeof(int))
-        {
-                *p++ = c;
-        }
-
-        return s;
-}
-
-int strcpy(char *dst, const char *src)
-{
-        size_t len = strlen(src);
-        memcpy(dst, src, len);
-        return len;
-}
-
-int substr(char *dst, const char *src, int start, size_t len)
-{
-        size_t srcLen = strlen(src);
-        if(start + len > srcLen) len = srcLen - start;
-        memcpy(dst, &src[start], len);
-        return len;
-}
-
-char *strcat(char *dest, const char *src)
-{
-    size_t i,j;
-    for (i = 0; dest[i] != '\0'; i++)
-        ;
-    for (j = 0; src[j] != '\0'; j++)
-        dest[i+j] = src[j];
-    dest[i+j] = '\0';
-    return dest;
-}
-
-int strcmp(const char *a, const char *b)
-{
-        int aLen = strlen(a);
-        int bLen = strlen(b);
-
-        int len = (aLen > bLen) ? bLen : aLen;
-
-        for(int i = 0; i < len; i++)
-        {
-                if(a[i] != b[i]) return 0;
-        }
-        return 1;
 }
 
 void make_delta1(int *delta1, char *pat, int patlen) {

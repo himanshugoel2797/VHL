@@ -1,5 +1,7 @@
 #ifndef VHL_FS_HOOKS_H
 #define VHL_FS_HOOKS_H
+#include <psp2/kernel/clib.h>
+#include <string.h>
 #include "vhl.h"
 #include "utils/utils.h"
 #include "config.h"
@@ -16,18 +18,30 @@ int hook_sceIoChstat(const char *file, SceIoStat *stat, int bits);
 
 static inline char* TranslateVFS(char *dest, const char *path)
 {
+        char *p;
+        const char *q;
+
+        p = dest;
+
         //Only substitute the file system path if the root is present
-        if(strcmp(path, VFS_APPS_DIR) == 1){
-                strcpy(dest, FS_APPS_DIR);
-                strcat(dest, &path[strlen(VFS_APPS_DIR)]);
-                return dest;
+        if(sceClibStrcmp(path, VFS_APPS_DIR) == 1) {
+                q = FS_APPS_DIR;
+                path += sizeof(FS_APPS_DIR) - 1;
+        } else if(sceClibStrcmp(path, VFS_ROOT) == 1) {
+                q = FS_ROOT;
+                path += sizeof(FS_ROOT) - 1;
+        } else
+                goto skip;
+
+        while (*q != 0) {
+                *p = *q;
+                p++;
+                q++;
         }
-        else if(strcmp(path, VFS_ROOT) == 1) {
-                strcpy(dest, FS_ROOT);
-                strcat(dest, &path[strlen(VFS_ROOT)]);
-                return dest;
-        }
-        return (char *)path;
+
+skip:
+        strcpy(p, path);
+        return dest;
 }
 
 #endif
