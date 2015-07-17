@@ -20,6 +20,7 @@ Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301  USA
 #define VHL_COMMON_H
 
 #include <psp2/types.h>
+#include <stdio.h>
 
 #include "utils/mini-printf.h"
 
@@ -27,7 +28,7 @@ typedef SceUInt SceNID;
 
 //#ifdef DEBUG
         #define DEBUG_LOG(x, ...) internal_printf(x, __VA_ARGS__)
-        #define DEBUG_LOG_(x) internal_printf(x)
+        #define DEBUG_LOG_(x) puts(x)
 //#else
 //        #define DEBUG_LOG(...)
 //        #define DEBUG_LOG_(x)
