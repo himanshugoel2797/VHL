@@ -26,13 +26,13 @@ Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301  USA
 
 typedef SceUInt SceNID;
 
-//#ifdef DEBUG
+#ifdef DEBUG
         #define DEBUG_PRINTF(x, ...) internal_printf(x, __VA_ARGS__)
         #define DEBUG_PUTS(x) puts(x)
-//#else
-//        #define DEBUG_PRINTF(x, ...)
-//        #define DEBUG_PUTS(x)
-//#endif
+#else
+        #define DEBUG_PRINTF(x, ...)
+        #define DEBUG_PUTS(x)
+#endif
 
 
 #endif
