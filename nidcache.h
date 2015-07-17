@@ -19,14 +19,26 @@ Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301  USA
 #ifndef VHL_NIDCACHE_H
 #define VHL_NIDCACHE_H
 
+#include "module_headers.h"
 #include "vhl.h"
+
+enum {
+        CACHED_IMPORTED_MODULE_SceSysmem,
+        CACHED_IMPORTED_MODULE_SceThreadmgr,
+        CACHED_IMPORTED_MODULE_SceModulemgr,
+        CACHED_IMPORTED_MODULE_SceProcessmgr,
+        CACHED_IMPORTED_MODULE_SceIofilemgr,
+
+        CACHED_IMPORTED_MODULE_NUM
+};
 
 typedef struct {
         SceNID module_nid;
         SceUInt count;
 } NID_CACHE;
 
-int nidCacheContainsModuleNID(SceNID nid, int *offset);
+void nidCacheFindCachedImports(const SceModuleInfo *libkernel,
+                               const SceModuleImports *imports[CACHED_IMPORTED_MODULE_NUM]);
 
 NID_CACHE* nidCache_getHeader();
 SceNID* nidCache_getCache();

@@ -37,14 +37,28 @@ Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301  USA
 #define SCE_MODULE_INFO_EXPECTED_ATTR     0x0000
 #define SCE_MODULE_INFO_EXPECTED_VER      0x0101
 
+enum {
+        ANALYZE_STUB_OK,
+        ANALYZE_STUB_UNRESOLVED,
+        ANALYZE_STUB_INVAL
+};
 
 int nid_table_initialize();
-int nid_table_analyzeStub(void *stub, SceNID nid, nidTable_entry *entry);
+int nid_table_analyzeStub(const void *stub, SceNID nid, nidTable_entry *entry);
 SceModuleInfo* nid_table_findModuleInfo(void* location, SceUInt size, char* libname);
 int nid_table_isValidModuleInfo(SceModuleInfo *m_info);
 int nid_table_addStubsInModule(Psp2LoadedModuleInfo *target);
-int nid_table_resolveVHLImports(const UVL_Context *ctx);
+void nid_table_resolveVhlPuts(void *p, const UVL_Context *ctx);
+void nid_table_resolveVhlPrimaryImports(void *p, size_t size, const SceModuleInfo *libkernel,
+        const SceModuleImports * const cachedImports[CACHED_IMPORTED_MODULE_NUM],
+        const UVL_Context *ctx);
+void nid_table_resolveVhlSecondaryImports(void *p, size_t size, const SceModuleInfo *libkernel,
+        const SceModuleImports * const cachedImports[CACHED_IMPORTED_MODULE_NUM],
+        const UVL_Context *ctx);
+int nid_table_addNIDCacheToTable(SceModuleInfo *moduleInfo,
+        const SceModuleImports * const cachedImports[CACHED_IMPORTED_MODULE_NUM]);
 int nid_table_addAllStubs(void);
+void nid_table_addAllHooks(void);
 int nid_table_resolveStub(void *stub, SceNID nid);
 
 #endif

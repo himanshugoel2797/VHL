@@ -64,6 +64,10 @@ Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301  USA
 #define NID_sceKernelGetMemBlockBase 0xb8ef5818
 #define NID_sceKernelFindMemBlockByAddr 0xa33b99d1
 #define NID_sceKernelFreeMemBlock 0xa91e15ee
+#define NID_sceKernelAllocMemBlockForVM 0xE2D7E137
+#define NID_sceKernelSyncVMDomain 0x19D2A81A
+#define NID_sceKernelOpenVMDomain 0x9CA3EB2B
+#define NID_sceKernelCloseVMDomain 0xD6CA56CA
 
 // SceThreadmgr
 #define NID_sceKernelDelayThread 0x4b675d05
@@ -73,12 +77,6 @@ Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301  USA
 // SceLibc
 #define NID_printf 0x9A004680
 #define NID_puts 0x59C3E171
-
-// SceLibMonoBridge
-#define NID_pss_code_mem_alloc 0xf466abec
-#define NID_pss_code_mem_flush_icache 0x110f567b
-#define NID_pss_code_mem_lock 0x53d03181
-#define NID_pss_code_mem_unlock 0x50e8f8ff
 
 // VHL
 #define NID_vhlGetIntValue 3

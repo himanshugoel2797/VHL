@@ -17,7 +17,6 @@
    Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301  USA
  */
 #include <psp2/kernel/sysmem.h>
-#include <psp2/pss.h>
 #include "utils/utils.h"
 #include "elf_parser.h"
 #include "nid_table.h"
@@ -88,13 +87,13 @@ int elf_parser_write_segment(Elf32_Phdr *phdr, SceUInt offset, void *data, SceUI
                 return -1;
         }
         if(phdr->p_flags & PF_X) {
-                pss_code_mem_unlock();
+                sceKernelOpenVMDomain();
         }
 
         memcpy((char*)phdr->p_vaddr + offset, data, len);
 
         if(phdr->p_flags & PF_X) {
-                pss_code_mem_lock();
+                sceKernelCloseVMDomain();
         }
         return 0;
 }
@@ -393,9 +392,7 @@ int elf_parser_load_sce_relexec(allocData *data, SceUID fd, unsigned int len, El
         SceUID exec_mem_uid = 0, data_mem_uid = 0;
         void *exec_mem_loc = NULL, *data_mem_loc = NULL;
 
-        char data_store_name[11];
-        snprintf(data_store_name, 11, "dataSlot%08X", data);
-
+        char name[17];
 
         for(int i = 0; i < hdr->e_phnum; i++) {
                 switch(prgmHDR[i].p_type)
@@ -413,19 +410,20 @@ int elf_parser_load_sce_relexec(allocData *data, SceUID fd, unsigned int len, El
         exec_mem_size = MB_ALIGN(FOUR_KB_ALIGN(exec_mem_size));
         data_mem_size = FOUR_KB_ALIGN(data_mem_size);
 
-        exec_mem_loc = pss_code_mem_alloc(&exec_mem_size);
-        if(exec_mem_loc == NULL) {
+        snprintf(name, 17, "codeSlot%08X", data);
+        exec_mem_uid = sceKernelAllocMemBlockForVM(name, exec_mem_size);
+        if(exec_mem_uid < 0) {
                 DEBUG_LOG_("Failed to allocate executable memory!");
                 goto freeAllAndError;
         }
 
-        exec_mem_uid = sceKernelFindMemBlockByAddr(exec_mem_loc, 0);
-        if (exec_mem_uid < 0) {
-                DEBUG_LOG_("Failed to retrieve allocated executable memory!");
+        if(sceKernelGetMemBlockBase(exec_mem_uid, &exec_mem_loc) < 0) {
+                DEBUG_LOG_("Failed to retrieve allocated data memory!");
                 goto freeAllAndError;
         }
 
-        data_mem_uid = sceKernelAllocMemBlock(data_store_name, SCE_KERNEL_MEMBLOCK_TYPE_USER_RW, data_mem_size, NULL);
+        snprintf(name, 17, "dataSlot%08X", data);
+        data_mem_uid = sceKernelAllocMemBlock(name, SCE_KERNEL_MEMBLOCK_TYPE_USER_RW, data_mem_size, NULL);
         if(data_mem_uid < 0) {
                 DEBUG_LOG_("Failed to allocate data memory!");
                 goto freeAllAndError;
@@ -473,10 +471,10 @@ int elf_parser_load_sce_relexec(allocData *data, SceUID fd, unsigned int len, El
                         DEBUG_LOG_("Writing Segment...");
                         elf_parser_write_segment(&prgmHDR[i], 0, (void*)((SceUInt)tmpDataStore_loc + prgmHDR[i].p_offset), prgmHDR[i].p_filesz);
 
-                        pss_code_mem_unlock();
+                        sceKernelOpenVMDomain();
                         DEBUG_LOG_("Clearing memory...");
                         memset ((void*)((SceUInt)block_loc + (SceUInt)prgmHDR[i].p_filesz), 0, prgmHDR[i].p_memsz - prgmHDR[i].p_filesz);  //TODO this is failing for some reason
-                        pss_code_mem_lock();
+                        sceKernelCloseVMDomain();
 
                         DEBUG_LOG_("Loaded LOAD section");
 
@@ -525,7 +523,10 @@ int elf_parser_load_sce_relexec(allocData *data, SceUID fd, unsigned int len, El
         DEBUG_LOG_("Retrieving entry point");
         if(entryPoint != NULL) *entryPoint = (void *)(prgmHDR[index].p_vaddr + mod_info->mod_start);
         data->entryPoint = (void *)(prgmHDR[index].p_vaddr + mod_info->mod_start);
-        DEBUG_LOG_("Entry point retrieved");
+
+        DEBUG_LOG_("Flushing Icache");
+        sceKernelSyncVMDomain(data->exec_mem_uid, data->exec_mem_loc, data->exec_mem_size);
+        DEBUG_LOG_("Flushed");
 
         return 0;
 

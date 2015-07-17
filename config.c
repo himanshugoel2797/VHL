@@ -16,7 +16,6 @@
    along with this program; if not, write to the Free Software Foundation,
    Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301  USA
  */
-#include <psp2/pss.h>
 #include "config.h"
 #include "vhl.h"
 #include "nid_table.h"
@@ -26,11 +25,9 @@ int config_initialize()
 {
         int *intOptions = getGlobals()->intOptions;
 
-        pss_code_mem_unlock();
         for(int j = 0; j < INT_VARIABLE_OPTION_COUNT; j++) {
                 intOptions[j] = 0;
         }
-        pss_code_mem_lock();
 
         return 0;
 }

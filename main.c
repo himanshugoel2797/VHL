@@ -19,7 +19,6 @@
 #include <psp2/types.h>
 #include <psp2/kernel/sysmem.h>
 #include <psp2/kernel/threadmgr.h>
-#include <psp2/pss.h>
 #include <stdio.h>
 #include "utils/bithacks.h"
 #include "vhl.h"
@@ -29,26 +28,55 @@
 #include "state_machine.h"
 #include "fs_hooks.h"
 #include "loader.h"
+#include "stub.h"
 
 static globals_t *globals;
 
 int __attribute__ ((section (".text.start")))
 _start(UVL_Context *ctx)
 {
+        void * const vhlStubTop = getVhlStubTop();
+        void * const vhlPrimaryStubTop = (void *)((uintptr_t)vhlStubTop + 16);
+        void * const vhlPrimaryStubBtm = (void *)((uintptr_t)vhlPrimaryStubTop + vhlPrimaryStubSize);
+
+        const SceModuleImports * cachedImports[CACHED_IMPORTED_MODULE_NUM];
+        nidTable_entry libkernelBase;
+        SceModuleInfo *libkernelInfo;
         SceUID uid;
         void *p;
+        int err;
 
-        ctx->funcs.logline("Starting VHL...");
+        ctx->logline("Starting VHL...");
 
-        // pss_* and puts won't work before this.
-        int err = nid_table_resolveVHLImports(ctx);
-        if(err < 0) {
-                ctx->funcs.logline("Failed to resolve some functions... VHL will not work...");
+        /* It may get wrong if you change the order of nid_table_resolveVhl*
+           See stub.S to know what imports will be resolved with those functions. */
+        ctx->logline("Resolving VHL puts");
+        nid_table_resolveVhlPuts(vhlStubTop, ctx);
+        ctx->psvFlushIcache(vhlStubTop, 16);
+
+        DEBUG_LOG_("Searching for SceLibKernel");
+        if (nid_table_analyzeStub(ctx->libkernel_anchor, 0, &libkernelBase) != ANALYZE_STUB_OK) {
+                DEBUG_LOG_("Failed to find the base of SceLibKernel");
                 return -1;
         }
 
-        //TODO find a way to free unused memory
+        libkernelBase.value.i = B_UNSET(libkernelBase.value.i, 0);
 
+        libkernelInfo = nid_table_findModuleInfo(libkernelBase.value.p, KERNEL_MODULE_SIZE, "SceLibKernel");
+        if (libkernelInfo == NULL) {
+                DEBUG_LOG_("Failed to find the module information of SceLibKernel");
+                return -1;
+        }
+
+        DEBUG_LOG_("Searching for cached imports");
+        nidCacheFindCachedImports(libkernelInfo, cachedImports);
+
+        DEBUG_LOG_("Resolving VHL primary imports");
+        nid_table_resolveVhlPrimaryImports(vhlPrimaryStubTop, vhlPrimaryStubSize,
+                                          libkernelInfo, cachedImports, ctx);
+        ctx->psvFlushIcache(vhlPrimaryStubTop, vhlPrimaryStubSize);
+
+        DEBUG_LOG_("Allocating memory for VHL");
         uid = sceKernelAllocMemBlock("vhlGlobals", SCE_KERNEL_MEMBLOCK_TYPE_USER_RW,
                                      FOUR_KB_ALIGN(sizeof(globals_t)), NULL);
         if (uid < 0) {
@@ -57,15 +85,34 @@ _start(UVL_Context *ctx)
         }
 
         err = sceKernelGetMemBlockBase(uid, &p);
-
         if (err < 0) {
                 DEBUG_LOG("Failed to retrive memory block 0x%08X", err);
                 return uid;
         }
 
-        pss_code_mem_unlock();
+        ctx->psvUnlockMem();
         globals = p;
-        pss_code_mem_lock();
+        ctx->psvLockMem();
+
+        DEBUG_LOG_("Initializing table");
+        nid_storage_initialize();
+
+        DEBUG_LOG_("Searching and Adding stubs to table...");
+        nid_table_addAllStubs();
+
+        DEBUG_LOG_("Resolving VHL secondary imports");
+        nid_table_resolveVhlSecondaryImports(vhlPrimaryStubBtm, vhlSecondaryStubSize,
+                                          libkernelInfo, cachedImports, ctx);
+        ctx->psvFlushIcache(vhlPrimaryStubBtm, vhlSecondaryStubSize);
+
+        DEBUG_LOG_("Adding stubs to table with cache");
+        if (nid_table_addNIDCacheToTable(libkernelInfo, cachedImports) < 0)
+                return -1;
+
+        DEBUG_LOG_("Adding hooks to table");
+        nid_table_addAllHooks();
+
+        //TODO find a way to free unused memory
 
         block_manager_initialize();  //Initialize the elf block slots
 

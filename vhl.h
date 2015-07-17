@@ -26,6 +26,7 @@ Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301  USA
 #include <psp2/io/stat.h>
 #include <psp2/kernel/threadmgr.h>
 
+#include "utils/nid_storage.h"
 #include "module_headers.h"
 #include "common.h"
 #include "config.h"
@@ -34,6 +35,7 @@ Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301  USA
 typedef struct {
         int intOptions[INT_VARIABLE_OPTION_COUNT];
         allocData allocatedBlocks[MAX_SLOTS];
+        nidTable_entry nid_storage_table[NID_STORAGE_BUCKET_COUNT * NID_STORAGE_MAX_BUCKET_ENTRIES];
 } globals_t;
 
 typedef struct {
@@ -42,14 +44,7 @@ typedef struct {
         void (*psvLockMem)(void);                  ///< Relock code block
         void (*psvFlushIcache)(void *, unsigned int); ///< Flush Icache
         int (*logline)(const char *);              ///< Debug logging (optional)
-} UVL_Funcs;
-
-typedef union {
-        UVL_Funcs funcs;
-        struct {
-                const void *funcs[sizeof(UVL_Funcs) / sizeof(void *)];
-                const void *libkernel_anchor;                    ///< Any imported SceLibKernel function
-        } ptrs;
+        const void *libkernel_anchor;                    ///< Any imported SceLibKernel function
 } UVL_Context;
 
 int __attribute__ ((section (".text.start"))) _start(UVL_Context *ctx);

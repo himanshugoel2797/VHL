@@ -116,7 +116,7 @@ static inline SceNID* GET_FUNCTIONS_NIDTABLE(SceModuleImports *x){
         return ((x->size == sizeof(SceModuleImports_3x)) ? x->new_version.func_nid_table : x->old_version.func_nid_table);
 }
 
-static inline void** GET_FUNCTIONS_ENTRYTABLE(SceModuleImports *x){
+static inline void** GET_FUNCTIONS_ENTRYTABLE(const SceModuleImports *x){
         return ((x->size == sizeof(SceModuleImports_3x)) ? x->new_version.func_entry_table : x->old_version.func_entry_table);
 }
 
