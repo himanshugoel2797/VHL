@@ -29,6 +29,6 @@ int loader_loadHomebrew(const char *str, int slot);
 int loader_startHomebrew(int slot);
 int loader_exitHomebrew(int errorCode);
 
-int hook_sceAppMgrLoadExec(const char *path, const char *argv[], void *opt);
+int hook_sceAppMgrLoadExec(const char *path);
 
 #endif

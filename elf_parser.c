@@ -44,7 +44,7 @@ int block_manager_free_old_data(allocData *p)
         return 0;
 }
 
-int block_manager_initialize()
+void block_manager_initialize()
 {
         allocData *allocatedBlocks = getGlobals()->allocatedBlocks;
 
@@ -108,7 +108,7 @@ int elf_parser_relocate(void *reloc, SceUInt size, Elf32_Phdr *segs)
         SceUInt8 r_symseg;
         SceUInt8 r_datseg;
         SceInt offset;
-        SceUInt symval, addend, loc;
+        SceUInt symval, loc;
         SceUInt upper, lower, sign, j1, j2;
         SceUInt value;
 
@@ -142,7 +142,8 @@ int elf_parser_relocate(void *reloc, SceUInt size, Elf32_Phdr *segs)
 
                 // perform relocation
                 // taken from linux/arch/arm/kernel/module.c of Linux Kernel 4.0
-                switch (SCE_RELOC_CODE (*entry))
+                r_code = SCE_RELOC_CODE(*entry);
+                switch (r_code)
                 {
                 case R_ARM_V4BX:
                 {
@@ -341,12 +342,12 @@ int elf_parser_check_hdr(Elf32_Ehdr *hdr)
 }
 
 
-int elf_parser_load_exec(allocData *data, SceUID fd, unsigned int len, Elf32_Ehdr *hdr, void **entryPoint)
+int elf_parser_load_exec()
 {
         return -1;
 }
 
-int elf_parser_load_sce_exec(allocData *data, SceUID fd, unsigned int len, Elf32_Ehdr *hdr, void **entryPoint)
+int elf_parser_load_sce_exec()
 {
         return -1;
 }
@@ -504,7 +505,7 @@ int elf_parser_load_sce_relexec(allocData *data, SceUID fd, unsigned int len, El
                 void **entryTable = GET_FUNCTIONS_ENTRYTABLE(imports);
                 SceUInt *nidTable = GET_FUNCTIONS_NIDTABLE(imports);
 
-                for(int i = 0; i < GET_FUNCTION_COUNT(imports); i++)
+                for(unsigned int i = 0; i < GET_FUNCTION_COUNT(imports); i++)
                 {
                         int err = nid_table_resolveStub(entryTable[i], nidTable[i]);
                         if(err < 0) DEBUG_LOG("Failed to resolve import NID 0x%08x", nidTable[i]);
@@ -578,7 +579,7 @@ int elf_parser_load(allocData *data, const char *file, void **entryPoint)
         return 0;
 }
 
-int homebrew_thread_entry(SceSize args, void *argp)
+int homebrew_thread_entry(SceSize args __attribute__((unused)), void *argp)
 {
 
         allocData *data = *(allocData **)argp;

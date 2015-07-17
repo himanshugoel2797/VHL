@@ -108,7 +108,7 @@ typedef struct // thanks roxfan
 
 
 
-static inline int GET_FUNCTION_COUNT(SceModuleImports *x) {
+static inline unsigned int GET_FUNCTION_COUNT(SceModuleImports *x) {
         return ((x->size == sizeof(SceModuleImports_3x)) ? x->new_version.num_functions : x->old_version.num_functions);
 }
 

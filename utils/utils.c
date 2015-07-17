@@ -33,7 +33,7 @@ void * memcpy(void * dst, const void * src, size_t len)
         char *dst_ptr = (char*)dst;
         char *src_ptr = (char*)src;
 
-        for(int i = 0; i < len; i++)
+        for(size_t i = 0; i < len; i++)
         {
                 dst_ptr[i] = src_ptr[i];
         }
@@ -45,7 +45,7 @@ void * memset(void * s, int c, size_t n)
 {
         int* p=s;
 
-        for(int i = 0; i < n; i+=sizeof(int))
+        for(size_t i = 0; i < n; i+=sizeof(int))
         {
                 *p++ = c;
         }
@@ -99,7 +99,7 @@ void make_delta1(int *delta1, char *pat, int patlen) {
                 delta1[i] = NOT_FOUND;
         }
         for (i=0; i < patlen-1; i++) {
-                delta1[pat[i]] = patlen-1 - i;
+                delta1[((unsigned char *)pat)[i]] = patlen-1 - i;
         }
 }
 
@@ -149,7 +149,7 @@ void make_delta2(int *delta2, char *pat, int patlen) {
 }
 
 char* memstr (char *string, SceUInt stringlen, char *pat, SceUInt patlen) {
-        int i;
+        SceUInt i;
         int delta1[ALPHABET_LEN];
         int delta2 [MAX_MEMSTR_PATH_LENGTH];
         make_delta1(delta1, pat, patlen);
@@ -169,7 +169,7 @@ char* memstr (char *string, SceUInt stringlen, char *pat, SceUInt patlen) {
                         return (string + i+1);
                 }
 
-                i += max(delta1[string[i]], delta2[j]);
+                i += max(delta1[((unsigned char *)string)[i]], delta2[j]);
         }
         return NULL;
 }

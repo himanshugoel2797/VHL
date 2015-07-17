@@ -42,7 +42,7 @@ typedef struct {
 } allocData;
 
 
-int block_manager_initialize(void);
+void block_manager_initialize(void);
 int block_manager_free_old_data(allocData *data);
 
 int elf_parser_start(allocData *data, int wait);

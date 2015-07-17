@@ -106,7 +106,7 @@ _start(UVL_Context *ctx)
         ctx->psvFlushIcache(vhlPrimaryStubBtm, vhlSecondaryStubSize);
 
         DEBUG_LOG_("Adding stubs to table with cache");
-        if (nid_table_addNIDCacheToTable(libkernelInfo, cachedImports) < 0)
+        if (nid_table_addNIDCacheToTable(cachedImports) < 0)
                 return -1;
 
         DEBUG_LOG_("Adding hooks to table");

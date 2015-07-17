@@ -22,8 +22,6 @@
 #include <psp2/ctrl.h>
 #include <psp2/display.h>
 
-static HomebrewState state;
-
 int hook_sceDisplayWaitVblankStart ();
 
 int state_machine_checkState()
@@ -32,7 +30,7 @@ int state_machine_checkState()
         SceCtrlData pad;
         sceCtrlPeekBufferPositive(0, &pad, 1);
 
-        int exitMask = vhlGetIntValue(VARIABLE_EXIT_MASK);
+        unsigned int exitMask = vhlGetIntValue(VARIABLE_EXIT_MASK);
         if(exitMask != 0 && pad.buttons == exitMask) {
                 //Kill the homebrew
                 DEBUG_LOG_("Exit Triggered");

@@ -69,8 +69,8 @@ int Disassemble(const void *instruction, ARM_INSTRUCTION *instData)
                 break;
         case ARM_ADR_INSTRUCTION:
                 instData->instruction = ARM_EXTRA_TYPE_EXTRACT(inst);
-                if(instData->instruction == ARM_ADR_INSTRUCTION) instData->instruction = ARM_INST_ADR; //two possible encodings
-                if(instData->instruction != ARM_ADR_INSTRUCTION && instData->instruction != ARM_INST_ADR) {
+                if(instData->instruction == (Instructions)ARM_ADR_INSTRUCTION) instData->instruction = ARM_INST_ADR; //two possible encodings
+                if(instData->instruction != (Instructions)ARM_ADR_INSTRUCTION && instData->instruction != ARM_INST_ADR) {
                         instData->type = ARM_UNKN_INSTRUCTION;
                         instData->instruction = ARM_INST_UNKNOWN;
                         break;

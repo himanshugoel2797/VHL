@@ -55,8 +55,7 @@ void nid_table_resolveVhlPrimaryImports(void *p, size_t size, const SceModuleInf
 void nid_table_resolveVhlSecondaryImports(void *p, size_t size, const SceModuleInfo *libkernel,
         const SceModuleImports * const cachedImports[CACHED_IMPORTED_MODULE_NUM],
         const UVL_Context *ctx);
-int nid_table_addNIDCacheToTable(SceModuleInfo *moduleInfo,
-        const SceModuleImports * const cachedImports[CACHED_IMPORTED_MODULE_NUM]);
+int nid_table_addNIDCacheToTable(const SceModuleImports * const cachedImports[CACHED_IMPORTED_MODULE_NUM]);
 int nid_table_addAllStubs(void);
 void nid_table_addAllHooks(void);
 int nid_table_resolveStub(void *stub, SceNID nid);

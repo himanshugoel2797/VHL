@@ -20,8 +20,7 @@ static inline int align(int x, int n) {
 
 #define B_JOIN(a, b, shift) (a | (b << shift))
 
-#define BIT_MASK(a, b) ((((unsigned) -1 >> a) << a + (31 - b)) >> (31 - b))
-#define B_EXTRACT(x, max, min) ( (x  & BIT_MASK(min, max)) >> min  )
+#define B_EXTRACT(x, max, min) (((x) >> (min)) & (((unsigned int)1 << ((max) - (min) + 1)) - 1))
 
 /* test if x is even */
 #define B_EVEN(x)        (((x)&1)==0)

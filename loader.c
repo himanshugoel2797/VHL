@@ -21,9 +21,7 @@
 #include "fs_hooks.h"
 #include "state_machine.h"
 
-static int currentHomebrew = 0;
-
-int hook_sceAppMgrLoadExec(const char *path, const char *argv[], void *opt)
+int hook_sceAppMgrLoadExec(const char *path)
 {
         allocData *data = getGlobals()->allocatedBlocks;
         //Trigger a cleanup here
@@ -48,7 +46,8 @@ int loader_exitHomebrew(int errorCode)
         //Load the menu
         char tmp[MAX_PATH_LENGTH];
         int retVal = elf_parser_load(data, TranslateVFS(tmp, MENU_PATH), NULL);
-        retVal = elf_parser_start(data, -1);
+        if (retVal == 0)
+                elf_parser_start(data, -1);
 
         return errorCode;
 

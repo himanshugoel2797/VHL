@@ -215,7 +215,7 @@ int nid_table_addStubsInModule(Psp2LoadedModuleInfo *target)
                                 void **entryTable = GET_FUNCTIONS_ENTRYTABLE(importTable_orig);
                                 SceNID *nidTable = GET_FUNCTIONS_NIDTABLE(importTable_l);
 
-                                for(int i = 0; i < GET_FUNCTION_COUNT(importTable_orig); i++)
+                                for(unsigned int i = 0; i < GET_FUNCTION_COUNT(importTable_orig); i++)
                                 {
                                         int err = nid_table_analyzeStub(entryTable[i], nidTable[i], &entry);
                                         if(err == ANALYZE_STUB_OK)
@@ -266,7 +266,7 @@ void nid_table_addAllHooks()
 int nid_table_addAllStubs()
 {
         SceUID uids[NID_TABLE_MAX_MODULES];
-        int numEntries = NID_TABLE_MAX_MODULES;
+        unsigned int numEntries = NID_TABLE_MAX_MODULES;
 
         int err = sceKernelGetModuleList(0xFF, uids, &numEntries);
         if(err < 0) {
@@ -276,7 +276,7 @@ int nid_table_addAllStubs()
         Psp2LoadedModuleInfo loadedModuleInfo;
         loadedModuleInfo.size = sizeof(loadedModuleInfo);
 
-        for(int i = 0; i < numEntries; i++)
+        for(unsigned int i = 0; i < numEntries; i++)
         {
                 if(sceKernelGetModuleInfo(uids[i], &loadedModuleInfo) < 0) {
                         DEBUG_LOG_("Failed to get module info... Skipping...");
@@ -319,8 +319,7 @@ SceModuleInfo* nid_table_findModuleInfo(void* location, SceUInt size, char* libn
 }
 
 __attribute__((hot))
-int nid_table_addNIDCacheToTable(SceModuleInfo *moduleInfo,
-        const SceModuleImports * const cachedImports[CACHED_IMPORTED_MODULE_NUM])
+int nid_table_addNIDCacheToTable(const SceModuleImports * const cachedImports[CACHED_IMPORTED_MODULE_NUM])
 {
         nidTable_entry entry;
         NID_CACHE *importsInfo;
