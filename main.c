@@ -70,11 +70,18 @@ static int loadExecCb()
         res = elf_parser_load(globals->allocatedBlocks, globals->loadExecPath, NULL);
         if (res) {
                 internal_printf("Load failed 0x%08X", res);
+                loadMenu();
                 return res;
         }
 
         DEBUG_PUTS("Launching");
-        return elf_parser_start(globals->allocatedBlocks);
+        res = elf_parser_start(globals->allocatedBlocks);
+        if (res) {
+                internal_printf("Start failed 0x%08X", res);
+                sceKernelExitProcess(res);
+        }
+
+        return res;
 }
 
 int __attribute__ ((section (".text.start")))
