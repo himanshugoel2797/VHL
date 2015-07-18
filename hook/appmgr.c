@@ -23,32 +23,23 @@
 
 int hook_sceAppMgrLoadExec(const char *path)
 {
-        allocData *data = getGlobals()->allocatedBlocks;
-        //Trigger a cleanup here
+        globals_t *globals = getGlobals();
+        int res;
 
-        char tmp[MAX_PATH_LENGTH];
-        char *p = TranslateVFS(tmp, path);
-        int retVal = elf_parser_load(data, p, NULL);
-        retVal = elf_parser_start(data, -1);
+        TranslateVFS(globals->loadExecPath, path);
 
-        //If we do end up returning, trigger the exitHomebrew procedures
-        loader_exitHomebrew(retVal);
+        res = sceKernelNotifyCallback(globals->loadExecCb, 0);
+        if (res)
+                return res;
 
-        return 0;
-        //TODO implement this properly, loads homebrew, kills current homebrew, launches loaded homebrew, maybe this should be moved to state machine
+        return sceKernelExitDeleteThread(0);
 }
 
-int loader_exitHomebrew(int errorCode)
+int hook_sceKernelExitProcess(int res)
 {
-        allocData *data = getGlobals()->allocatedBlocks;
-        //Trigger a cleanup here
+        res = sceKernelNotifyCallback(getGlobals()->exitCb, res);
+        if (res)
+                return res;
 
-        //Load the menu
-        char tmp[MAX_PATH_LENGTH];
-        int retVal = elf_parser_load(data, TranslateVFS(tmp, MENU_PATH), NULL);
-        if (retVal == 0)
-                elf_parser_start(data, -1);
-
-        return errorCode;
-
+        return sceKernelExitDeleteThread(0);
 }

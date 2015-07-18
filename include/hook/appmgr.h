@@ -25,10 +25,7 @@ Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301  USA
 #include <nids.h>
 
 //Contains functions to parse and load elfs
-int loader_loadHomebrew(const char *str, int slot);
-int loader_startHomebrew(int slot);
-int loader_exitHomebrew(int errorCode);
-
 int hook_sceAppMgrLoadExec(const char *path);
+int hook_sceKernelExitProcess(int res);
 
 #endif

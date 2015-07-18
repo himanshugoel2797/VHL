@@ -16,6 +16,8 @@
    along with this program; if not, write to the Free Software Foundation,
    Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301  USA
  */
+
+#include <hook/appmgr.h>
 #include <hook/state_machine.h>
 #include <nid_table.h>
 #include <nids.h>
@@ -34,7 +36,7 @@ int state_machine_checkState()
         if(exitMask != 0 && pad.buttons == exitMask) {
                 //Kill the homebrew
                 DEBUG_PUTS("Exit Triggered");
-                sceKernelExitDeleteThread(0);
+                hook_sceKernelExitProcess(0);
                 return 0;
         }
 

@@ -33,6 +33,10 @@ Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301  USA
 #include <elf_parser.h>
 
 typedef struct {
+        int isMenu;
+        SceUID exitCb;
+        SceUID loadExecCb;
+        char loadExecPath[MAX_PATH_LENGTH];
         int intOptions[INT_VARIABLE_OPTION_COUNT];
         allocData allocatedBlocks[MAX_SLOTS];
         nidTable_entry nid_storage_table[NID_STORAGE_BUCKET_COUNT * NID_STORAGE_MAX_BUCKET_ENTRIES];

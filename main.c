@@ -17,6 +17,7 @@
    Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301  USA
  */
 #include <psp2/types.h>
+#include <psp2/kernel/processmgr.h>
 #include <psp2/kernel/sysmem.h>
 #include <psp2/kernel/threadmgr.h>
 #include <stdio.h>
@@ -28,6 +29,53 @@
 #include <stub.h>
 
 static globals_t *globals;
+
+static int loadMenu()
+{
+        int res;
+
+        globals->isMenu = 1;
+
+        DEBUG_PUTS("Loading menu");
+        res = elf_parser_load(globals->allocatedBlocks, "pss0:/top/Documents/homebrew.self", NULL);
+        if (res) {
+                internal_printf("Load failed 0x%08X", res);
+                return res;
+        }
+
+        DEBUG_PUTS("Launching");
+        return elf_parser_start(globals->allocatedBlocks);
+}
+
+static int exitCb(int notifyId __attribute__((unused)),
+           int notifyCount __attribute__((unused)),
+           int notifyArg,
+           void *common __attribute__((unused)))
+{
+        DEBUG_PRINTF("Exited 0x%08X", notifyArg);
+
+        if (globals->isMenu)
+                sceKernelExitProcess(notifyArg);
+
+        return loadMenu();
+}
+
+static int loadExecCb()
+{
+        int res;
+
+        globals->isMenu = 0;
+
+        DEBUG_PUTS("Loading homebrew");
+        res = elf_parser_load(globals->allocatedBlocks, globals->loadExecPath, NULL);
+        if (res) {
+                internal_printf("Load failed 0x%08X", res);
+                return res;
+        }
+
+        DEBUG_PUTS("Launching");
+        return elf_parser_start(globals->allocatedBlocks);
+}
 
 int __attribute__ ((section (".text.start")))
 _start(UVL_Context *ctx)
@@ -111,26 +159,20 @@ _start(UVL_Context *ctx)
 
         //TODO find a way to free unused memory
 
+        DEBUG_PUTS("Initializing variables");
         block_manager_initialize();  //Initialize the elf block slots
-
-        //TODO decide how to handle plugins
-
         config_initialize();
 
-        DEBUG_PUTS("Loading menu...");
+        globals->exitCb = sceKernelCreateCallback("vhlExitCb", 0, exitCb, NULL);
+        globals->loadExecCb = sceKernelCreateCallback("vhlLoadExecCb", 0, loadExecCb, NULL);
 
-        if(elf_parser_load(globals->allocatedBlocks, "pss0:/top/Documents/homebrew.self", NULL) < 0) {
-                internal_printf("Load failed!");
-                return -1;
-        }
-        puts("Load succeeded! Launching!");
+        loadMenu();
 
-        elf_parser_start(globals->allocatedBlocks, 0);
-
+        DEBUG_PUTS("Menu loaded");
         while(1) {
                 //Delay thread and check for flags and things to update every once in a while, check for exit combination
-                //calls.LogLine("Menu exited! Relaunching...");
                 sceKernelDelayThread(16000);  //Update stuff once every 16 ms
+                sceKernelCheckCallback();
         }
 
         return 0;

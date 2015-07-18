@@ -20,6 +20,7 @@
 #include <psp2/kernel/clib.h>
 #include <psp2/kernel/sysmem.h>
 #include <string.h>
+#include <hook/appmgr.h>
 #include <utils/utils.h>
 #include <elf_parser.h>
 #include <nid_table.h>
@@ -603,27 +604,31 @@ static int homebrew_thread_entry(SceSize args __attribute__((unused)), void *arg
         int retVal = data->entryPoint(0, NULL);
         //TODO stop managing and clear all resources
 
-        sceKernelExitDeleteThread(retVal);
-        return retVal;
+        return hook_sceKernelExitProcess(retVal);
 }
 
-int elf_parser_start(allocData *data, int wait)
+int elf_parser_start(allocData *data)
 {
         SceKernelThreadInfo mainThreadInfo;
         SceUID tid;
+        int res;
 
         mainThreadInfo.size = sizeof(SceKernelThreadInfo);
-        sceKernelGetThreadInfo(sceKernelGetThreadId(), &mainThreadInfo);
+        tid = sceKernelGetThreadId();
+        if (tid < 0)
+                return tid;
+
+        res = sceKernelGetThreadInfo(tid, &mainThreadInfo);
+        if (res)
+                return res;
 
         tid = sceKernelCreateThread("homebrew_thread", homebrew_thread_entry, mainThreadInfo.currentPriority, 0x10000, mainThreadInfo.attr, 0, NULL);
-        sceKernelStartThread(tid, sizeof(data), &data);
+        if (tid < 0)
+                return tid;
 
-        data->thid = tid;
+        res = sceKernelStartThread(tid, sizeof(data), &data);
+        if (res)
+                sceKernelDeleteThread(tid);
 
-        int exitStatus = 0;
-        SceUInt *delay = wait < 0 ? NULL : (SceUInt *)&wait;
-
-        sceKernelWaitThreadEnd(tid, &exitStatus, delay);
-
-        return exitStatus;
+        return res;
 }
