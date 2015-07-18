@@ -21,6 +21,7 @@
 #include <psp2/kernel/sysmem.h>
 #include <string.h>
 #include <hook/appmgr.h>
+#include <hook/threadmgr.h>
 #include <utils/utils.h>
 #include <elf_parser.h>
 #include <nid_table.h>
@@ -595,18 +596,6 @@ int elf_parser_load(allocData *data, const char *file, void **entryPoint)
         return 0;
 }
 
-static int homebrew_thread_entry(SceSize args __attribute__((unused)), void *argp)
-{
-
-        allocData *data = *(allocData **)argp;
-
-        //TODO start managing resources for this
-        int retVal = data->entryPoint(0, NULL);
-        //TODO stop managing and clear all resources
-
-        return hook_sceKernelExitProcess(retVal);
-}
-
 int elf_parser_start(allocData *data)
 {
         SceKernelThreadInfo mainThreadInfo;
@@ -622,11 +611,11 @@ int elf_parser_start(allocData *data)
         if (res)
                 return res;
 
-        tid = sceKernelCreateThread("homebrew_thread", homebrew_thread_entry, mainThreadInfo.currentPriority, 0x10000, mainThreadInfo.attr, 0, NULL);
+        tid = hook_sceKernelCreateThread("homebrew_thread", data->entryPoint, mainThreadInfo.currentPriority, 0x10000, mainThreadInfo.attr, 0, NULL);
         if (tid < 0)
                 return tid;
 
-        res = sceKernelStartThread(tid, sizeof(data), &data);
+        res = sceKernelStartThread(tid, 0, NULL);
         if (res)
                 sceKernelDeleteThread(tid);
 

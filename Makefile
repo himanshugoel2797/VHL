@@ -10,7 +10,7 @@ TARGET	:= VHL
 
 OBJS	:= main.o nid_table.o arm_tools.o nidcache.o	\
 	elf_parser.o stub.o config.o	\
-	hook/appmgr.o hook/iofilemgr.o hook/state_machine.o	\
+	hook/appmgr.o hook/iofilemgr.o hook/state_machine.o hook/threadmgr.o	\
 	utils/nid_storage.o utils/utils.o utils/mini-printf.o
 
 all: $(TARGET).bin $(TARGET).vds

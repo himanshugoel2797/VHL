@@ -21,6 +21,7 @@
 #include <psp2/kernel/sysmem.h>
 #include <psp2/kernel/threadmgr.h>
 #include <stdio.h>
+#include <hook/threadmgr.h>
 #include <utils/bithacks.h>
 #include <vhl.h>
 #include <nid_table.h>
@@ -57,6 +58,7 @@ static int exitCb(int notifyId __attribute__((unused)),
         if (globals->isMenu)
                 sceKernelExitProcess(notifyArg);
 
+        terminateDeleteAllUserThreads();
         return loadMenu();
 }
 
@@ -64,6 +66,8 @@ static int loadExecCb()
 {
         int res;
 
+        DEBUG_PUTS("Killing all user threads");
+        terminateDeleteAllUserThreads();
         globals->isMenu = 0;
 
         DEBUG_PUTS("Loading homebrew");
@@ -90,6 +94,7 @@ _start(UVL_Context *ctx)
         void * const vhlStubTop = getVhlStubTop();
         void * const vhlPrimaryStubTop = (void *)((uintptr_t)vhlStubTop + 16);
         void * const vhlPrimaryStubBtm = (void *)((uintptr_t)vhlPrimaryStubTop + vhlPrimaryStubSize);
+        SceUInt timeout = 16384;
 
         const SceModuleImports * cachedImports[CACHED_IMPORTED_MODULE_NUM];
         nidTable_entry libkernelBase;
@@ -169,6 +174,7 @@ _start(UVL_Context *ctx)
         DEBUG_PUTS("Initializing variables");
         block_manager_initialize();  //Initialize the elf block slots
         config_initialize();
+        initThreadmgr();
 
         globals->exitCb = sceKernelCreateCallback("vhlExitCb", 0, exitCb, NULL);
         globals->loadExecCb = sceKernelCreateCallback("vhlLoadExecCb", 0, loadExecCb, NULL);
@@ -178,8 +184,14 @@ _start(UVL_Context *ctx)
         DEBUG_PUTS("Menu loaded");
         while(1) {
                 //Delay thread and check for flags and things to update every once in a while, check for exit combination
-                sceKernelDelayThread(16000);  //Update stuff once every 16 ms
-                sceKernelCheckCallback();
+                err = waitAllUserThreadsEndCB(&timeout);
+                if (err)
+                        continue;
+
+                if (globals->isMenu)
+                        sceKernelExitProcess(0);
+
+                loadMenu();
         }
 
         return 0;

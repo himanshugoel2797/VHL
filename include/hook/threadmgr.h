@@ -16,36 +16,28 @@ You should have received a copy of the GNU General Public License
 along with this program; if not, write to the Free Software Foundation,
 Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301  USA
 */
-#ifndef VHL_ELF_PARSER_H
-#define VHL_ELF_PARSER_H
 
-#include <config.h>
-#include <elf_headers.h>
-#include <utils/bithacks.h>
+#ifndef HOOK_THREADMGR_H
+#define HOOK_THREADMGR_H
+
+#include <psp2/kernel/threadmgr.h>
+#include <psp2/types.h>
 
 typedef struct {
-        void *data_mem_loc;
-        SceUID data_mem_uid;
-        int data_mem_size;
+        SceUID uid;
+        SceUID exitDeleteCb;
+        SceKernelThreadEntry entry;
+} thInfo_t;
 
-        void *exec_mem_loc;
-        SceUID exec_mem_uid;
-        int exec_mem_size;
+void initThreadmgr(void);
 
-        void *elf_mem_loc;
-        SceUID elf_mem_uid;
-        int elf_mem_size;
+SceUID hook_sceKernelCreateThread(const char *name, SceKernelThreadEntry entry,
+        int initPriority, SceSize stackSize, SceUInt attr,
+        int cpuAffinityMask, const SceKernelThreadOptParam *option);
 
-        char path[MAX_PATH_LENGTH];
-        int (*entryPoint)(SceSize, void *);
-        SceUID thid;
-} allocData;
+int hook_sceKernelExitDeleteThread(int res);
 
-
-void block_manager_initialize(void);
-
-int elf_parser_start(allocData *data);
-int elf_parser_load(allocData *data, const char* file, void** entryPoint);
-
+int terminateDeleteAllUserThreads(void);
+int waitAllUserThreadsEndCB(SceUInt *timeout);
 
 #endif

@@ -32,7 +32,7 @@ int hook_sceAppMgrLoadExec(const char *path)
         if (res)
                 return res;
 
-        return sceKernelExitDeleteThread(0);
+        return hook_sceKernelExitDeleteThread(0);
 }
 
 int hook_sceKernelExitProcess(int res)
@@ -41,5 +41,5 @@ int hook_sceKernelExitProcess(int res)
         if (res)
                 return res;
 
-        return sceKernelExitDeleteThread(0);
+        return hook_sceKernelExitDeleteThread(0);
 }

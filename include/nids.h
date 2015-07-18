@@ -39,6 +39,13 @@ Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301  USA
 #define NID_sceKernelGetThreadInfo 0x8d9c5461
 #define NID_sceKernelWaitThreadEnd 0xddb395a9
 #define NID_sceKernelGetThreadExitStatus 0xd5dc26c4
+#define NID_sceKernelCreateSema 0x1bd67366
+#define NID_sceKernelCreateMutex 0xed53334a
+#define NID_sceKernelLockMutexCB 0x2bdaa524
+#define NID_sceKernelGetSemaInfo 0x595d3fa6
+#define NID_sceKernelLockMutex 0x1d8d7945
+#define NID_sceKernelWaitSema 0x0c7b834b
+#define NID_sceKernelWaitSemaCB 0x174692b4
 
 // SceAppMgrUser
 #define NID_sceAppMgrLoadExec 0xe6774abc
@@ -79,6 +86,9 @@ Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301  USA
 #define NID_sceKernelCreateCallback 0xb19cf7e9
 #define NID_sceKernelNotifyCallback 0xa4683592
 #define NID_sceKernelCheckCallback 0xe53e41f6
+#define NID_sceKernelUnlockMutex 0x1a372ec8
+#define NID_sceKernelPollSema 0x866ef048
+#define NID_sceKernelSignalSema 0xe6b761d1
 
 // SceLibc
 #define NID_printf 0x9A004680
