@@ -20,6 +20,7 @@
 #include <psp2/kernel/processmgr.h>
 #include <psp2/kernel/sysmem.h>
 #include <psp2/kernel/threadmgr.h>
+#include <psp2/ctrl.h>
 #include <stdio.h>
 #include <hook/threadmgr.h>
 #include <utils/bithacks.h>
@@ -99,7 +100,9 @@ _start(UVL_Context *ctx)
         const SceModuleImports * cachedImports[CACHED_IMPORTED_MODULE_NUM];
         nidTable_entry libkernelBase;
         SceModuleInfo *libkernelInfo;
+        SceCtrlData pad;
         SceUID uid;
+        unsigned int exitMask;
         void *p;
         int err;
 
@@ -183,9 +186,12 @@ _start(UVL_Context *ctx)
 
         DEBUG_PUTS("Menu loaded");
         while(1) {
-                //Delay thread and check for flags and things to update every once in a while, check for exit combination
-                err = waitAllUserThreadsEndCB(&timeout);
-                if (err)
+                sceCtrlPeekBufferPositive(0, &pad, 1);
+
+                exitMask = vhlGetIntValue(VARIABLE_EXIT_MASK);
+                if (exitMask != 0 && pad.buttons == exitMask)
+                        terminateDeleteAllUserThreads();
+                else if (waitAllUserThreadsEndCB(&timeout)) // If it times out
                         continue;
 
                 if (globals->isMenu)
